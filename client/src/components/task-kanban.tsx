@@ -18,7 +18,8 @@ import {
   Trash2,
   ArrowRight,
   Eye,
-  Building2
+  Building2,
+  MessageSquare
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -26,6 +27,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -51,7 +53,9 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
   const { toast } = useToast();
   const { user } = useAuth();
   const [assignPointsDialog, setAssignPointsDialog] = useState<{ open: boolean; taskId: string | null }>({ open: false, taskId: null });
+  const [commentsDialog, setCommentsDialog] = useState<{ open: boolean; taskId: string | null }>({ open: false, taskId: null });
   const [rewardPoints, setRewardPoints] = useState("");
+  const [commentText, setCommentText] = useState("");
   const [activeTab, setActiveTab] = useState("pending");
 
   const updateTaskMutation = useMutation({
@@ -286,11 +290,19 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
                     </DropdownMenuItem>
                   </>
                 )}
-                {task.status === 'under_review' && user?.role === 'admin' && (
-                  <DropdownMenuItem onClick={() => handleApproveTask(task.id)} data-testid={`menu-approve-task-${task.id}`}>
-                    <CheckCircle className="w-4 h-4 ml-2" />
-                    الموافقة والإكمال
-                  </DropdownMenuItem>
+                {task.status === 'under_review' && (
+                  <>
+                    {user?.role === 'admin' && (
+                      <DropdownMenuItem onClick={() => handleApproveTask(task.id)} data-testid={`menu-approve-task-${task.id}`}>
+                        <CheckCircle className="w-4 h-4 ml-2" />
+                        الموافقة والإكمال
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem onClick={() => handleMoveTask(task.id, 'in_progress')} data-testid={`menu-move-back-to-progress-${task.id}`}>
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                      إرجاع لقيد التنفيذ
+                    </DropdownMenuItem>
+                  </>
                 )}
                 {task.status === 'completed' && user?.role === 'admin' && !task.rewardPoints && (
                   <DropdownMenuItem onClick={() => setAssignPointsDialog({ open: true, taskId: task.id })} data-testid={`menu-assign-points-${task.id}`}>
@@ -333,18 +345,30 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
             </div>
           )}
 
-          {task.assignedToUser && (
-            <div className="flex items-center gap-2 mt-2" data-testid={`task-assignee-${task.id}`}>
-              <Avatar className="h-7 w-7 sm:h-6 sm:w-6">
-                <AvatarFallback className="text-xs">
-                  {task.assignedToUser.fullName[0]}
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-sm sm:text-xs text-muted-foreground truncate">
-                {task.assignedToUser.fullName}
-              </span>
-            </div>
-          )}
+          <div className="flex items-center justify-between mt-2">
+            {task.assignedToUser && (
+              <div className="flex items-center gap-2" data-testid={`task-assignee-${task.id}`}>
+                <Avatar className="h-7 w-7 sm:h-6 sm:w-6">
+                  <AvatarFallback className="text-xs">
+                    {task.assignedToUser.fullName[0]}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-sm sm:text-xs text-muted-foreground truncate">
+                  {task.assignedToUser.fullName}
+                </span>
+              </div>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 gap-1"
+              onClick={() => setCommentsDialog({ open: true, taskId: task.id })}
+              data-testid={`button-task-comments-${task.id}`}
+            >
+              <MessageSquare className="w-3 h-3" />
+              <span className="text-xs">تعليقات</span>
+            </Button>
+          </div>
         </div>
       </Card>
     </motion.div>

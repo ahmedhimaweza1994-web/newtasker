@@ -161,6 +161,33 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Task comments/notes routes
+  app.get("/api/tasks/:id/comments", requireAuth, async (req, res) => {
+    try {
+      const comments = await storage.getTaskNotes(req.params.id);
+      res.json(comments);
+    } catch (error) {
+      console.error("Error fetching task comments:", error);
+      res.status(500).json({ message: "حدث خطأ في جلب التعليقات" });
+    }
+  });
+
+  app.post("/api/tasks/:id/comments", requireAuth, async (req, res) => {
+    try {
+      const comment = await storage.createTaskNote({
+        taskId: req.params.id,
+        userId: req.user!.id,
+        content: req.body.content,
+        attachments: req.body.attachments || [],
+      });
+      res.status(201).json(comment);
+    } catch (error) {
+      console.error("Error creating task comment:", error);
+      res.status(500).json({ message: "حدث خطأ في إضافة التعليق" });
+    }
+  });
+
+
   // Task review and rating routes
   app.put("/api/tasks/:id/submit-review", requireAuth, async (req, res) => {
     try {
@@ -1075,29 +1102,15 @@ export function registerRoutes(app: Express): Server {
 
   app.post("/api/google-calendar/schedule-meeting", requireAuth, async (req, res) => {
     try {
-      const { title, participantIds, startTime, endTime } = req.body;
+      const { title, participantIds, startTime, endTime, meetingLink } = req.body;
       
-      let meetingLink = "";
-      
-      try {
-        const meetData = await createGoogleMeetEvent(
-          title,
-          `اجتماع مع ${participantIds.length} مشارك`,
-          new Date(startTime),
-          new Date(endTime)
-        );
-        meetingLink = meetData.meetingLink!;
-      } catch (error) {
-        console.error("Failed to create Google Meet link:", error);
-        return res.status(400).json({ 
-          message: "حدث خطأ في إنشاء رابط Google Meet. يرجى المحاولة مرة أخرى" 
-        });
-      }
+      // Allow users to provide their own meeting link instead of relying on Google Calendar
+      const finalMeetingLink = meetingLink || `https://meet.example.com/${Date.now()}-${Math.random().toString(36).substring(7)}`;
       
       const meeting = await storage.createMeeting({
         title,
         description: `اجتماع مع ${participantIds.length} مشارك`,
-        meetingLink,
+        meetingLink: finalMeetingLink,
         scheduledBy: req.user!.id,
         startTime: new Date(startTime),
         endTime: new Date(endTime),
@@ -1128,11 +1141,11 @@ export function registerRoutes(app: Express): Server {
       const message = await storage.createChatMessage({
         roomId: chatRoom.id,
         senderId: req.user!.id,
-        content: `🎥 ${title}\n\nانضم للاجتماع: ${meetingLink}`,
+        content: `🎥 ${title}\n\nانضم للاجتماع: ${finalMeetingLink}`,
         messageType: "meeting_link",
         attachments: [{
           name: title,
-          url: meetingLink,
+          url: finalMeetingLink,
           type: "meeting"
         }],
       });

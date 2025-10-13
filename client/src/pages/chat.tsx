@@ -608,31 +608,47 @@ export default function Chat() {
         </AnimatePresence>
       </ScrollArea>
       <div className="p-4 border-t border-border bg-card/80">
-        <p className="text-sm text-muted-foreground mb-2 font-medium">بدء دردشة خاصة</p>
-        <ScrollArea className="max-h-32">
-          {users
-            .filter((u) => u.id !== user?.id)
-            .map((u) => (
-              <motion.div
-                key={u.id}
-                whileHover={{ x: 4 }}
-                transition={{ type: "spring", stiffness: 300 }}
-              >
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start mb-1 hover:bg-primary/10"
-                  onClick={() => {
-                    startPrivateChatMutation.mutate(u.id);
-                    if (isMobile) setMobileSheetOpen(false);
-                  }}
-                  data-testid={`button-private-chat-${u.id}`}
-                >
-                  <MessageSquare className="w-4 h-4 ml-2" />
-                  {u.fullName}
-                </Button>
-              </motion.div>
-            ))}
-        </ScrollArea>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="outline" className="w-full gap-2" data-testid="button-open-private-chat">
+              <MessageSquare className="w-4 h-4" />
+              بدء دردشة خاصة
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>اختر مستخدم للمحادثة</DialogTitle>
+            </DialogHeader>
+            <ScrollArea className="max-h-[400px] pr-4">
+              <div className="space-y-2">
+                {users
+                  .filter((u) => u.id !== user?.id)
+                  .map((u) => (
+                    <motion.div
+                      key={u.id}
+                      whileHover={{ x: 4 }}
+                      transition={{ type: "spring", stiffness: 300 }}
+                    >
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start hover:bg-primary/10"
+                        onClick={() => {
+                          startPrivateChatMutation.mutate(u.id);
+                          if (isMobile) setMobileSheetOpen(false);
+                        }}
+                        data-testid={`button-private-chat-${u.id}`}
+                      >
+                        <Avatar className="h-8 w-8 ml-2">
+                          <AvatarFallback>{u.fullName[0]}</AvatarFallback>
+                        </Avatar>
+                        {u.fullName}
+                      </Button>
+                    </motion.div>
+                  ))}
+              </div>
+            </ScrollArea>
+          </DialogContent>
+        </Dialog>
       </div>
     </>
   );

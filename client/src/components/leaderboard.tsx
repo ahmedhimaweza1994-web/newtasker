@@ -15,8 +15,9 @@ export default function Leaderboard({ limit = 5, showTitle = true }: Leaderboard
     queryKey: ["/api/users"],
   });
 
-  // Sort users by totalPoints in descending order
+  // Sort users by totalPoints in descending order (highest first)
   const topUsers = [...users]
+    .filter((u) => u.totalPoints && u.totalPoints > 0)
     .sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0))
     .slice(0, limit);
 

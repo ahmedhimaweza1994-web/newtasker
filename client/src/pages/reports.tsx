@@ -173,20 +173,22 @@ export default function Reports() {
               </p>
             </div>
 
-            <div className="flex gap-3">
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button variant="outline" onClick={() => handleExportReport('pdf')} className="gap-2" data-testid="button-export-pdf">
-                  <FileText className="w-4 h-4" />
-                  تصدير PDF
-                </Button>
-              </motion.div>
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button variant="outline" onClick={() => handleExportReport('excel')} className="gap-2" data-testid="button-export-excel">
-                  <Download className="w-4 h-4" />
-                  تصدير Excel
-                </Button>
-              </motion.div>
-            </div>
+            {(user?.role === 'admin' || user?.role === 'sub-admin') && (
+              <div className="flex gap-3">
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Button variant="outline" onClick={() => handleExportReport('pdf')} className="gap-2" data-testid="button-export-pdf">
+                    <FileText className="w-4 h-4" />
+                    تصدير PDF
+                  </Button>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Button variant="outline" onClick={() => handleExportReport('excel')} className="gap-2" data-testid="button-export-excel">
+                    <Download className="w-4 h-4" />
+                    تصدير Excel
+                  </Button>
+                </motion.div>
+              </div>
+            )}
           </motion.div>
 
           <motion.div
@@ -363,45 +365,47 @@ export default function Reports() {
               </Card>
             </motion.div>
 
-            <motion.div
-              custom={3}
-              initial="hidden"
-              animate="visible"
-              variants={metricsVariants}
-            >
-              <Card className="relative overflow-hidden group hover:shadow-2xl transition-all duration-300" data-testid="card-active-employees-count">
-                <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-red-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-                <motion.div
-                  className="absolute -top-12 -right-12 w-32 h-32 bg-gradient-to-br from-orange-500 to-red-500 rounded-full opacity-10"
-                  animate={{ 
-                    scale: [1, 1.2, 1],
-                    rotate: [0, -180, 0]
-                  }}
-                  transition={{ duration: 14, repeat: Infinity }}
-                />
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">موظفين نشطين</CardTitle>
+            {(user?.role === 'admin' || user?.role === 'sub-admin') && (
+              <motion.div
+                custom={3}
+                initial="hidden"
+                animate="visible"
+                variants={metricsVariants}
+              >
+                <Card className="relative overflow-hidden group hover:shadow-2xl transition-all duration-300" data-testid="card-active-employees-count">
+                  <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-red-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                   <motion.div
-                    whileHover={{ rotate: 360 }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    <Users className="h-5 w-5 text-orange-600 dark:text-orange-500" />
-                  </motion.div>
-                </CardHeader>
-                <CardContent>
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", stiffness: 200, delay: 0.5 }}
-                    className="text-3xl font-bold text-orange-600 dark:text-orange-500"
-                    data-testid="text-active-employees"
-                  >
-                    {activeEmployees}
-                  </motion.div>
-                  <p className="text-xs text-muted-foreground mt-1">من أصل {totalEmployees} موظف</p>
-                </CardContent>
-              </Card>
-            </motion.div>
+                    className="absolute -top-12 -right-12 w-32 h-32 bg-gradient-to-br from-orange-500 to-red-500 rounded-full opacity-10"
+                    animate={{ 
+                      scale: [1, 1.2, 1],
+                      rotate: [0, -180, 0]
+                    }}
+                    transition={{ duration: 14, repeat: Infinity }}
+                  />
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">موظفين نشطين</CardTitle>
+                    <motion.div
+                      whileHover={{ rotate: 360 }}
+                      transition={{ duration: 0.5 }}
+                    >
+                      <Users className="h-5 w-5 text-orange-600 dark:text-orange-500" />
+                    </motion.div>
+                  </CardHeader>
+                  <CardContent>
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", stiffness: 200, delay: 0.5 }}
+                      className="text-3xl font-bold text-orange-600 dark:text-orange-500"
+                      data-testid="text-active-employees"
+                    >
+                      {activeEmployees}
+                    </motion.div>
+                    <p className="text-xs text-muted-foreground mt-1">من أصل {totalEmployees} موظف</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
