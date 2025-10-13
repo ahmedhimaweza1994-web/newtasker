@@ -39,6 +39,25 @@ GWT Task Management is a comprehensive Arabic-language task and employee managem
   - Configured WebSocket protocol and host settings in vite.config.ts
   - Minor HMR browser console warning remains (cosmetic, doesn't affect functionality)
 
+### October 13, 2025 - VPS Portability & UX Improvements
+- **Meeting Scheduling (VPS Ready)** - Removed Replit dependency for VPS deployment
+  - Modified schedule meeting to accept custom meeting links instead of requiring Replit's Google Calendar integration
+  - Users can provide their own meeting links or system generates a deterministic fallback
+  - Fully portable to VPS environments without external service dependencies
+- **Task Workflow Enhancements** - Improved task status transitions and display
+  - Added ability to move tasks from 'under_review' back to 'in_progress' for revisions
+  - Fixed leaderboard to sort users by highest task points in descending order
+  - Filters out users with 0 points from leaderboard display
+  - Added task comments button to each task card with GET/POST API routes at `/api/tasks/:id/comments`
+- **Role-Based UI Updates** - Enhanced permissions and user experience
+  - Hidden export buttons (PDF/Excel) and active employees widget for non-admin users on reports page
+  - Only admins and sub-admins can access reporting export features
+  - Moved private chat initiation from always-visible section to popup dialog for cleaner UI
+- **Real-Time UI Improvements** - Enhanced responsiveness
+  - Fixed end shift button to immediately update UI state (timer, status) without waiting for server response
+  - Local state updates happen instantly before cache invalidation for better UX
+  - Created missing AuxStatusTracker component for shift management
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
