@@ -106,13 +106,13 @@ export default function AuthPage() {
   ];
 
   return (
-    <div className="min-h-screen flex bg-background">
+    <div className="min-h-screen flex flex-col lg:flex-row bg-background">
       {/* Hero Section */}
       <motion.div 
         initial={{ x: -100, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.6 }}
-        className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary via-secondary to-accent p-12 text-primary-foreground relative overflow-hidden"
+        className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary via-secondary to-accent p-6 md:p-8 lg:p-12 text-primary-foreground relative overflow-hidden"
       >
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzRjMC0yLjIxIDEuNzktNCA0LTRzNCAxLjc5IDQgNC0xLjc5IDQtNCA0LTQtMS43OS00LTR6bTAgNGMwLTIuMjEgMS43OS00IDQtNHM0IDEuNzkgNCA0LTEuNzkgNC00IDQtNC0xLjc5LTQtNHptLTIwIDRjMC0yLjIxIDEuNzktNCA0LTRzNCAxLjc5IDQgNC0xLjc5IDQtNCA0LTQtMS43OS00LTR6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-20"></div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
@@ -168,7 +168,7 @@ export default function AuthPage() {
         initial={{ x: 100, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.6, delay: 0.2 }}
-        className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-background"
+        className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-6 md:p-8 bg-background"
       >
         <div className="w-full max-w-md">
           <motion.div
@@ -214,7 +214,7 @@ export default function AuthPage() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <form onSubmit={handleLogin} className="space-y-4">
+                    <form onSubmit={handleLogin} className="space-y-3 sm:space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="login-email">البريد الإلكتروني</Label>
                       <Input
@@ -225,6 +225,7 @@ export default function AuthPage() {
                         onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
                         required
                         data-testid="login-email-input"
+                        className="h-11 sm:h-10"
                       />
                     </div>
                     <div className="space-y-2">
@@ -237,12 +238,13 @@ export default function AuthPage() {
                         onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
                         required
                         data-testid="login-password-input"
+                        className="h-11 sm:h-10"
                       />
                     </div>
                     <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                       <Button 
                         type="submit" 
-                        className="w-full shadow-lg hover:shadow-xl transition-all" 
+                        className="w-full h-11 sm:h-10 shadow-lg hover:shadow-xl transition-all" 
                         disabled={loginMutation.isPending}
                         data-testid="login-submit-button"
                       >
@@ -269,7 +271,7 @@ export default function AuthPage() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <form onSubmit={handleRegister} className="space-y-4">
+                    <form onSubmit={handleRegister} className="space-y-3 sm:space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="register-name">الاسم الكامل</Label>
                       <Input
@@ -280,6 +282,7 @@ export default function AuthPage() {
                         onChange={(e) => setRegisterForm({ ...registerForm, fullName: e.target.value })}
                         required
                         data-testid="register-name-input"
+                        className="h-11 sm:h-10"
                       />
                     </div>
                     <div className="space-y-2">
@@ -292,6 +295,7 @@ export default function AuthPage() {
                         onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
                         required
                         data-testid="register-email-input"
+                        className="h-11 sm:h-10"
                       />
                     </div>
                     <div className="space-y-2">
@@ -304,9 +308,10 @@ export default function AuthPage() {
                         onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
                         required
                         data-testid="register-password-input"
+                        className="h-11 sm:h-10"
                       />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="register-department">القسم</Label>
                         <Select
@@ -314,7 +319,7 @@ export default function AuthPage() {
                           onValueChange={(value) => setRegisterForm({ ...registerForm, department: value })}
                           required
                         >
-                          <SelectTrigger data-testid="register-department-select">
+                          <SelectTrigger data-testid="register-department-select" className="h-11 sm:h-10">
                             <SelectValue placeholder="اختر القسم" />
                           </SelectTrigger>
                           <SelectContent>
@@ -335,13 +340,14 @@ export default function AuthPage() {
                           value={registerForm.jobTitle}
                           onChange={(e) => setRegisterForm({ ...registerForm, jobTitle: e.target.value })}
                           data-testid="register-job-input"
+                          className="h-11 sm:h-10"
                         />
                       </div>
                     </div>
                     <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                       <Button 
                         type="submit" 
-                        className="w-full shadow-lg hover:shadow-xl transition-all" 
+                        className="w-full h-11 sm:h-10 shadow-lg hover:shadow-xl transition-all" 
                         disabled={registerMutation.isPending}
                         data-testid="register-submit-button"
                       >
