@@ -3,7 +3,6 @@ import { createServer, type Server } from "http";
 import { WebSocketServer } from "ws";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
-import { createGoogleMeetEvent as createGoogleMeetEventLegacy } from "./google-calendar";
 import { createGoogleMeetEvent, isGoogleCalendarConnected } from "./google-calendar-integration";
 import multer from 'multer';
 const upload = multer({ dest: 'uploads/' });
@@ -834,6 +833,10 @@ export function registerRoutes(app: Express): Server {
   // WebSocket server for real-time updates
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
 
+
+  wss.on('error', (error) => {
+    console.error('WebSocket server error:', error);
+  });
   wss.on('connection', (ws) => {
     console.log('WebSocket client connected');
 
@@ -867,9 +870,6 @@ export function registerRoutes(app: Express): Server {
       console.log('WebSocket client disconnected');
     });
 
-    wss.on('error', (error) => {
-      console.error('WebSocket server error:', error);
-    });
   });
 
   // Chat Rooms Routes
@@ -1063,52 +1063,6 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Google Calendar OAuth Routes
-  // Google Calendar Routes (Using Replit Integration)
-  app.get("/api/google-calendar/status", requireAuth, async (req, res) => {
-    try {
-      const connected = await isGoogleCalendarConnected();
-      res.json({ connected });
-    } catch (error) {
-      res.json({ connected: false });
-    }
-  });
-  // Google Calendar Routes (Using Replit Integration)
-  app.get("/api/google-calendar/status", requireAuth, async (req, res) => {
-    try {
-      const connected = await isGoogleCalendarConnected();
-      res.json({ connected });
-    } catch (error) {
-      res.json({ connected: false });
-    }
-  });
-  // Google Calendar Routes (Using Replit Integration)
-  app.get("/api/google-calendar/status", requireAuth, async (req, res) => {
-    try {
-      const connected = await isGoogleCalendarConnected();
-      res.json({ connected });
-    } catch (error) {
-      res.json({ connected: false });
-    }
-  });
-  // Google Calendar Routes (Using Replit Integration)
-  app.get("/api/google-calendar/status", requireAuth, async (req, res) => {
-    try {
-      const connected = await isGoogleCalendarConnected();
-      res.json({ connected });
-    } catch (error) {
-      res.json({ connected: false });
-    }
-  });
-  // Google Calendar Routes (Using Replit Integration)
-  app.get("/api/google-calendar/status", requireAuth, async (req, res) => {
-    try {
-      const connected = await isGoogleCalendarConnected();
-      res.json({ connected });
-    } catch (error) {
-      res.json({ connected: false });
-    }
-  });
   // Google Calendar Routes (Using Replit Integration)
   app.get("/api/google-calendar/status", requireAuth, async (req, res) => {
     try {
@@ -1119,42 +1073,20 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  app.get("/api/google-calendar/auth", requireAuth, async (req, res) => {
+  app.post("/api/google-calendar/schedule-meeting", requireAuth, async (req, res) => {
     try {
-      const { getAuthorizationUrl } = await import("./google-calendar");
-      const crypto = await import("crypto");
+      const { title, participantIds, startTime, endTime } = req.body;
       
-      const state = crypto.randomBytes(32).toString('hex');
+      let meetingLink = "";
       
-      req.session.googleAuthState = state;
-      req.session.googleAuthUserId = req.user!.id;
-      
-      const authUrl = getAuthorizationUrl(state);
-      
-      res.json({ authUrl });
-    } catch (error) {
-      console.error("Error initiating Google OAuth:", error);
-      res.status(500).json({ message: "حدث خطأ في بدء عملية الربط" });
-    }
-  });
       try {
-        const { createGoogleMeetEvent } = await import("./google-calendar");
         const meetData = await createGoogleMeetEvent(
-          tokenData,
           title,
           `اجتماع مع ${participantIds.length} مشارك`,
-          startTime,
-          endTime
+          new Date(startTime),
+          new Date(endTime)
         );
         meetingLink = meetData.meetingLink!;
-        
-        if (meetData.updatedTokens) {
-          await storage.updateGoogleCalendarToken(
-            req.user!.id,
-            meetData.updatedTokens.accessToken,
-            meetData.updatedTokens.expiresAt
-          );
-        }
       } catch (error) {
         console.error("Failed to create Google Meet link:", error);
         return res.status(400).json({ 
@@ -1167,8 +1099,8 @@ export function registerRoutes(app: Express): Server {
         description: `اجتماع مع ${participantIds.length} مشارك`,
         meetingLink,
         scheduledBy: req.user!.id,
-        startTime,
-        endTime,
+        startTime: new Date(startTime),
+        endTime: new Date(endTime),
       });
       
       const allParticipantIds = [...participantIds, req.user!.id];
@@ -1184,7 +1116,7 @@ export function registerRoutes(app: Express): Server {
       } else {
         chatRoom = await storage.createChatRoom({
           name: title,
-          type: 'group',
+          type: "group",
           createdBy: req.user!.id,
         });
         
@@ -1197,11 +1129,11 @@ export function registerRoutes(app: Express): Server {
         roomId: chatRoom.id,
         senderId: req.user!.id,
         content: `🎥 ${title}\n\nانضم للاجتماع: ${meetingLink}`,
-        messageType: 'meeting_link',
+        messageType: "meeting_link",
         attachments: [{
           name: title,
           url: meetingLink,
-          type: 'meeting'
+          type: "meeting"
         }],
       });
       
@@ -1216,7 +1148,7 @@ export function registerRoutes(app: Express): Server {
         wss.clients.forEach((client) => {
           if (client.readyState === client.OPEN) {
             client.send(JSON.stringify({
-              type: 'new_notification',
+              type: "new_notification",
               data: notification
             }));
           }
@@ -1226,11 +1158,11 @@ export function registerRoutes(app: Express): Server {
       wss.clients.forEach((client) => {
         if (client.readyState === client.OPEN) {
           client.send(JSON.stringify({
-            type: 'new_message',
+            type: "new_message",
             data: message
           }));
           client.send(JSON.stringify({
-            type: 'new_meeting',
+            type: "new_meeting",
             data: meeting
           }));
         }
@@ -1242,7 +1174,6 @@ export function registerRoutes(app: Express): Server {
       res.status(500).json({ message: "حدث خطأ في جدولة الاجتماع" });
     }
   });
-
   app.post("/api/meetings", requireAuth, async (req, res) => {
     try {
       const meeting = await storage.createMeeting({
