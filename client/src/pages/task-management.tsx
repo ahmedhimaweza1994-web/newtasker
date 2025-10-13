@@ -160,7 +160,7 @@ export default function TaskManagement() {
       <div className="flex">
         <Sidebar />
       
-        <main className={cn("flex-1 p-6 transition-all duration-300", isCollapsed ? "mr-16" : "mr-64")}>
+        <main className={cn("flex-1 p-4 sm:p-6 transition-all duration-300", "lg:mr-16", !isCollapsed && "lg:mr-64")}>
           <div className="flex items-center justify-between mb-6">
             <div>
               <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">

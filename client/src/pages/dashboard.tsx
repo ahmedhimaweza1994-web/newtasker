@@ -257,7 +257,7 @@ export default function Dashboard() {
       <div className="flex">
         <Sidebar />
        
-        <main className={cn("flex-1 p-6 transition-all duration-300", isCollapsed ? "mr-16" : "mr-64")}>
+        <main className={cn("flex-1 p-4 sm:p-6 transition-all duration-300", "lg:mr-16" , !isCollapsed && "lg:mr-64")}>
           {/* Hero Section with Gradient */}
           <div
             className="relative bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 overflow-hidden"
@@ -302,7 +302,7 @@ export default function Dashboard() {
 
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
             {/* Stats Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
               <Card className="border-l-4 border-l-blue-500 hover:shadow-lg transition-all hover:scale-105" data-testid="card-total-time">
                 <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">

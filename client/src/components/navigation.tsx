@@ -1,4 +1,5 @@
 import { useAuth } from "@/hooks/use-auth";
+import { useSidebar } from "@/contexts/sidebar-context";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
@@ -16,7 +17,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bell, Search, Moon, Sun, LogOut, User, Settings, FileText, Users as UsersIcon, CheckSquare } from "lucide-react";
+import { Bell, Search, Moon, Sun, LogOut, User, Settings, FileText, Users as UsersIcon, CheckSquare, Menu } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -27,6 +28,7 @@ import type { Notification, Task, User as UserType } from "@shared/schema";
 
 export default function Navigation() {
   const { user, logoutMutation } = useAuth();
+  const { setIsMobileOpen } = useSidebar();
   const [, setLocation] = useLocation();
   const [isDark, setIsDark] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -143,10 +145,20 @@ export default function Navigation() {
   };
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center justify-between px-4 bg-background dark:bg-background">
+    <nav className="sticky top-0 z-50 w-full border-b border-border bg-white dark:bg-gray-900">
+      <div className="container flex h-16 items-center justify-between px-4 bg-white dark:bg-gray-900">
         {/* Logo and Brand */}
         <div className="flex items-center gap-3">
+          {/* Hamburger Menu for Mobile */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsMobileOpen(true)}
+            className="lg:hidden"
+            data-testid="nav-mobile-menu-toggle"
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
           <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-accent">
             <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />

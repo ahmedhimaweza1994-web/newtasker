@@ -1,8 +1,10 @@
 import { useAuth } from "@/hooks/use-auth";
 import { useSidebar } from "@/contexts/sidebar-context";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { 
   Home, 
@@ -45,7 +47,8 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 export default function Sidebar() {
   const { user } = useAuth();
   const [location, setLocation] = useLocation();
-  const { isCollapsed, setIsCollapsed } = useSidebar();
+  const { isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen } = useSidebar();
+  const isMobile = useIsMobile();
   const [showMeetingDialog, setShowMeetingDialog] = useState(false);
   const [showTaskDialog, setShowTaskDialog] = useState(false);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
@@ -291,17 +294,14 @@ export default function Sidebar() {
     });
   };
 
-  return (
-    <div className={cn(
-      "fixed right-0 top-16 z-40 h-[calc(100vh-4rem)] bg-card border-l border-border transition-all duration-300",
-      isCollapsed ? "w-16" : "w-64"
-    )}>
-      <div className="flex h-full flex-col">
-        {/* Toggle Button */}
-        <div className="flex h-14 items-center justify-between px-4 border-b border-border">
-          {!isCollapsed && (
-            <h2 className="text-lg font-semibold text-foreground dark:text-white">القائمة الرئيسية</h2>
-          )}
+  const sidebarContent = (
+    <div className="flex h-full flex-col">
+      {/* Toggle Button */}
+      <div className="flex h-14 items-center justify-between px-4 border-b border-border">
+        {!isCollapsed && (
+          <h2 className="text-lg font-semibold text-foreground dark:text-white">القائمة الرئيسية</h2>
+        )}
+        {!isMobile && (
           <Button
             variant="ghost"
             size="sm"
@@ -313,7 +313,8 @@ export default function Sidebar() {
               isCollapsed ? "rotate-180" : ""
             )} />
           </Button>
-        </div>
+        )}
+      </div>
 
         {/* Navigation */}
         <ScrollArea className="flex-1 px-3 py-4">
@@ -397,6 +398,26 @@ export default function Sidebar() {
           </div>
         </div>
       </div>
+  );
+
+  return (
+    <>
+      {/* Mobile Sidebar - Sheet Drawer */}
+      {isMobile ? (
+        <Sheet open={isMobileOpen} onOpenChange={setIsMobileOpen}>
+          <SheetContent side="right" className="w-64 p-0">
+            {sidebarContent}
+          </SheetContent>
+        </Sheet>
+      ) : (
+        /* Desktop Sidebar - Fixed Position */
+        <div className={cn(
+          "hidden lg:block fixed right-0 top-16 z-40 h-[calc(100vh-4rem)] bg-card border-l border-border transition-all duration-300",
+          isCollapsed ? "w-16" : "w-64"
+        )}>
+          {sidebarContent}
+        </div>
+      )}
 
       {/* Schedule Meeting Dialog */}
       <Dialog open={showMeetingDialog} onOpenChange={setShowMeetingDialog}>
@@ -642,6 +663,6 @@ export default function Sidebar() {
           </form>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }
