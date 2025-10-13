@@ -296,9 +296,9 @@ export default function Sidebar() {
         <AnimatePresence mode="wait">
           {!isCollapsed && (
             <motion.h2 
-              
-              
-              
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
               className="text-lg font-semibold text-foreground dark:text-white"
             >
               القائمة الرئيسية
@@ -331,10 +331,10 @@ export default function Sidebar() {
             {allNavigation.map((item, index) => (
               <motion.div
                 key={item.name}
-                
-                
-                
-                
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ delay: index * 0.05 }}
               >
                 <motion.div whileTap={{ scale: 0.95 }}>
                   <Button
@@ -448,7 +448,7 @@ export default function Sidebar() {
             {!isCollapsed && (
               <motion.div 
                 initial={{ opacity: 0, x: -10 }}
-                
+                animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
                 className="flex-1"
               >

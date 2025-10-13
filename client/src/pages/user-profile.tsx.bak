@@ -173,65 +173,18 @@ export default function UserProfile() {
     reader.readAsDataURL(file);
   };
 
-  const handleSave = async () => {
-    try {
-      const hasImages = (editData.profilePicture && editData.profilePicture.startsWith("data:")) ||
-                        (editData.coverImage && editData.coverImage.startsWith("data:"));
-      
-      if (hasImages) {
-        // Use FormData for images
-        const formData = new FormData();
-        
-        // Add text fields
-        Object.keys(editData).forEach(key => {
-          if (key !== "profilePicture" && key !== "coverImage" && editData[key]) {
-            formData.append(key, editData[key]);
-          }
-        });
-        
-        // Convert base64 images to blobs and append
-        if (editData.profilePicture && editData.profilePicture.startsWith("data:")) {
-          const blob = await fetch(editData.profilePicture).then(r => r.blob());
-          formData.append("profilePicture", blob, "profile.jpg");
-        }
-        
-        if (editData.coverImage && editData.coverImage.startsWith("data:")) {
-          const blob = await fetch(editData.coverImage).then(r => r.blob());
-          formData.append("coverImage", blob, "cover.jpg");
-        }
-        
-        // Use fetch directly for FormData
-        const response = await fetch("/api/profile", {
-          method: "PUT",
-          body: formData,
-        });
-        
-        if (!response.ok) {
-          throw new Error("Failed to update profile");
-        }
-      } else {
-        // Use JSON for text-only updates
-        await updateProfileMutation.mutateAsync(editData);
-        return; // mutation handles success/error
-      }
-      
-      queryClient.invalidateQueries({ queryKey: ["/api/profile", userId] });
-      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
-      setIsEditing(false);
-      toast({
-        title: "تم التحديث بنجاح",
-        description: "تم تحديث الملف الشخصي بنجاح",
-      });
-    } catch (error) {
-      toast({
-        title: "خطأ",
-        description: "حدث خطأ في تحديث الملف الشخصي",
-        variant: "destructive",
-      });
-    }
+  const handleSave = () => {
+    updateProfileMutation.mutate(editData);
   };
 
-  if (profileLoading || tasksLoading) {
+  const handleCancel = () => {
+    setIsEditing(false);
+    setEditData({});
+    setProfileImagePreview(null);
+    setCoverImagePreview(null);
+  };
+
+  if (profileLoading || !profile) {
     return <ProfileLoadingSkeleton />;
   }
 

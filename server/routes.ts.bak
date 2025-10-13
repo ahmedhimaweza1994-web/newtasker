@@ -1104,22 +1104,6 @@ export function registerRoutes(app: Express): Server {
     try {
       const { title, participantIds, startTime, endTime, meetingLink } = req.body;
       
-      // Validation
-      if (!title || !participantIds || !Array.isArray(participantIds) || participantIds.length === 0) {
-        return res.status(400).json({ message: "العنوان والمشاركين مطلوبان" });
-      }
-      
-      const start = new Date(startTime);
-      const end = new Date(endTime);
-      
-      if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-        return res.status(400).json({ message: "تواريخ غير صالحة" });
-      }
-      
-      if (start >= end) {
-        return res.status(400).json({ message: "وقت البدء يجب أن يكون قبل وقت النهاية" });
-      }
-      
       // Allow users to provide their own meeting link instead of relying on Google Calendar
       const finalMeetingLink = meetingLink || `https://meet.example.com/${Date.now()}-${Math.random().toString(36).substring(7)}`;
       
@@ -1198,46 +1182,6 @@ export function registerRoutes(app: Express): Server {
       });
       
       res.status(201).json({ ...meeting, chatRoomId: chatRoom.id });
-    } catch (error) {
-      console.error("Error scheduling meeting:", error);
-      res.status(500).json({ message: "حدث خطأ في جدولة الاجتماع" });
-    }
-  });
-
-  // Meeting scheduling route (legacy endpoint for sidebar)
-  app.post("/api/meetings/schedule", requireAuth, async (req, res) => {
-    try {
-      const { title, participantIds } = req.body;
-      
-      if (!title || !participantIds || !Array.isArray(participantIds) || participantIds.length === 0) {
-        return res.status(400).json({ message: "العنوان والمشاركين مطلوبان" });
-      }
-      
-      const meetingLink = `https://meet.example.com/${Date.now()}-${Math.random().toString(36).substring(7)}`;
-      
-      const meeting = await storage.createMeeting({
-        title,
-        description: `اجتماع مع ${participantIds.length} مشارك`,
-        meetingLink,
-        scheduledBy: req.user!.id,
-        startTime: new Date(),
-        endTime: null,
-      });
-      
-      for (const participantId of participantIds) {
-        await storage.addMeetingParticipant(meeting.id, participantId);
-        const privateRoom = await storage.getOrCreatePrivateChat(req.user!.id, participantId);
-        await storage.createChatMessage({
-          roomId: privateRoom.id,
-          senderId: req.user!.id,
-          content: `🎥 ${title}\n\nانضم للاجتماع: ${meetingLink}`,
-          messageType: "meeting_link",
-          attachments: [{ name: title, url: meetingLink, type: "meeting" }],
-        });
-        await storage.createNotification(participantId, "اجتماع جديد", `${req.user!.fullName} قام بجدولة اجتماع: ${title}`, "info");
-      }
-      
-      res.status(201).json({ ...meeting, meetingLink });
     } catch (error) {
       console.error("Error scheduling meeting:", error);
       res.status(500).json({ message: "حدث خطأ في جدولة الاجتماع" });

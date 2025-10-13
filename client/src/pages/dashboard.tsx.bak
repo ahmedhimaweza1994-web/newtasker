@@ -104,23 +104,18 @@ export default function Dashboard() {
 
   const toggleShiftMutation = useMutation({
     mutationFn: async (notes?: string) => {
-      // Refetch current session to ensure we have latest state
-      const { data: latestSession } = await refetchCurrentSession();
-      const isEndingShift = latestSession && !latestSession.endTime;
-      
-      if (isEndingShift) {
-        const res = await apiRequest("POST", `/api/aux/end/${latestSession.id}`, { notes });
-        return { action: "end", data: await res.json() };
+      if (currentSession && !currentSession.endTime) {
+        const res = await apiRequest("POST", `/api/aux/end/${currentSession.id}`, { notes });
+        return res.json();
       } else {
         const res = await apiRequest("POST", "/api/aux/start", { status: "ready", notes });
-        return { action: "start", data: await res.json() };
+        return res.json();
       }
     },
     onSuccess: async (result) => {
       queryClient.invalidateQueries({ queryKey: ["/api/aux/current"] });
       await refetchCurrentSession();
-      
-      if (result.action === "end") {
+      if (currentSession && !currentSession.endTime) {
         toast({
           title: "تم إنهاء الشيفت",
           description: "الحالة الآن: غير نشط",
