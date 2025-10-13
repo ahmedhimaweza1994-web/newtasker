@@ -27,6 +27,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import type { Task, LeaveRequest, User } from "@shared/schema";
 import {
   Dialog,
@@ -63,7 +64,6 @@ export default function Sidebar() {
   });
   const { toast } = useToast();
 
-  // Fetch user tasks for badge count
   const { data: userTasks = [] } = useQuery<Task[]>({
     queryKey: ["/api/tasks/my"],
     enabled: !!user,
@@ -74,19 +74,16 @@ export default function Sidebar() {
     enabled: !!user,
   });
 
-  // Fetch leave requests for HR badge
   const { data: leaveRequests = [] } = useQuery<LeaveRequest[]>({
     queryKey: ["/api/leave-requests/pending"],
     enabled: !!user && (user.role === 'admin' || user.role === 'sub-admin'),
   });
 
-  // Fetch all users for meeting scheduling
   const { data: allUsers = [], isLoading: isLoadingUsers } = useQuery<Pick<User, 'id' | 'fullName' | 'email' | 'department' | 'jobTitle' | 'profilePicture'>[]>({
     queryKey: ["/api/users"],
     enabled: !!user,
   });
 
-  // Check Google Calendar connection status
   const { data: calendarStatus, isLoading: isLoadingCalendarStatus } = useQuery<{ connected: boolean }>({
     queryKey: ["/api/google-calendar/status"],
     enabled: !!user && showMeetingDialog,
@@ -181,7 +178,6 @@ export default function Sidebar() {
       const data = await res.json();
       
       if (data.authUrl) {
-        // Open Google OAuth page in new window
         window.open(data.authUrl, '_blank', 'width=600,height=700');
         
         toast({
@@ -296,113 +292,180 @@ export default function Sidebar() {
 
   const sidebarContent = (
     <div className="flex h-full flex-col">
-      {/* Toggle Button */}
       <div className="flex h-14 items-center justify-between px-4 border-b border-border">
-        {!isCollapsed && (
-          <h2 className="text-lg font-semibold text-foreground dark:text-white">القائمة الرئيسية</h2>
-        )}
+        <AnimatePresence mode="wait">
+          {!isCollapsed && (
+            <motion.h2 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="text-lg font-semibold text-foreground dark:text-white"
+            >
+              القائمة الرئيسية
+            </motion.h2>
+          )}
+        </AnimatePresence>
         {!isMobile && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            data-testid="sidebar-toggle"
-          >
-            <ChevronLeft className={cn(
-              "h-4 w-4 transition-transform duration-200",
-              isCollapsed ? "rotate-180" : ""
-            )} />
-          </Button>
+          <motion.div whileTap={{ scale: 0.9 }}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              className="h-9 w-9"
+              data-testid="sidebar-toggle"
+            >
+              <motion.div
+                animate={{ rotate: isCollapsed ? 180 : 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </motion.div>
+            </Button>
+          </motion.div>
         )}
       </div>
 
-        {/* Navigation */}
-        <ScrollArea className="flex-1 px-3 py-4">
-          <nav className="space-y-2">
-            {allNavigation.map((item) => (
-              <Button
+      <ScrollArea className="flex-1 px-3 py-4">
+        <nav className="space-y-2">
+          <AnimatePresence mode="popLayout">
+            {allNavigation.map((item, index) => (
+              <motion.div
                 key={item.name}
-                variant={isActive(item.href) ? "default" : "ghost"}
-                className={cn(
-                  "w-full justify-start gap-3 text-right",
-                  isCollapsed && "justify-center px-2"
-                )}
-                onClick={() => setLocation(item.href)}
-                data-testid={`sidebar-link-${item.href.replace('/', '')}`}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ delay: index * 0.05 }}
               >
-                <item.icon className="h-5 w-5 flex-shrink-0" />
-                {!isCollapsed && (
-                  <>
-                    <span className="flex-1 dark:text-white">{item.name}</span>
-                    {item.badge && (
-                      <Badge variant="secondary" className="mr-auto">
-                        {item.badge}
-                      </Badge>
+                <motion.div whileTap={{ scale: 0.95 }}>
+                  <Button
+                    variant={isActive(item.href) ? "default" : "ghost"}
+                    className={cn(
+                      "w-full justify-start gap-3 text-right h-11 md:h-10 transition-all duration-200",
+                      isCollapsed && "justify-center px-2",
+                      isActive(item.href) && "shadow-md"
                     )}
-                  </>
-                )}
-              </Button>
+                    onClick={() => {
+                      setLocation(item.href);
+                      if (isMobile) setIsMobileOpen(false);
+                    }}
+                    data-testid={`sidebar-link-${item.href.replace('/', '')}`}
+                  >
+                    <motion.div
+                      whileHover={{ rotate: 360 }}
+                      transition={{ duration: 0.5 }}
+                    >
+                      <item.icon className="h-5 w-5 flex-shrink-0" />
+                    </motion.div>
+                    <AnimatePresence mode="wait">
+                      {!isCollapsed && (
+                        <motion.div
+                          initial={{ opacity: 0, width: 0 }}
+                          animate={{ opacity: 1, width: "auto" }}
+                          exit={{ opacity: 0, width: 0 }}
+                          className="flex flex-1 items-center justify-between overflow-hidden"
+                        >
+                          <span className="flex-1 dark:text-white">{item.name}</span>
+                          {item.badge && (
+                            <motion.div
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              transition={{ type: "spring", stiffness: 500 }}
+                            >
+                              <Badge variant="secondary" className="mr-auto">
+                                {item.badge}
+                              </Badge>
+                            </motion.div>
+                          )}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </Button>
+                </motion.div>
+              </motion.div>
             ))}
-          </nav>
+          </AnimatePresence>
+        </nav>
 
-          {/* Quick Actions */}
+        <AnimatePresence mode="wait">
           {!isCollapsed && (
-            <div className="mt-8 space-y-2">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              className="mt-8 space-y-2"
+            >
               <h3 className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 إجراءات سريعة
               </h3>
               <div className="space-y-1">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="w-full justify-start gap-3" 
-                  onClick={() => setShowTaskDialog(true)}
-                  data-testid="sidebar-quick-task"
-                >
-                  <CheckSquare className="h-4 w-4" />
-                  إضافة مهمة
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="w-full justify-start gap-3" 
-                  onClick={() => setShowMeetingDialog(true)}
-                  data-testid="sidebar-quick-schedule"
-                >
-                  <Calendar className="h-4 w-4" />
-                  جدولة اجتماع
-                </Button>
+                <motion.div whileTap={{ scale: 0.95 }}>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="w-full justify-start gap-3 h-11 md:h-10" 
+                    onClick={() => setShowTaskDialog(true)}
+                    data-testid="sidebar-quick-task"
+                  >
+                    <CheckSquare className="h-4 w-4" />
+                    إضافة مهمة
+                  </Button>
+                </motion.div>
+                <motion.div whileTap={{ scale: 0.95 }}>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="w-full justify-start gap-3 h-11 md:h-10" 
+                    onClick={() => setShowMeetingDialog(true)}
+                    data-testid="sidebar-quick-schedule"
+                  >
+                    <Calendar className="h-4 w-4" />
+                    جدولة اجتماع
+                  </Button>
+                </motion.div>
               </div>
-            </div>
+            </motion.div>
           )}
-        </ScrollArea>
+        </AnimatePresence>
+      </ScrollArea>
 
-        {/* Footer */}
-        <div className="border-t border-border p-4">
-          <div className={cn(
+      <div className="border-t border-border p-4">
+        <motion.div 
+          className={cn(
             "flex items-center gap-3",
             isCollapsed && "justify-center"
-          )}>
-            <div className={cn(
-              "w-2 h-2 rounded-full bg-success animate-pulse",
+          )}
+          whileHover={{ scale: 1.02 }}
+        >
+          <motion.div 
+            className={cn(
+              "w-2 h-2 rounded-full bg-success",
               isCollapsed && "w-3 h-3"
-            )}></div>
+            )}
+            animate={{ opacity: [1, 0.5, 1] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          />
+          <AnimatePresence mode="wait">
             {!isCollapsed && (
-              <div className="flex-1">
+              <motion.div 
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                className="flex-1"
+              >
                 <p className="text-xs text-muted-foreground dark:text-gray-400">متصل كـ</p>
                 <p className="text-sm font-medium text-foreground dark:text-white truncate">
                   {user?.fullName}
                 </p>
-              </div>
+              </motion.div>
             )}
-          </div>
-        </div>
+          </AnimatePresence>
+        </motion.div>
       </div>
+    </div>
   );
 
   return (
     <>
-      {/* Mobile Sidebar - Sheet Drawer */}
       {isMobile ? (
         <Sheet open={isMobileOpen} onOpenChange={setIsMobileOpen}>
           <SheetContent side="right" className="w-64 p-0">
@@ -410,16 +473,19 @@ export default function Sidebar() {
           </SheetContent>
         </Sheet>
       ) : (
-        /* Desktop Sidebar - Fixed Position */
-        <div className={cn(
-          "hidden lg:block fixed right-0 top-16 z-40 h-[calc(100vh-4rem)] bg-card border-l border-border transition-all duration-300",
-          isCollapsed ? "w-16" : "w-64"
-        )}>
+        <motion.div 
+          initial={{ x: 100 }}
+          animate={{ x: 0 }}
+          transition={{ type: "spring", stiffness: 100 }}
+          className={cn(
+            "hidden lg:block fixed right-0 top-16 z-40 h-[calc(100vh-4rem)] bg-card border-l border-border transition-all duration-300",
+            isCollapsed ? "w-16" : "w-64"
+          )}
+        >
           {sidebarContent}
-        </div>
+        </motion.div>
       )}
 
-      {/* Schedule Meeting Dialog */}
       <Dialog open={showMeetingDialog} onOpenChange={setShowMeetingDialog}>
         <DialogContent className="sm:max-w-md" dir="rtl">
           <DialogHeader>
@@ -430,7 +496,6 @@ export default function Sidebar() {
           </DialogHeader>
           
           <div className="space-y-4 py-4">
-            {/* Google Calendar Connection Status */}
             {isLoadingCalendarStatus ? (
               <Alert data-testid="alert-calendar-loading">
                 <AlertCircle className="h-4 w-4" />
@@ -487,10 +552,12 @@ export default function Sidebar() {
               <ScrollArea className="h-[300px] pr-4">
                 <div className="space-y-2">
                   {allUsers
-                    .filter(u => u.id !== user?.id) // Exclude current user
+                    .filter(u => u.id !== user?.id)
                     .map((u) => (
-                      <div
+                      <motion.div
                         key={u.id}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                         className="flex items-center space-x-3 space-x-reverse p-3 rounded-lg border border-border hover:bg-accent transition-colors"
                         data-testid={`user-item-${u.id}`}
                       >
@@ -531,7 +598,7 @@ export default function Sidebar() {
                             )}
                           </div>
                         </label>
-                      </div>
+                      </motion.div>
                     ))}
                 </div>
               </ScrollArea>
@@ -561,7 +628,6 @@ export default function Sidebar() {
         </DialogContent>
       </Dialog>
 
-      {/* Create Task Dialog */}
       <Dialog open={showTaskDialog} onOpenChange={setShowTaskDialog}>
         <DialogContent className="sm:max-w-[500px]" dir="rtl" data-testid="dialog-create-task">
           <DialogHeader>
@@ -630,24 +696,28 @@ export default function Sidebar() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="task-assigned-to">تعيين إلى</Label>
+              <Label htmlFor="task-assign">تعيين إلى</Label>
               <Select
                 value={newTask.assignedTo}
                 onValueChange={(value) => setNewTask({ ...newTask, assignedTo: value })}
               >
-                <SelectTrigger id="task-assigned-to" data-testid="select-task-assigned-to">
-                  <SelectValue placeholder="اختر موظف (اختياري)" />
+                <SelectTrigger id="task-assign" data-testid="select-task-assign">
+                  <SelectValue placeholder="اختر مستخدم (اختياري)" />
                 </SelectTrigger>
                 <SelectContent>
                   {users.map((u) => (
                     <SelectItem key={u.id} value={u.id}>
-                      {u.fullName} - {u.email}
+                      {u.fullName} - {u.department}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex justify-end gap-2">
+
+            <DialogFooter className="flex-row-reverse gap-2">
+              <Button type="submit" disabled={createTaskMutation.isPending} data-testid="button-create-task">
+                {createTaskMutation.isPending ? "جاري الإنشاء..." : "إنشاء المهمة"}
+              </Button>
               <Button
                 type="button"
                 variant="outline"
@@ -656,10 +726,7 @@ export default function Sidebar() {
               >
                 إلغاء
               </Button>
-              <Button type="submit" data-testid="button-submit-task">
-                إنشاء المهمة
-              </Button>
-            </div>
+            </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>

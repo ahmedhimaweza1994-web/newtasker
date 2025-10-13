@@ -33,6 +33,8 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Redirect, Link } from "wouter";
 import type { User, LeaveRequest, SalaryAdvanceRequest } from "@shared/schema";
+import { MotionPageShell, MotionSection, MotionMetricCard, ResponsiveGrid } from "@/components/ui/motion-wrappers";
+import { motion } from "framer-motion";
 
 interface HRStats {
   totalEmployees: number;
@@ -106,55 +108,46 @@ export default function HRManagement() {
     salary: 0,
   });
 
-  // Fetch pending leave requests (admin only)
   const { data: pendingLeaveRequests = [] } = useQuery<LeaveRequest[]>({
     queryKey: ["/api/leaves/pending"],
     enabled: isAdmin,
   });
 
-  // Fetch pending salary advance requests (admin only)
   const { data: pendingSalaryAdvances = [] } = useQuery<SalaryAdvanceRequest[]>({
     queryKey: ["/api/salary-advances/pending"],
     enabled: isAdmin,
   });
 
-  // Fetch user's own leave requests (employee)
   const { data: userLeaveRequests = [] } = useQuery<LeaveRequest[]>({
     queryKey: ["/api/leaves"],
     enabled: !isAdmin,
   });
 
-  // Fetch user's own salary advance requests (employee)
   const { data: userSalaryAdvances = [] } = useQuery<SalaryAdvanceRequest[]>({
     queryKey: ["/api/salary-advances/user"],
     enabled: !isAdmin,
   });
 
-  // Fetch all users for HR purposes (admin only)
   const { data: allUsers = [] } = useQuery<User[]>({
     queryKey: ["/api/users"],
     enabled: isAdmin,
   });
 
-  // Fetch HR stats (admin only)
   const { data: hrStats } = useQuery<HRStats>({
     queryKey: ["/api/hr/stats"],
     enabled: isAdmin,
   });
 
-  // Fetch payroll data (admin only)
   const { data: payrollData = [] } = useQuery<PayrollEntry[]>({
     queryKey: ["/api/hr/payroll"],
     enabled: isAdmin,
   });
 
-  // Fetch HR reports (admin only)
   const { data: hrReports } = useQuery<HRReports>({
     queryKey: ["/api/hr/reports"],
     enabled: isAdmin,
   });
 
-  // Employee leave request mutation
   const createLeaveRequestMutation = useMutation({
     mutationFn: async (data: typeof newLeaveRequest) => {
       const res = await apiRequest("POST", "/api/leaves", data);
@@ -179,7 +172,6 @@ export default function HRManagement() {
     },
   });
 
-  // Employee salary advance request mutation
   const createSalaryAdvanceMutation = useMutation({
     mutationFn: async (data: typeof newSalaryAdvance) => {
       const res = await apiRequest("POST", "/api/salary-advances", data);
@@ -201,7 +193,6 @@ export default function HRManagement() {
     },
   });
 
-  // Approve/Reject leave mutation
   const updateLeaveMutation = useMutation({
     mutationFn: async (data: { id: string; status: string; rejectionReason?: string }) => {
       const res = await apiRequest("PUT", `/api/leaves/${data.id}`, {
@@ -219,7 +210,6 @@ export default function HRManagement() {
     },
   });
 
-  // Approve/Reject salary advance mutation
   const updateSalaryAdvanceMutation = useMutation({
     mutationFn: async (data: { id: string; status: string; rejectionReason?: string }) => {
       const res = await apiRequest("PUT", `/api/salary-advances/${data.id}`, {
@@ -237,7 +227,6 @@ export default function HRManagement() {
     },
   });
 
-  // Add employee mutation
   const addEmployeeMutation = useMutation({
     mutationFn: async (data: typeof newEmployee) => {
       const res = await apiRequest("POST", "/api/admin/employees", data);
@@ -266,7 +255,6 @@ export default function HRManagement() {
     },
   });
 
-  // Update employee mutation
   const updateEmployeeMutation = useMutation({
     mutationFn: async (data: { id: string; updates: any }) => {
       const res = await apiRequest("PUT", `/api/admin/employees/${data.id}`, data.updates);
@@ -328,803 +316,866 @@ export default function HRManagement() {
     }
   };
 
-  // Employee View
   if (!isAdmin) {
     return (
-      <div className="min-h-screen bg-background">
+      <MotionPageShell>
         <Navigation />
-        
         <div className="flex">
           <Sidebar />
-          
-          <main className={cn("flex-1 p-4 sm:p-6 transition-all duration-300", "lg:mr-16", !isCollapsed && "lg:mr-64")}>
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold text-foreground mb-2">
-                طلباتي
-              </h1>
-              <p className="text-muted-foreground">
-                إدارة طلبات الإجازات والسلف
-              </p>
-            </div>
+          <main className={cn("flex-1 p-4 sm:p-6 transition-all duration-300", isCollapsed ? "lg:mr-[90px]" : "lg:mr-64")}>
+            <MotionSection delay={0}>
+              <div className="mb-6 sm:mb-8">
+                <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
+                  طلباتي
+                </h1>
+                <p className="text-sm sm:text-base text-muted-foreground">
+                  إدارة طلبات الإجازات والسلف
+                </p>
+              </div>
+            </MotionSection>
 
-            <Tabs defaultValue="request-leave" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="request-leave" data-testid="tab-request-leave">طلب إجازة</TabsTrigger>
-                <TabsTrigger value="request-advance" data-testid="tab-request-advance">طلب سلفة</TabsTrigger>
-                <TabsTrigger value="leave-history" data-testid="tab-leave-history">سجل الإجازات</TabsTrigger>
-                <TabsTrigger value="advance-history" data-testid="tab-advance-history">سجل السلف</TabsTrigger>
-              </TabsList>
+            <MotionSection delay={0.1}>
+              <Tabs defaultValue="request-leave" className="space-y-4 md:space-y-6">
+                <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
+                  <TabsTrigger value="request-leave" data-testid="tab-request-leave" className="text-sm sm:text-base">طلب إجازة</TabsTrigger>
+                  <TabsTrigger value="request-advance" data-testid="tab-request-advance" className="text-sm sm:text-base">طلب سلفة</TabsTrigger>
+                  <TabsTrigger value="leave-history" data-testid="tab-leave-history" className="text-sm sm:text-base">سجل الإجازات</TabsTrigger>
+                  <TabsTrigger value="advance-history" data-testid="tab-advance-history" className="text-sm sm:text-base">سجل السلف</TabsTrigger>
+                </TabsList>
 
-              {/* Request Leave Tab */}
-              <TabsContent value="request-leave">
-                <Card data-testid="card-request-leave">
-                  <CardHeader>
-                    <CardTitle>طلب إجازة جديد</CardTitle>
-                    <CardDescription>
-                      قم بتعبئة النموذج أدناه لطلب إجازة
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4 max-w-2xl">
-                      <div>
-                        <Label>نوع الإجازة</Label>
-                        <Select value={newLeaveRequest.type} onValueChange={(value) => setNewLeaveRequest({...newLeaveRequest, type: value})}>
-                          <SelectTrigger data-testid="select-leave-type-employee">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="annual">سنوية</SelectItem>
-                            <SelectItem value="sick">مرضية</SelectItem>
-                            <SelectItem value="maternity">أمومة</SelectItem>
-                            <SelectItem value="emergency">طارئة</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
+                <TabsContent value="request-leave">
+                  <Card data-testid="card-request-leave">
+                    <CardHeader>
+                      <CardTitle>طلب إجازة جديد</CardTitle>
+                      <CardDescription>
+                        قم بتعبئة النموذج أدناه لطلب إجازة
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4 max-w-2xl">
                         <div>
-                          <Label>تاريخ البداية</Label>
-                          <Input
-                            type="date"
-                            value={newLeaveRequest.startDate}
-                            onChange={(e) => setNewLeaveRequest({...newLeaveRequest, startDate: e.target.value})}
-                            data-testid="input-leave-start-date-employee"
-                          />
+                          <Label>نوع الإجازة</Label>
+                          <Select value={newLeaveRequest.type} onValueChange={(value) => setNewLeaveRequest({...newLeaveRequest, type: value})}>
+                            <SelectTrigger className="h-11 sm:h-10" data-testid="select-leave-type-employee">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="annual">سنوية</SelectItem>
+                              <SelectItem value="sick">مرضية</SelectItem>
+                              <SelectItem value="maternity">أمومة</SelectItem>
+                              <SelectItem value="emergency">طارئة</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
-                        <div>
-                          <Label>تاريخ النهاية</Label>
-                          <Input
-                            type="date"
-                            value={newLeaveRequest.endDate}
-                            onChange={(e) => setNewLeaveRequest({...newLeaveRequest, endDate: e.target.value})}
-                            data-testid="input-leave-end-date-employee"
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <Label>عدد الأيام</Label>
-                        <Input
-                          type="number"
-                          value={newLeaveRequest.days}
-                          onChange={(e) => setNewLeaveRequest({...newLeaveRequest, days: Number(e.target.value)})}
-                          placeholder="0"
-                          data-testid="input-leave-days-employee"
-                        />
-                      </div>
-                      <div>
-                        <Label>السبب</Label>
-                        <Textarea
-                          value={newLeaveRequest.reason}
-                          onChange={(e) => setNewLeaveRequest({...newLeaveRequest, reason: e.target.value})}
-                          placeholder="أدخل سبب الإجازة"
-                          data-testid="input-leave-reason-employee"
-                        />
-                      </div>
-                      <Button 
-                        onClick={() => createLeaveRequestMutation.mutate(newLeaveRequest)}
-                        disabled={createLeaveRequestMutation.isPending || !newLeaveRequest.startDate || !newLeaveRequest.endDate || newLeaveRequest.days <= 0}
-                        className="w-full"
-                        data-testid="button-submit-leave-employee"
-                      >
-                        {createLeaveRequestMutation.isPending ? "جاري الإرسال..." : "إرسال الطلب"}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              {/* Request Salary Advance Tab */}
-              <TabsContent value="request-advance">
-                <Card data-testid="card-request-advance">
-                  <CardHeader>
-                    <CardTitle>طلب سلفة جديد</CardTitle>
-                    <CardDescription>
-                      قم بتعبئة النموذج أدناه لطلب سلفة من الراتب
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4 max-w-2xl">
-                      <div>
-                        <Label>المبلغ (ر.س)</Label>
-                        <Input
-                          type="number"
-                          value={newSalaryAdvance.amount}
-                          onChange={(e) => setNewSalaryAdvance({...newSalaryAdvance, amount: e.target.value})}
-                          placeholder="0"
-                          data-testid="input-advance-amount"
-                        />
-                      </div>
-                      <div>
-                        <Label>تاريخ السداد المتوقع</Label>
-                        <Input
-                          type="date"
-                          value={newSalaryAdvance.repaymentDate}
-                          onChange={(e) => setNewSalaryAdvance({...newSalaryAdvance, repaymentDate: e.target.value})}
-                          data-testid="input-advance-repayment-date"
-                        />
-                      </div>
-                      <div>
-                        <Label>السبب</Label>
-                        <Textarea
-                          value={newSalaryAdvance.reason}
-                          onChange={(e) => setNewSalaryAdvance({...newSalaryAdvance, reason: e.target.value})}
-                          placeholder="أدخل سبب طلب السلفة"
-                          data-testid="input-advance-reason"
-                        />
-                      </div>
-                      <Button 
-                        onClick={() => createSalaryAdvanceMutation.mutate(newSalaryAdvance)}
-                        disabled={createSalaryAdvanceMutation.isPending || !newSalaryAdvance.amount || !newSalaryAdvance.reason}
-                        className="w-full"
-                        data-testid="button-submit-advance"
-                      >
-                        {createSalaryAdvanceMutation.isPending ? "جاري الإرسال..." : "إرسال الطلب"}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              {/* Leave History Tab */}
-              <TabsContent value="leave-history">
-                <Card data-testid="card-leave-history">
-                  <CardHeader>
-                    <CardTitle>سجل طلبات الإجازات</CardTitle>
-                    <CardDescription>
-                      عرض جميع طلبات الإجازات السابقة والحالية
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {userLeaveRequests.map((request: any) => (
-                        <div key={request.id} className="p-4 rounded-lg border" data-testid={`user-leave-${request.id}`}>
-                          <div className="flex items-center justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-2">
-                                <Badge variant="outline">{getLeaveTypeLabel(request.type)}</Badge>
-                                <Badge variant={getStatusColor(request.status) as any}>{getStatusLabel(request.status)}</Badge>
-                              </div>
-                              <p className="text-sm text-muted-foreground">
-                                {new Date(request.startDate).toLocaleDateString('ar-EG')} - {new Date(request.endDate).toLocaleDateString('ar-EG')} ({request.days} أيام)
-                              </p>
-                              {request.reason && (
-                                <p className="text-sm mt-2">{request.reason}</p>
-                              )}
-                              {request.rejectionReason && (
-                                <p className="text-sm text-destructive mt-2">سبب الرفض: {request.rejectionReason}</p>
-                              )}
-                            </div>
-                            <Calendar className="w-8 h-8 text-muted-foreground" />
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <Label>تاريخ البداية</Label>
+                            <Input
+                              type="date"
+                              className="h-11 sm:h-10"
+                              value={newLeaveRequest.startDate}
+                              onChange={(e) => setNewLeaveRequest({...newLeaveRequest, startDate: e.target.value})}
+                              data-testid="input-leave-start-date-employee"
+                            />
+                          </div>
+                          <div>
+                            <Label>تاريخ النهاية</Label>
+                            <Input
+                              type="date"
+                              className="h-11 sm:h-10"
+                              value={newLeaveRequest.endDate}
+                              onChange={(e) => setNewLeaveRequest({...newLeaveRequest, endDate: e.target.value})}
+                              data-testid="input-leave-end-date-employee"
+                            />
                           </div>
                         </div>
-                      ))}
-                      
-                      {userLeaveRequests.length === 0 && (
-                        <div className="text-center py-8 text-muted-foreground">
-                          لا توجد طلبات إجازات
+                        <div>
+                          <Label>عدد الأيام</Label>
+                          <Input
+                            type="number"
+                            className="h-11 sm:h-10"
+                            value={newLeaveRequest.days}
+                            onChange={(e) => setNewLeaveRequest({...newLeaveRequest, days: Number(e.target.value)})}
+                            placeholder="0"
+                            data-testid="input-leave-days-employee"
+                          />
                         </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
+                        <div>
+                          <Label>السبب</Label>
+                          <Textarea
+                            value={newLeaveRequest.reason}
+                            onChange={(e) => setNewLeaveRequest({...newLeaveRequest, reason: e.target.value})}
+                            placeholder="أدخل سبب الإجازة"
+                            data-testid="input-leave-reason-employee"
+                          />
+                        </div>
+                        <Button 
+                          onClick={() => createLeaveRequestMutation.mutate(newLeaveRequest)}
+                          disabled={createLeaveRequestMutation.isPending || !newLeaveRequest.startDate || !newLeaveRequest.endDate || newLeaveRequest.days <= 0}
+                          className="w-full sm:w-auto"
+                          data-testid="button-submit-leave-employee"
+                        >
+                          {createLeaveRequestMutation.isPending ? "جاري الإرسال..." : "إرسال الطلب"}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
 
-              {/* Salary Advance History Tab */}
-              <TabsContent value="advance-history">
-                <Card data-testid="card-advance-history">
-                  <CardHeader>
-                    <CardTitle>سجل طلبات السلف</CardTitle>
-                    <CardDescription>
-                      عرض جميع طلبات السلف السابقة والحالية
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {userSalaryAdvances.map((request: any) => (
-                        <div key={request.id} className="p-4 rounded-lg border" data-testid={`user-advance-${request.id}`}>
-                          <div className="flex items-center justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-2">
-                                <span className="text-lg font-bold">{Number(request.amount).toLocaleString()} ر.س</span>
-                                <Badge variant={getStatusColor(request.status) as any}>{getStatusLabel(request.status)}</Badge>
-                              </div>
-                              <p className="text-sm text-muted-foreground">
-                                تاريخ الطلب: {new Date(request.createdAt).toLocaleDateString('ar-EG')}
-                              </p>
-                              {request.repaymentDate && (
+                <TabsContent value="request-advance">
+                  <Card data-testid="card-request-advance">
+                    <CardHeader>
+                      <CardTitle>طلب سلفة جديد</CardTitle>
+                      <CardDescription>
+                        قم بتعبئة النموذج أدناه لطلب سلفة من الراتب
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4 max-w-2xl">
+                        <div>
+                          <Label>المبلغ (ر.س)</Label>
+                          <Input
+                            type="number"
+                            className="h-11 sm:h-10"
+                            value={newSalaryAdvance.amount}
+                            onChange={(e) => setNewSalaryAdvance({...newSalaryAdvance, amount: e.target.value})}
+                            placeholder="0"
+                            data-testid="input-advance-amount"
+                          />
+                        </div>
+                        <div>
+                          <Label>تاريخ السداد المتوقع</Label>
+                          <Input
+                            type="date"
+                            className="h-11 sm:h-10"
+                            value={newSalaryAdvance.repaymentDate}
+                            onChange={(e) => setNewSalaryAdvance({...newSalaryAdvance, repaymentDate: e.target.value})}
+                            data-testid="input-advance-repayment-date"
+                          />
+                        </div>
+                        <div>
+                          <Label>السبب</Label>
+                          <Textarea
+                            value={newSalaryAdvance.reason}
+                            onChange={(e) => setNewSalaryAdvance({...newSalaryAdvance, reason: e.target.value})}
+                            placeholder="أدخل سبب طلب السلفة"
+                            data-testid="input-advance-reason"
+                          />
+                        </div>
+                        <Button 
+                          onClick={() => createSalaryAdvanceMutation.mutate(newSalaryAdvance)}
+                          disabled={createSalaryAdvanceMutation.isPending || !newSalaryAdvance.amount || !newSalaryAdvance.reason}
+                          className="w-full sm:w-auto"
+                          data-testid="button-submit-advance"
+                        >
+                          {createSalaryAdvanceMutation.isPending ? "جاري الإرسال..." : "إرسال الطلب"}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="leave-history">
+                  <Card data-testid="card-leave-history">
+                    <CardHeader>
+                      <CardTitle>سجل طلبات الإجازات</CardTitle>
+                      <CardDescription>
+                        عرض جميع طلبات الإجازات السابقة والحالية
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        {userLeaveRequests.map((request: any, index) => (
+                          <motion.div
+                            key={request.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.05 }}
+                            className="p-4 rounded-lg border"
+                            data-testid={`user-leave-${request.id}`}
+                          >
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                  <Badge variant="outline">{getLeaveTypeLabel(request.type)}</Badge>
+                                  <Badge variant={getStatusColor(request.status) as any}>{getStatusLabel(request.status)}</Badge>
+                                </div>
                                 <p className="text-sm text-muted-foreground">
-                                  تاريخ السداد: {new Date(request.repaymentDate).toLocaleDateString('ar-EG')}
+                                  {new Date(request.startDate).toLocaleDateString('ar-EG')} - {new Date(request.endDate).toLocaleDateString('ar-EG')} ({request.days} أيام)
                                 </p>
-                              )}
-                              {request.reason && (
-                                <p className="text-sm mt-2">{request.reason}</p>
-                              )}
-                              {request.rejectionReason && (
-                                <p className="text-sm text-destructive mt-2">سبب الرفض: {request.rejectionReason}</p>
-                              )}
+                                {request.reason && (
+                                  <p className="text-sm mt-2">{request.reason}</p>
+                                )}
+                                {request.rejectionReason && (
+                                  <p className="text-sm text-destructive mt-2">سبب الرفض: {request.rejectionReason}</p>
+                                )}
+                              </div>
+                              <Calendar className="w-6 h-6 sm:w-8 sm:h-8 text-muted-foreground" />
                             </div>
-                            <DollarSign className="w-8 h-8 text-muted-foreground" />
+                          </motion.div>
+                        ))}
+                        
+                        {userLeaveRequests.length === 0 && (
+                          <div className="text-center py-8 text-muted-foreground">
+                            لا توجد طلبات إجازات
                           </div>
-                        </div>
-                      ))}
-                      
-                      {userSalaryAdvances.length === 0 && (
-                        <div className="text-center py-8 text-muted-foreground">
-                          لا توجد طلبات سلف
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="advance-history">
+                  <Card data-testid="card-advance-history">
+                    <CardHeader>
+                      <CardTitle>سجل طلبات السلف</CardTitle>
+                      <CardDescription>
+                        عرض جميع طلبات السلف السابقة والحالية
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        {userSalaryAdvances.map((request: any, index) => (
+                          <motion.div
+                            key={request.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.05 }}
+                            className="p-4 rounded-lg border"
+                            data-testid={`user-advance-${request.id}`}
+                          >
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                  <span className="text-base sm:text-lg font-bold">{Number(request.amount).toLocaleString()} ر.س</span>
+                                  <Badge variant={getStatusColor(request.status) as any}>{getStatusLabel(request.status)}</Badge>
+                                </div>
+                                <p className="text-sm text-muted-foreground">
+                                  تاريخ الطلب: {new Date(request.createdAt).toLocaleDateString('ar-EG')}
+                                </p>
+                                {request.repaymentDate && (
+                                  <p className="text-sm text-muted-foreground">
+                                    تاريخ السداد: {new Date(request.repaymentDate).toLocaleDateString('ar-EG')}
+                                  </p>
+                                )}
+                                {request.reason && (
+                                  <p className="text-sm mt-2">{request.reason}</p>
+                                )}
+                                {request.rejectionReason && (
+                                  <p className="text-sm text-destructive mt-2">سبب الرفض: {request.rejectionReason}</p>
+                                )}
+                              </div>
+                              <DollarSign className="w-6 h-6 sm:w-8 sm:h-8 text-muted-foreground" />
+                            </div>
+                          </motion.div>
+                        ))}
+                        
+                        {userSalaryAdvances.length === 0 && (
+                          <div className="text-center py-8 text-muted-foreground">
+                            لا توجد طلبات سلف
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              </Tabs>
+            </MotionSection>
           </main>
         </div>
-      </div>
+      </MotionPageShell>
     );
   }
 
-  // Admin View
   return (
-    <div className="min-h-screen bg-background">
+    <MotionPageShell>
       <Navigation />
-      
       <div className="flex">
         <Sidebar />
-        
-        <main className={cn("flex-1 p-4 sm:p-6 transition-all duration-300", "lg:mr-16", !isCollapsed && "lg:mr-64")}>
-          {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground mb-2">
-                إدارة الموارد البشرية
-              </h1>
-              <p className="text-muted-foreground">
-                نظام شامل لإدارة الموظفين، الإجازات، والرواتب
-              </p>
+        <main className={cn("flex-1 p-4 sm:p-6 transition-all duration-300", isCollapsed ? "lg:mr-[90px]" : "lg:mr-64")}>
+          <MotionSection delay={0}>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 sm:mb-8">
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
+                  إدارة الموارد البشرية
+                </h1>
+                <p className="text-sm sm:text-base text-muted-foreground">
+                  نظام شامل لإدارة الموظفين، الإجازات، والرواتب
+                </p>
+              </div>
+              
+              <Dialog open={isAddEmployeeDialogOpen} onOpenChange={setIsAddEmployeeDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button className="w-full sm:w-auto" data-testid="button-add-employee">
+                    <UserPlus className="w-4 h-4 ml-2" />
+                    إضافة موظف
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto" data-testid="dialog-add-employee">
+                  <DialogHeader>
+                    <DialogTitle>إضافة موظف جديد</DialogTitle>
+                  </DialogHeader>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                    <div>
+                      <Label>الاسم الكامل</Label>
+                      <Input
+                        value={newEmployee.fullName}
+                        onChange={(e) => setNewEmployee({...newEmployee, fullName: e.target.value})}
+                        placeholder="أدخل الاسم الكامل"
+                        className="h-11 sm:h-10"
+                        data-testid="input-employee-fullname"
+                      />
+                    </div>
+                    <div>
+                      <Label>البريد الإلكتروني</Label>
+                      <Input
+                        type="email"
+                        value={newEmployee.email}
+                        onChange={(e) => setNewEmployee({...newEmployee, email: e.target.value})}
+                        placeholder="البريد الإلكتروني"
+                        className="h-11 sm:h-10"
+                        data-testid="input-employee-email"
+                      />
+                    </div>
+                    <div>
+                      <Label>كلمة المرور</Label>
+                      <Input
+                        type="password"
+                        value={newEmployee.password}
+                        onChange={(e) => setNewEmployee({...newEmployee, password: e.target.value})}
+                        placeholder="كلمة المرور"
+                        className="h-11 sm:h-10"
+                        data-testid="input-employee-password"
+                      />
+                    </div>
+                    <div>
+                      <Label>القسم</Label>
+                      <Input
+                        value={newEmployee.department}
+                        onChange={(e) => setNewEmployee({...newEmployee, department: e.target.value})}
+                        placeholder="التطوير، التسويق، إلخ"
+                        className="h-11 sm:h-10"
+                        data-testid="input-employee-department"
+                      />
+                    </div>
+                    <div>
+                      <Label>المسمى الوظيفي</Label>
+                      <Input
+                        value={newEmployee.jobTitle}
+                        onChange={(e) => setNewEmployee({...newEmployee, jobTitle: e.target.value})}
+                        placeholder="مطور، مدير، إلخ"
+                        className="h-11 sm:h-10"
+                        data-testid="input-employee-jobtitle"
+                      />
+                    </div>
+                    <div>
+                      <Label>الدور</Label>
+                      <Select value={newEmployee.role} onValueChange={(value) => setNewEmployee({...newEmployee, role: value})}>
+                        <SelectTrigger className="h-11 sm:h-10" data-testid="select-employee-role">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="employee">موظف</SelectItem>
+                          <SelectItem value="sub-admin">مدير فرعي</SelectItem>
+                          <SelectItem value="admin">مدير</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>رقم الهاتف</Label>
+                      <Input
+                        value={newEmployee.phoneNumber}
+                        onChange={(e) => setNewEmployee({...newEmployee, phoneNumber: e.target.value})}
+                        placeholder="+966 XX XXX XXXX"
+                        className="h-11 sm:h-10"
+                        data-testid="input-employee-phone"
+                      />
+                    </div>
+                    <div>
+                      <Label>الراتب (ر.س)</Label>
+                      <Input
+                        type="number"
+                        value={newEmployee.salary}
+                        onChange={(e) => setNewEmployee({...newEmployee, salary: Number(e.target.value)})}
+                        placeholder="0"
+                        className="h-11 sm:h-10"
+                        data-testid="input-employee-salary"
+                      />
+                    </div>
+                    <div className="col-span-1 sm:col-span-2">
+                      <Label>العنوان</Label>
+                      <Textarea
+                        value={newEmployee.address}
+                        onChange={(e) => setNewEmployee({...newEmployee, address: e.target.value})}
+                        placeholder="أدخل العنوان"
+                        data-testid="input-employee-address"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 mt-4">
+                    <Button variant="outline" className="w-full sm:w-auto" onClick={() => setIsAddEmployeeDialogOpen(false)} data-testid="button-cancel-add-employee">
+                      إلغاء
+                    </Button>
+                    <Button 
+                      onClick={() => addEmployeeMutation.mutate(newEmployee)}
+                      disabled={addEmployeeMutation.isPending || !newEmployee.email || !newEmployee.fullName}
+                      className="w-full sm:w-auto"
+                      data-testid="button-submit-add-employee"
+                    >
+                      {addEmployeeMutation.isPending ? "جاري الإضافة..." : "إضافة"}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
-            
-            <Dialog open={isAddEmployeeDialogOpen} onOpenChange={setIsAddEmployeeDialogOpen}>
-              <DialogTrigger asChild>
-                <Button data-testid="button-add-employee">
-                  <UserPlus className="w-4 h-4 ml-2" />
-                  إضافة موظف
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl" data-testid="dialog-add-employee">
-                <DialogHeader>
-                  <DialogTitle>إضافة موظف جديد</DialogTitle>
-                </DialogHeader>
-                <div className="grid grid-cols-2 gap-4 mt-4">
-                  <div>
-                    <Label>الاسم الكامل</Label>
-                    <Input
-                      value={newEmployee.fullName}
-                      onChange={(e) => setNewEmployee({...newEmployee, fullName: e.target.value})}
-                      placeholder="أدخل الاسم الكامل"
-                      data-testid="input-employee-fullname"
-                    />
-                  </div>
-                  <div>
-                    <Label>البريد الإلكتروني</Label>
-                    <Input
-                      type="email"
-                      value={newEmployee.email}
-                      onChange={(e) => setNewEmployee({...newEmployee, email: e.target.value})}
-                      placeholder="البريد الإلكتروني"
-                      data-testid="input-employee-email"
-                    />
-                  </div>
-                  <div>
-                    <Label>كلمة المرور</Label>
-                    <Input
-                      type="password"
-                      value={newEmployee.password}
-                      onChange={(e) => setNewEmployee({...newEmployee, password: e.target.value})}
-                      placeholder="كلمة المرور"
-                      data-testid="input-employee-password"
-                    />
-                  </div>
-                  <div>
-                    <Label>القسم</Label>
-                    <Input
-                      value={newEmployee.department}
-                      onChange={(e) => setNewEmployee({...newEmployee, department: e.target.value})}
-                      placeholder="التطوير، التسويق، إلخ"
-                      data-testid="input-employee-department"
-                    />
-                  </div>
-                  <div>
-                    <Label>المسمى الوظيفي</Label>
-                    <Input
-                      value={newEmployee.jobTitle}
-                      onChange={(e) => setNewEmployee({...newEmployee, jobTitle: e.target.value})}
-                      placeholder="مطور، مدير، إلخ"
-                      data-testid="input-employee-jobtitle"
-                    />
-                  </div>
-                  <div>
-                    <Label>الدور</Label>
-                    <Select value={newEmployee.role} onValueChange={(value) => setNewEmployee({...newEmployee, role: value})}>
-                      <SelectTrigger data-testid="select-employee-role">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="employee">موظف</SelectItem>
-                        <SelectItem value="sub-admin">مدير فرعي</SelectItem>
-                        <SelectItem value="admin">مدير</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label>رقم الهاتف</Label>
-                    <Input
-                      value={newEmployee.phoneNumber}
-                      onChange={(e) => setNewEmployee({...newEmployee, phoneNumber: e.target.value})}
-                      placeholder="+966 XX XXX XXXX"
-                      data-testid="input-employee-phone"
-                    />
-                  </div>
-                  <div>
-                    <Label>الراتب (ر.س)</Label>
-                    <Input
-                      type="number"
-                      value={newEmployee.salary}
-                      onChange={(e) => setNewEmployee({...newEmployee, salary: Number(e.target.value)})}
-                      placeholder="0"
-                      data-testid="input-employee-salary"
-                    />
-                  </div>
-                  <div className="col-span-2">
-                    <Label>العنوان</Label>
-                    <Textarea
-                      value={newEmployee.address}
-                      onChange={(e) => setNewEmployee({...newEmployee, address: e.target.value})}
-                      placeholder="أدخل العنوان"
-                      data-testid="input-employee-address"
-                    />
-                  </div>
-                </div>
-                <div className="flex justify-end gap-2 mt-4">
-                  <Button variant="outline" onClick={() => setIsAddEmployeeDialogOpen(false)} data-testid="button-cancel-add-employee">
-                    إلغاء
-                  </Button>
-                  <Button 
-                    onClick={() => addEmployeeMutation.mutate(newEmployee)}
-                    disabled={addEmployeeMutation.isPending || !newEmployee.email || !newEmployee.fullName}
-                    data-testid="button-submit-add-employee"
-                  >
-                    {addEmployeeMutation.isPending ? "جاري الإضافة..." : "إضافة"}
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-          </div>
+          </MotionSection>
 
-          {/* HR Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <Card data-testid="card-total-employees-hr">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">إجمالي الموظفين</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold" data-testid="text-total-employees">{hrStats?.totalEmployees || 0}</div>
-                <p className="text-xs text-muted-foreground">موظف نشط</p>
-              </CardContent>
-            </Card>
+          <MotionSection delay={0.1}>
+            <ResponsiveGrid cols={{ sm: 2, md: 2, lg: 4 }} className="mb-6 sm:mb-8">
+              <MotionMetricCard
+                title="إجمالي الموظفين"
+                value={hrStats?.totalEmployees || 0}
+                subtitle="موظف نشط"
+                icon={Users}
+                variant="primary"
+                testId="card-total-employees-hr"
+                index={0}
+              />
+              <MotionMetricCard
+                title="حاضر اليوم"
+                value={hrStats?.presentToday || 0}
+                subtitle="موظف حاضر"
+                icon={CheckCircle}
+                variant="green-emerald"
+                testId="card-present-today"
+                index={1}
+              />
+              <MotionMetricCard
+                title="في إجازة"
+                value={hrStats?.onLeave || 0}
+                subtitle="موظفين"
+                icon={Calendar}
+                variant="yellow-amber"
+                testId="card-on-leave"
+                index={2}
+              />
+              <MotionMetricCard
+                title="طلبات معلقة"
+                value={hrStats?.pendingRequests || 0}
+                subtitle="تحتاج مراجعة"
+                icon={AlertCircle}
+                variant="red-pink"
+                testId="card-pending-requests-hr"
+                index={3}
+              />
+            </ResponsiveGrid>
+          </MotionSection>
 
-            <Card data-testid="card-present-today">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">حاضر اليوم</CardTitle>
-                <CheckCircle className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-success" data-testid="text-present-today">{hrStats?.presentToday || 0}</div>
-                <p className="text-xs text-muted-foreground">موظف حاضر</p>
-              </CardContent>
-            </Card>
+          <MotionSection delay={0.2}>
+            <Tabs defaultValue="leave-requests" className="space-y-4 md:space-y-6">
+              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1">
+                <TabsTrigger value="leave-requests" className="text-sm">طلبات الإجازات</TabsTrigger>
+                <TabsTrigger value="salary-advances" className="text-sm">طلبات السلف</TabsTrigger>
+                <TabsTrigger value="payroll" className="text-sm">الرواتب</TabsTrigger>
+                <TabsTrigger value="employees" className="text-sm">الموظفين</TabsTrigger>
+                <TabsTrigger value="reports" className="text-sm">تقارير HR</TabsTrigger>
+              </TabsList>
 
-            <Card data-testid="card-on-leave">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">في إجازة</CardTitle>
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-warning" data-testid="text-on-leave">{hrStats?.onLeave || 0}</div>
-                <p className="text-xs text-muted-foreground">موظفين</p>
-              </CardContent>
-            </Card>
-
-            <Card data-testid="card-pending-requests-hr">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">طلبات معلقة</CardTitle>
-                <AlertCircle className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-destructive" data-testid="text-pending-requests">{hrStats?.pendingRequests || 0}</div>
-                <p className="text-xs text-muted-foreground">تحتاج مراجعة</p>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* HR Tabs */}
-          <Tabs defaultValue="leave-requests" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-5">
-              <TabsTrigger value="leave-requests">طلبات الإجازات</TabsTrigger>
-              <TabsTrigger value="salary-advances">طلبات السلف</TabsTrigger>
-              <TabsTrigger value="payroll">الرواتب</TabsTrigger>
-              <TabsTrigger value="employees">الموظفين</TabsTrigger>
-              <TabsTrigger value="reports">تقارير HR</TabsTrigger>
-            </TabsList>
-
-            {/* Leave Requests Tab */}
-            <TabsContent value="leave-requests">
-              <Card data-testid="card-leave-requests">
-                <CardHeader>
-                  <CardTitle>طلبات الإجازات المعلقة</CardTitle>
-                  <CardDescription>
-                    مراجعة والموافقة على طلبات الإجازات
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {pendingLeaveRequests.map((request: any) => (
-                      <div key={request.id} className="flex items-center justify-between p-4 rounded-lg border" data-testid={`leave-request-${request.id}`}>
-                        <div className="flex items-center gap-4">
-                          <Avatar>
-                            <AvatarImage src={request.user?.profilePicture} />
-                            <AvatarFallback>
-                              {request.user?.fullName?.split(' ').map((n: string) => n[0]).join('').slice(0, 2) || 'U'}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <h4 className="font-semibold text-foreground">{request.user?.fullName}</h4>
-                            <p className="text-sm text-muted-foreground">{request.user?.department}</p>
-                            <div className="flex items-center gap-2 mt-1">
-                              <Badge variant="outline">{getLeaveTypeLabel(request.type)}</Badge>
-                              <span className="text-xs text-muted-foreground">
-                                {request.days} أيام • {new Date(request.startDate).toLocaleDateString('ar-EG')}
-                              </span>
-                            </div>
-                            {request.reason && (
-                              <p className="text-sm text-muted-foreground mt-1">{request.reason}</p>
-                            )}
-                          </div>
-                        </div>
-                        
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            onClick={() => handleApproveLeave(request.id)}
-                            disabled={updateLeaveMutation.isPending}
-                            data-testid={`button-approve-leave-${request.id}`}
-                          >
-                            <CheckCircle className="w-4 h-4 ml-1" />
-                            موافقة
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => handleRejectLeave(request.id, "تم الرفض من قبل الإدارة")}
-                            disabled={updateLeaveMutation.isPending}
-                            data-testid={`button-reject-leave-${request.id}`}
-                          >
-                            <XCircle className="w-4 h-4 ml-1" />
-                            رفض
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                    
-                    {pendingLeaveRequests.length === 0 && (
-                      <div className="text-center py-8 text-muted-foreground">
-                        لا توجد طلبات إجازات معلقة
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            {/* Salary Advances Tab */}
-            <TabsContent value="salary-advances">
-              <Card data-testid="card-salary-advances">
-                <CardHeader>
-                  <CardTitle>طلبات السلف المعلقة</CardTitle>
-                  <CardDescription>
-                    مراجعة والموافقة على طلبات السلف
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {pendingSalaryAdvances.map((request: any) => (
-                      <div key={request.id} className="flex items-center justify-between p-4 rounded-lg border" data-testid={`salary-advance-${request.id}`}>
-                        <div className="flex items-center gap-4">
-                          <Avatar>
-                            <AvatarImage src={request.user?.profilePicture} />
-                            <AvatarFallback>
-                              {request.user?.fullName?.split(' ').map((n: string) => n[0]).join('').slice(0, 2) || 'U'}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <h4 className="font-semibold text-foreground">{request.user?.fullName}</h4>
-                            <p className="text-sm text-muted-foreground">{request.user?.department}</p>
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className="text-lg font-bold">{Number(request.amount).toLocaleString()} ر.س</span>
-                              {request.repaymentDate && (
-                                <span className="text-xs text-muted-foreground">
-                                  • السداد: {new Date(request.repaymentDate).toLocaleDateString('ar-EG')}
-                                </span>
-                              )}
-                            </div>
-                            {request.reason && (
-                              <p className="text-sm text-muted-foreground mt-1">{request.reason}</p>
-                            )}
-                          </div>
-                        </div>
-                        
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            onClick={() => handleApproveSalaryAdvance(request.id)}
-                            disabled={updateSalaryAdvanceMutation.isPending}
-                            data-testid={`button-approve-advance-${request.id}`}
-                          >
-                            <CheckCircle className="w-4 h-4 ml-1" />
-                            موافقة
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => handleRejectSalaryAdvance(request.id, "تم الرفض من قبل الإدارة")}
-                            disabled={updateSalaryAdvanceMutation.isPending}
-                            data-testid={`button-reject-advance-${request.id}`}
-                          >
-                            <XCircle className="w-4 h-4 ml-1" />
-                            رفض
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                    
-                    {pendingSalaryAdvances.length === 0 && (
-                      <div className="text-center py-8 text-muted-foreground">
-                        لا توجد طلبات سلف معلقة
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            {/* Payroll Tab */}
-            <TabsContent value="payroll">
-              <Card data-testid="card-payroll">
-                <CardHeader>
-                  <CardTitle>إدارة الرواتب</CardTitle>
-                  <CardDescription>
-                    حساب وإصدار كشوف الرواتب الشهرية
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="border-b">
-                          <th className="text-right py-3 px-4 text-sm font-semibold">الموظف</th>
-                          <th className="text-right py-3 px-4 text-sm font-semibold">القسم</th>
-                          <th className="text-right py-3 px-4 text-sm font-semibold">الراتب الأساسي</th>
-                          <th className="text-right py-3 px-4 text-sm font-semibold">ساعات إضافية</th>
-                          <th className="text-right py-3 px-4 text-sm font-semibold">الخصومات</th>
-                          <th className="text-right py-3 px-4 text-sm font-semibold">صافي الراتب</th>
-                          <th className="text-right py-3 px-4 text-sm font-semibold">الإجراءات</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {payrollData.length > 0 ? payrollData.map((payroll: any) => (
-                          <tr key={payroll.id} className="border-b hover:bg-muted/50 transition-colors" data-testid={`payroll-row-${payroll.id}`}>
-                            <td className="py-3 px-4">
-                              <div className="font-medium" data-testid={`text-employee-${payroll.id}`}>{payroll.employee}</div>
-                            </td>
-                            <td className="py-3 px-4">
-                              <Badge variant="outline" data-testid={`badge-department-${payroll.id}`}>{payroll.department}</Badge>
-                            </td>
-                            <td className="py-3 px-4">
-                              <span className="font-medium" data-testid={`text-base-salary-${payroll.id}`}>{payroll.baseSalary.toLocaleString()} ر.س</span>
-                            </td>
-                            <td className="py-3 px-4">
-                              <span className="text-success">+{payroll.overtime.toLocaleString()} ر.س</span>
-                            </td>
-                            <td className="py-3 px-4">
-                              <span className="text-destructive">-{payroll.deductions.toLocaleString()} ر.س</span>
-                            </td>
-                            <td className="py-3 px-4">
-                              <span className="font-bold text-lg" data-testid={`text-net-salary-${payroll.id}`}>{payroll.netSalary.toLocaleString()} ر.س</span>
-                            </td>
-                            <td className="py-3 px-4">
-                              <div className="flex gap-2">
-                                <Button size="sm" variant="outline" data-testid={`button-view-payroll-${payroll.id}`}>
-                                  <FileText className="w-4 h-4" />
-                                </Button>
-                                <Button size="sm" data-testid={`button-generate-payslip-${payroll.id}`}>
-                                  كشف الراتب
-                                </Button>
-                              </div>
-                            </td>
-                          </tr>
-                        )) : (
-                          <tr>
-                            <td colSpan={7} className="py-8 text-center text-muted-foreground">
-                              لا توجد بيانات رواتب متاحة
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            {/* Employees Tab */}
-            <TabsContent value="employees">
-              <Card data-testid="card-hr-employees">
-                <CardHeader>
-                  <CardTitle>إدارة الموظفين</CardTitle>
-                  <CardDescription>
-                    عرض وإدارة معلومات الموظفين وملفاتهم الشخصية
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {allUsers.map((employee: any) => (
-                      <Card key={employee.id} className="hover:shadow-md transition-shadow" data-testid={`employee-card-${employee.id}`}>
-                        <CardContent className="p-4">
-                          <div className="flex items-center gap-3 mb-3">
-                            <Avatar>
-                              <AvatarImage src={employee.profilePicture} />
+              <TabsContent value="leave-requests">
+                <Card data-testid="card-leave-requests">
+                  <CardHeader>
+                    <CardTitle>طلبات الإجازات المعلقة</CardTitle>
+                    <CardDescription>
+                      مراجعة والموافقة على طلبات الإجازات
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {pendingLeaveRequests.map((request: any, index) => (
+                        <motion.div
+                          key={request.id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.05 }}
+                          className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 rounded-lg border gap-4"
+                          data-testid={`leave-request-${request.id}`}
+                        >
+                          <div className="flex items-start gap-4">
+                            <Avatar className="hidden sm:block">
+                              <AvatarImage src={request.user?.profilePicture} />
                               <AvatarFallback>
-                                {employee.fullName.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
+                                {request.user?.fullName?.split(' ').map((n: string) => n[0]).join('').slice(0, 2) || 'U'}
                               </AvatarFallback>
                             </Avatar>
                             <div className="flex-1">
-                              <h4 className="font-semibold text-foreground">{employee.fullName}</h4>
-                              <p className="text-sm text-muted-foreground">{employee.jobTitle}</p>
+                              <h4 className="font-semibold text-foreground">{request.user?.fullName}</h4>
+                              <p className="text-sm text-muted-foreground">{request.user?.department}</p>
+                              <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                <Badge variant="outline">{getLeaveTypeLabel(request.type)}</Badge>
+                                <span className="text-xs text-muted-foreground">
+                                  {request.days} أيام • {new Date(request.startDate).toLocaleDateString('ar-EG')}
+                                </span>
+                              </div>
+                              {request.reason && (
+                                <p className="text-sm text-muted-foreground mt-1">{request.reason}</p>
+                              )}
                             </div>
                           </div>
                           
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-2 text-sm">
-                              <Building className="w-4 h-4 text-muted-foreground" />
-                              <span>{employee.department}</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-sm">
-                              <Badge variant={employee.isActive ? "default" : "secondary"}>
-                                {employee.isActive ? "نشط" : "غير نشط"}
-                              </Badge>
-                            </div>
-                          </div>
-                          
-                          <div className="flex gap-2 mt-4">
-                            <Link href={`/user-profile/${employee.id}`} className="flex-1">
-                              <Button 
-                                size="sm" 
-                                variant="outline" 
-                                className="w-full" 
-                                data-testid={`button-view-employee-${employee.id}`}
-                              >
-                                عرض الملف
-                              </Button>
-                            </Link>
-                            <Button 
-                              size="sm" 
-                              className="flex-1" 
-                              onClick={() => {
-                                setSelectedEmployee(employee);
-                                setIsEditEmployeeDialogOpen(true);
-                              }}
-                              data-testid={`button-edit-employee-${employee.id}`}
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              className="flex-1 sm:flex-none"
+                              onClick={() => handleApproveLeave(request.id)}
+                              disabled={updateLeaveMutation.isPending}
+                              data-testid={`button-approve-leave-${request.id}`}
                             >
-                              تعديل
+                              <CheckCircle className="w-4 h-4 ml-1" />
+                              موافقة
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              className="flex-1 sm:flex-none"
+                              onClick={() => handleRejectLeave(request.id, "تم الرفض من قبل الإدارة")}
+                              disabled={updateLeaveMutation.isPending}
+                              data-testid={`button-reject-leave-${request.id}`}
+                            >
+                              <XCircle className="w-4 h-4 ml-1" />
+                              رفض
                             </Button>
                           </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            {/* HR Reports Tab */}
-            <TabsContent value="reports">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card data-testid="card-attendance-summary">
-                  <CardHeader>
-                    <CardTitle>ملخص الحضور</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-center">
-                        <span>معدل الحضور الشهري</span>
-                        <span className="font-bold text-success" data-testid="text-attendance-rate">{hrReports?.attendanceRate || 0}%</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span>متوسط ساعات العمل اليومية</span>
-                        <span className="font-bold" data-testid="text-avg-work-hours">{hrReports?.avgWorkHoursPerDay || 0} ساعة</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span>أيام الإجازات المستخدمة</span>
-                        <span className="font-bold" data-testid="text-used-leave-days">{hrReports?.usedLeaveDays || 0} يوم</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card data-testid="card-department-summary">
-                  <CardHeader>
-                    <CardTitle>توزيع الموظفين</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {hrReports?.departmentDistribution && hrReports.departmentDistribution.length > 0 ? hrReports.departmentDistribution.map((item: any) => (
-                        <div key={item.dept} className="space-y-2" data-testid={`dept-dist-${item.dept}`}>
-                          <div className="flex justify-between items-center">
-                            <span>{item.dept}</span>
-                            <span className="font-bold">{item.count} موظف</span>
-                          </div>
-                          <div className="w-full bg-muted rounded-full h-2">
-                            <div 
-                              className="bg-primary h-2 rounded-full transition-all duration-500" 
-                              style={{ width: `${item.percentage}%` }}
-                            ></div>
-                          </div>
+                        </motion.div>
+                      ))}
+                      
+                      {pendingLeaveRequests.length === 0 && (
+                        <div className="text-center py-8 text-muted-foreground">
+                          لا توجد طلبات إجازات معلقة
                         </div>
-                      )) : (
-                        <p className="text-center text-muted-foreground py-4">لا توجد بيانات توزيع متاحة</p>
                       )}
                     </div>
                   </CardContent>
                 </Card>
-              </div>
-            </TabsContent>
-          </Tabs>
+              </TabsContent>
+
+              <TabsContent value="salary-advances">
+                <Card data-testid="card-salary-advances">
+                  <CardHeader>
+                    <CardTitle>طلبات السلف المعلقة</CardTitle>
+                    <CardDescription>
+                      مراجعة والموافقة على طلبات السلف
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {pendingSalaryAdvances.map((request: any, index) => (
+                        <motion.div
+                          key={request.id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.05 }}
+                          className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 rounded-lg border gap-4"
+                          data-testid={`salary-advance-${request.id}`}
+                        >
+                          <div className="flex items-start gap-4">
+                            <Avatar className="hidden sm:block">
+                              <AvatarImage src={request.user?.profilePicture} />
+                              <AvatarFallback>
+                                {request.user?.fullName?.split(' ').map((n: string) => n[0]).join('').slice(0, 2) || 'U'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1">
+                              <h4 className="font-semibold text-foreground">{request.user?.fullName}</h4>
+                              <p className="text-sm text-muted-foreground">{request.user?.department}</p>
+                              <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                <span className="text-base sm:text-lg font-bold">{Number(request.amount).toLocaleString()} ر.س</span>
+                                {request.repaymentDate && (
+                                  <span className="text-xs text-muted-foreground">
+                                    • السداد: {new Date(request.repaymentDate).toLocaleDateString('ar-EG')}
+                                  </span>
+                                )}
+                              </div>
+                              {request.reason && (
+                                <p className="text-sm text-muted-foreground mt-1">{request.reason}</p>
+                              )}
+                            </div>
+                          </div>
+                          
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              className="flex-1 sm:flex-none"
+                              onClick={() => handleApproveSalaryAdvance(request.id)}
+                              disabled={updateSalaryAdvanceMutation.isPending}
+                              data-testid={`button-approve-advance-${request.id}`}
+                            >
+                              <CheckCircle className="w-4 h-4 ml-1" />
+                              موافقة
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              className="flex-1 sm:flex-none"
+                              onClick={() => handleRejectSalaryAdvance(request.id, "تم الرفض من قبل الإدارة")}
+                              disabled={updateSalaryAdvanceMutation.isPending}
+                              data-testid={`button-reject-advance-${request.id}`}
+                            >
+                              <XCircle className="w-4 h-4 ml-1" />
+                              رفض
+                            </Button>
+                          </div>
+                        </motion.div>
+                      ))}
+                      
+                      {pendingSalaryAdvances.length === 0 && (
+                        <div className="text-center py-8 text-muted-foreground">
+                          لا توجد طلبات سلف معلقة
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="payroll">
+                <Card data-testid="card-payroll">
+                  <CardHeader>
+                    <CardTitle>إدارة الرواتب</CardTitle>
+                    <CardDescription>
+                      حساب وإصدار كشوف الرواتب الشهرية
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="hidden md:block overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="border-b">
+                            <th className="text-right py-3 px-4 text-sm font-semibold">الموظف</th>
+                            <th className="text-right py-3 px-4 text-sm font-semibold">القسم</th>
+                            <th className="text-right py-3 px-4 text-sm font-semibold">الراتب الأساسي</th>
+                            <th className="text-right py-3 px-4 text-sm font-semibold">الصافي</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {payrollData && payrollData.length > 0 ? payrollData.map((entry: any, index) => (
+                            <motion.tr
+                              key={entry.userId}
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              transition={{ delay: index * 0.03 }}
+                              className="border-b hover:bg-muted/50"
+                              data-testid={`payroll-row-${entry.userId}`}
+                            >
+                              <td className="py-3 px-4 text-sm">{entry.fullName}</td>
+                              <td className="py-3 px-4 text-sm">{entry.department}</td>
+                              <td className="py-3 px-4 text-sm">{Number(entry.salary).toLocaleString()} ر.س</td>
+                              <td className="py-3 px-4 text-sm font-semibold">{Number(entry.netSalary || entry.salary).toLocaleString()} ر.س</td>
+                            </motion.tr>
+                          )) : (
+                            <tr>
+                              <td colSpan={4} className="py-8 text-center text-muted-foreground">
+                                لا توجد بيانات رواتب متاحة
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <div className="md:hidden space-y-4">
+                      {payrollData && payrollData.length > 0 ? payrollData.map((entry: any, index) => (
+                        <motion.div
+                          key={entry.userId}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.05 }}
+                        >
+                          <Card data-testid={`payroll-card-${entry.userId}`}>
+                            <CardHeader className="p-4">
+                              <CardTitle className="text-base">{entry.fullName}</CardTitle>
+                              <CardDescription className="text-sm">{entry.department}</CardDescription>
+                            </CardHeader>
+                            <CardContent className="p-4 pt-0 space-y-2">
+                              <div className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">الراتب الأساسي:</span>
+                                <span>{Number(entry.salary).toLocaleString()} ر.س</span>
+                              </div>
+                              <div className="flex justify-between text-sm font-semibold">
+                                <span>الصافي:</span>
+                                <span>{Number(entry.netSalary || entry.salary).toLocaleString()} ر.س</span>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </motion.div>
+                      )) : (
+                        <div className="text-center py-8 text-muted-foreground">
+                          لا توجد بيانات رواتب متاحة
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="employees">
+                <Card data-testid="card-hr-employees">
+                  <CardHeader>
+                    <CardTitle>إدارة الموظفين</CardTitle>
+                    <CardDescription>
+                      عرض وإدارة معلومات الموظفين وملفاتهم الشخصية
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveGrid cols={{ sm: 1, md: 2, lg: 3 }}>
+                      {allUsers.map((employee: any, index) => (
+                        <motion.div
+                          key={employee.id}
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: index * 0.05 }}
+                        >
+                          <Card className="hover:shadow-md transition-shadow" data-testid={`employee-card-${employee.id}`}>
+                            <CardContent className="p-4">
+                              <div className="flex items-center gap-3 mb-3">
+                                <Avatar>
+                                  <AvatarImage src={employee.profilePicture} />
+                                  <AvatarFallback>
+                                    {employee.fullName.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="font-semibold text-foreground truncate">{employee.fullName}</h4>
+                                  <p className="text-sm text-muted-foreground truncate">{employee.jobTitle}</p>
+                                </div>
+                              </div>
+                              
+                              <div className="space-y-2">
+                                <div className="flex items-center gap-2 text-sm">
+                                  <Building className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                                  <span className="truncate">{employee.department}</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-sm">
+                                  <Badge variant={employee.isActive ? "default" : "secondary"}>
+                                    {employee.isActive ? "نشط" : "غير نشط"}
+                                  </Badge>
+                                </div>
+                              </div>
+                              
+                              <div className="flex gap-2 mt-4">
+                                <Link href={`/user-profile/${employee.id}`} className="flex-1">
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline" 
+                                    className="w-full" 
+                                    data-testid={`button-view-employee-${employee.id}`}
+                                  >
+                                    عرض الملف
+                                  </Button>
+                                </Link>
+                                <Button 
+                                  size="sm" 
+                                  className="flex-1" 
+                                  onClick={() => {
+                                    setSelectedEmployee(employee);
+                                    setIsEditEmployeeDialogOpen(true);
+                                  }}
+                                  data-testid={`button-edit-employee-${employee.id}`}
+                                >
+                                  تعديل
+                                </Button>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </motion.div>
+                      ))}
+                    </ResponsiveGrid>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="reports">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                  >
+                    <Card data-testid="card-attendance-summary">
+                      <CardHeader>
+                        <CardTitle>ملخص الحضور</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm sm:text-base">معدل الحضور الشهري</span>
+                            <span className="font-bold text-success text-sm sm:text-base" data-testid="text-attendance-rate">{hrReports?.attendanceRate || 0}%</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm sm:text-base">متوسط ساعات العمل اليومية</span>
+                            <span className="font-bold text-sm sm:text-base" data-testid="text-avg-work-hours">{hrReports?.avgWorkHoursPerDay || 0} ساعة</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm sm:text-base">أيام الإجازات المستخدمة</span>
+                            <span className="font-bold text-sm sm:text-base" data-testid="text-used-leave-days">{hrReports?.usedLeaveDays || 0} يوم</span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                  >
+                    <Card data-testid="card-department-summary">
+                      <CardHeader>
+                        <CardTitle>توزيع الموظفين</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          {hrReports?.departmentDistribution && hrReports.departmentDistribution.length > 0 ? hrReports.departmentDistribution.map((item: any) => (
+                            <div key={item.dept} className="space-y-2" data-testid={`dept-dist-${item.dept}`}>
+                              <div className="flex justify-between items-center">
+                                <span className="text-sm sm:text-base">{item.dept}</span>
+                                <span className="font-bold text-sm sm:text-base">{item.count} موظف</span>
+                              </div>
+                              <div className="w-full bg-muted rounded-full h-2">
+                                <motion.div 
+                                  initial={{ width: 0 }}
+                                  animate={{ width: `${item.percentage}%` }}
+                                  transition={{ duration: 0.5, delay: 0.3 }}
+                                  className="bg-primary h-2 rounded-full"
+                                />
+                              </div>
+                            </div>
+                          )) : (
+                            <p className="text-center text-muted-foreground py-4">لا توجد بيانات توزيع متاحة</p>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                </div>
+              </TabsContent>
+            </Tabs>
+          </MotionSection>
         </main>
       </div>
 
-      {/* Edit Employee Dialog */}
       <Dialog open={isEditEmployeeDialogOpen} onOpenChange={setIsEditEmployeeDialogOpen}>
-        <DialogContent className="max-w-2xl" data-testid="dialog-edit-employee">
+        <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto" data-testid="dialog-edit-employee">
           <DialogHeader>
             <DialogTitle>تعديل بيانات الموظف</DialogTitle>
           </DialogHeader>
           {selectedEmployee && (
-            <div className="grid grid-cols-2 gap-4 mt-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
               <div>
                 <Label>الاسم الكامل</Label>
                 <Input
                   value={selectedEmployee.fullName || ""}
                   onChange={(e) => setSelectedEmployee({...selectedEmployee, fullName: e.target.value})}
+                  className="h-11 sm:h-10"
                   data-testid="input-edit-fullname"
                 />
               </div>
@@ -1133,6 +1184,7 @@ export default function HRManagement() {
                 <Input
                   value={selectedEmployee.department || ""}
                   onChange={(e) => setSelectedEmployee({...selectedEmployee, department: e.target.value})}
+                  className="h-11 sm:h-10"
                   data-testid="input-edit-department"
                 />
               </div>
@@ -1141,6 +1193,7 @@ export default function HRManagement() {
                 <Input
                   value={selectedEmployee.jobTitle || ""}
                   onChange={(e) => setSelectedEmployee({...selectedEmployee, jobTitle: e.target.value})}
+                  className="h-11 sm:h-10"
                   data-testid="input-edit-jobtitle"
                 />
               </div>
@@ -1149,6 +1202,7 @@ export default function HRManagement() {
                 <Input
                   value={selectedEmployee.phoneNumber || ""}
                   onChange={(e) => setSelectedEmployee({...selectedEmployee, phoneNumber: e.target.value})}
+                  className="h-11 sm:h-10"
                   data-testid="input-edit-phone"
                 />
               </div>
@@ -1158,6 +1212,7 @@ export default function HRManagement() {
                   type="number"
                   value={selectedEmployee.salary || 0}
                   onChange={(e) => setSelectedEmployee({...selectedEmployee, salary: Number(e.target.value)})}
+                  className="h-11 sm:h-10"
                   data-testid="input-edit-salary"
                 />
               </div>
@@ -1167,7 +1222,7 @@ export default function HRManagement() {
                   value={selectedEmployee.isActive ? "active" : "inactive"} 
                   onValueChange={(value) => setSelectedEmployee({...selectedEmployee, isActive: value === "active"})}
                 >
-                  <SelectTrigger data-testid="select-edit-status">
+                  <SelectTrigger className="h-11 sm:h-10" data-testid="select-edit-status">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -1176,7 +1231,7 @@ export default function HRManagement() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="col-span-2">
+              <div className="col-span-1 sm:col-span-2">
                 <Label>العنوان</Label>
                 <Textarea
                   value={selectedEmployee.address || ""}
@@ -1186,8 +1241,8 @@ export default function HRManagement() {
               </div>
             </div>
           )}
-          <div className="flex justify-end gap-2 mt-4">
-            <Button variant="outline" onClick={() => setIsEditEmployeeDialogOpen(false)} data-testid="button-cancel-edit">
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 mt-4">
+            <Button variant="outline" className="w-full sm:w-auto" onClick={() => setIsEditEmployeeDialogOpen(false)} data-testid="button-cancel-edit">
               إلغاء
             </Button>
             <Button 
@@ -1208,6 +1263,7 @@ export default function HRManagement() {
                 }
               }}
               disabled={updateEmployeeMutation.isPending}
+              className="w-full sm:w-auto"
               data-testid="button-submit-edit"
             >
               {updateEmployeeMutation.isPending ? "جاري الحفظ..." : "حفظ التعديلات"}
@@ -1215,6 +1271,6 @@ export default function HRManagement() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </MotionPageShell>
   );
 }
