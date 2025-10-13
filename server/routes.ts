@@ -3,7 +3,8 @@ import { createServer, type Server } from "http";
 import { WebSocketServer } from "ws";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
-import { createGoogleMeetEvent } from "./google-calendar";
+import { createGoogleMeetEvent as createGoogleMeetEventLegacy } from "./google-calendar";
+import { createGoogleMeetEvent, isGoogleCalendarConnected } from "./google-calendar-integration";
 import multer from 'multer';
 const upload = multer({ dest: 'uploads/' });
 
@@ -1063,10 +1064,56 @@ export function registerRoutes(app: Express): Server {
   });
 
   // Google Calendar OAuth Routes
+  // Google Calendar Routes (Using Replit Integration)
   app.get("/api/google-calendar/status", requireAuth, async (req, res) => {
     try {
-      const token = await storage.getGoogleCalendarToken(req.user!.id);
-      res.json({ connected: !!token });
+      const connected = await isGoogleCalendarConnected();
+      res.json({ connected });
+    } catch (error) {
+      res.json({ connected: false });
+    }
+  });
+  // Google Calendar Routes (Using Replit Integration)
+  app.get("/api/google-calendar/status", requireAuth, async (req, res) => {
+    try {
+      const connected = await isGoogleCalendarConnected();
+      res.json({ connected });
+    } catch (error) {
+      res.json({ connected: false });
+    }
+  });
+  // Google Calendar Routes (Using Replit Integration)
+  app.get("/api/google-calendar/status", requireAuth, async (req, res) => {
+    try {
+      const connected = await isGoogleCalendarConnected();
+      res.json({ connected });
+    } catch (error) {
+      res.json({ connected: false });
+    }
+  });
+  // Google Calendar Routes (Using Replit Integration)
+  app.get("/api/google-calendar/status", requireAuth, async (req, res) => {
+    try {
+      const connected = await isGoogleCalendarConnected();
+      res.json({ connected });
+    } catch (error) {
+      res.json({ connected: false });
+    }
+  });
+  // Google Calendar Routes (Using Replit Integration)
+  app.get("/api/google-calendar/status", requireAuth, async (req, res) => {
+    try {
+      const connected = await isGoogleCalendarConnected();
+      res.json({ connected });
+    } catch (error) {
+      res.json({ connected: false });
+    }
+  });
+  // Google Calendar Routes (Using Replit Integration)
+  app.get("/api/google-calendar/status", requireAuth, async (req, res) => {
+    try {
+      const connected = await isGoogleCalendarConnected();
+      res.json({ connected });
     } catch (error) {
       res.json({ connected: false });
     }
@@ -1090,74 +1137,6 @@ export function registerRoutes(app: Express): Server {
       res.status(500).json({ message: "حدث خطأ في بدء عملية الربط" });
     }
   });
-
-  app.get("/api/google-calendar/callback", async (req, res) => {
-    try {
-      const code = req.query.code as string;
-      const state = req.query.state as string;
-      const userId = req.session.googleAuthUserId;
-      const sessionState = req.session.googleAuthState;
-      
-      if (!state || !sessionState || state !== sessionState) {
-        console.error("OAuth state mismatch - possible CSRF attack");
-        delete req.session.googleAuthState;
-        delete req.session.googleAuthUserId;
-        return res.redirect("/?error=auth_failed");
-      }
-      
-      if (!code || !userId) {
-        return res.redirect("/?error=auth_failed");
-      }
-      
-      const user = await storage.getUser(userId);
-      if (!user || !user.isActive) {
-        console.error("Invalid or inactive user in OAuth callback");
-        delete req.session.googleAuthState;
-        delete req.session.googleAuthUserId;
-        return res.redirect("/?error=auth_failed");
-      }
-      
-      const { exchangeCodeForTokens } = await import("./google-calendar");
-      const tokens = await exchangeCodeForTokens(code);
-      
-      await storage.saveGoogleCalendarToken(userId, tokens);
-      
-      delete req.session.googleAuthUserId;
-      delete req.session.googleAuthState;
-      
-      res.redirect("/?google_calendar_connected=true");
-    } catch (error) {
-      console.error("Error in Google OAuth callback:", error);
-      res.redirect("/?error=auth_failed");
-    }
-  });
-
-  app.delete("/api/google-calendar/disconnect", requireAuth, async (req, res) => {
-    try {
-      await storage.deleteGoogleCalendarToken(req.user!.id);
-      res.json({ message: "تم فصل Google Calendar بنجاح" });
-    } catch (error) {
-      console.error("Error disconnecting Google Calendar:", error);
-      res.status(500).json({ message: "حدث خطأ في فصل Google Calendar" });
-    }
-  });
-
-  // Meetings Routes
-  app.post("/api/meetings/schedule", requireAuth, async (req, res) => {
-    try {
-      const { title, participantIds } = req.body;
-      
-      const tokenData = await storage.getGoogleCalendarToken(req.user!.id);
-      if (!tokenData) {
-        return res.status(400).json({ 
-          message: "يرجى ربط حساب Google Calendar الخاص بك لإنشاء رابط Google Meet تلقائياً" 
-        });
-      }
-      
-      const startTime = new Date();
-      const endTime = new Date(startTime.getTime() + 60 * 60 * 1000); // 1 hour from now
-      
-      let meetingLink: string;
       try {
         const { createGoogleMeetEvent } = await import("./google-calendar");
         const meetData = await createGoogleMeetEvent(
