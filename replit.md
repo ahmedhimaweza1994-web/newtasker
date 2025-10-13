@@ -25,17 +25,19 @@ GWT Task Management is a comprehensive Arabic-language task and employee managem
   - Updated `PUT /api/profile` to accept and persist `profilePicture` and `coverImage` fields
   - Updated `GET /api/profile/:id` to return both profile and cover images
 
-### October 11, 2025 - Google Calendar OAuth 2.0 Integration
-- **Migrated from Replit-specific connector to portable OAuth 2.0** - Replaced Replit's Google Calendar connector with standard OAuth 2.0 flow
-- **Database**: Added `google_calendar_tokens` table to store user OAuth tokens (access_token, refresh_token, expires_at)
-- **Backend**: Implemented full OAuth flow with authorization, callback, token storage, and automatic token refresh
-- **Frontend**: Added "Connect Google Calendar" button in meeting dialog for in-app authentication
-- **API Endpoints**:
-  - `GET /api/google-calendar/auth` - Initiates OAuth flow
-  - `GET /api/google-calendar/callback` - Handles OAuth callback and stores tokens
-  - `GET /api/google-calendar/status` - Checks connection status
-  - `DELETE /api/google-calendar/disconnect` - Disconnects Google Calendar
-- **Portability**: Solution now works on any VPS without Replit dependencies
+### October 13, 2025 - Google Calendar Integration & Performance Fixes
+- **Google Calendar Integration** - Migrated from custom OAuth to Replit connector implementation
+  - Created `server/google-calendar-integration.ts` using Replit's native Google Calendar connector
+  - Replaced legacy OAuth routes with simplified Replit connector API
+  - Meeting scheduling now uses `createGoogleMeetEvent()` from Replit connector
+  - Removed custom token management (handled automatically by Replit)
+  - Fixed corrupted routes.ts file with duplicate endpoints and orphaned code
+- **WebSocket Performance** - Fixed MaxListenersExceededWarning memory leak
+  - Moved WebSocket error listener outside connection handler
+  - Prevents adding duplicate error listeners for each client connection
+- **Vite Configuration** - Added HMR configuration for better development experience
+  - Configured WebSocket protocol and host settings in vite.config.ts
+  - Minor HMR browser console warning remains (cosmetic, doesn't affect functionality)
 
 ## User Preferences
 
