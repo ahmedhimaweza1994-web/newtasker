@@ -642,7 +642,7 @@ export default function Chat() {
       <Navigation />
       <div className="flex">
         <Sidebar />
-        <main className={cn("flex-1 h-screen flex bg-gradient-to-br from-background to-muted/20 transition-all duration-300", isCollapsed ? "lg:mr-[90px]" : "lg:mr-64")}>
+        <main className={cn("flex-1 h-screen flex bg-gradient-to-br from-background to-muted/20 transition-all duration-300", isCollapsed ? "md:mr-16" : "md:mr-64")}>
           {isMobile ? (
             <>
               <Sheet open={mobileSheetOpen} onOpenChange={setMobileSheetOpen}>
@@ -1096,6 +1096,14 @@ export default function Chat() {
                   <p className="text-muted-foreground">
                     حدد دردشة من القائمة أو ابدأ محادثة جديدة
                   </p>
+                  <Button
+                    onClick={() => setMobileSheetOpen(true)}
+                    className="gap-2 shadow-lg"
+                    data-testid="button-open-chat-list"
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                    عرض الدردشات
+                  </Button>
                 </div>
               </motion.div>
             )}

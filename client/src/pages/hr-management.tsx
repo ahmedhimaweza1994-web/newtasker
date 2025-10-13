@@ -322,7 +322,7 @@ export default function HRManagement() {
         <Navigation />
         <div className="flex">
           <Sidebar />
-          <main className={cn("flex-1 p-4 sm:p-6 transition-all duration-300", isCollapsed ? "lg:mr-[90px]" : "lg:mr-64")}>
+          <main className={cn("flex-1 p-4 sm:p-6 transition-all duration-300", isCollapsed ? "md:mr-16" : "md:mr-64")}>
             <MotionSection delay={0}>
               <div className="mb-6 sm:mb-8">
                 <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
@@ -592,7 +592,7 @@ export default function HRManagement() {
       <Navigation />
       <div className="flex">
         <Sidebar />
-        <main className={cn("flex-1 p-4 sm:p-6 transition-all duration-300", isCollapsed ? "lg:mr-[90px]" : "lg:mr-64")}>
+        <main className={cn("flex-1 p-4 sm:p-6 transition-all duration-300", isCollapsed ? "md:mr-16" : "md:mr-64")}>
           <MotionSection delay={0}>
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 sm:mb-8">
               <div>

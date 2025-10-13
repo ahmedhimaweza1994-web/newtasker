@@ -298,7 +298,7 @@ export default function UserManagement() {
         <NavHeader />
         <div className="flex">
           <Sidebar />
-          <div className={cn("flex-1 transition-all duration-300", isCollapsed ? "lg:mr-[90px]" : "lg:mr-64")}>
+          <div className={cn("flex-1 transition-all duration-300", isCollapsed ? "md:mr-16" : "md:mr-64")}>
             <div className="p-4 sm:p-6 md:p-8">
               <Card>
                 <CardHeader>
@@ -323,7 +323,7 @@ export default function UserManagement() {
       <NavHeader />
       <div className="flex">
         <Sidebar />
-        <div className={cn("flex-1 transition-all duration-300", isCollapsed ? "lg:mr-[90px]" : "lg:mr-64")}>
+        <div className={cn("flex-1 transition-all duration-300", isCollapsed ? "md:mr-16" : "md:mr-64")}>
           <div className="p-4 sm:p-6 md:p-8">
             <MotionSection delay={0}>
               <div className="mb-6 sm:mb-8">

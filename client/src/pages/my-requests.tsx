@@ -180,7 +180,7 @@ export default function MyRequests() {
       <Navigation />
       <div className="flex">
         <Sidebar />
-        <main className={cn("flex-1 p-4 sm:p-6 transition-all duration-300", isCollapsed ? "lg:mr-[90px]" : "lg:mr-64")}>
+        <main className={cn("flex-1 p-4 sm:p-6 transition-all duration-300", isCollapsed ? "md:mr-16" : "md:mr-64")}>
           <div className="container mx-auto max-w-7xl">
             <MotionSection delay={0}>
               <div className="mb-6 sm:mb-8">

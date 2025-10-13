@@ -151,7 +151,7 @@ export default function Navigation() {
               variant="ghost"
               size="sm"
               onClick={() => setIsMobileOpen(true)}
-              className="lg:hidden h-11 w-11 md:h-10 md:w-10"
+              className="md:hidden h-11 w-11"
               data-testid="nav-mobile-menu-toggle"
             >
               <Menu className="h-5 w-5" />

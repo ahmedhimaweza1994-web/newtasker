@@ -136,7 +136,7 @@ export default function AdminDashboard() {
       <div className="flex">
         <Sidebar />
        
-        <main className={cn("flex-1 p-4 sm:p-6 transition-all duration-300", "lg:mr-16", !isCollapsed && "lg:mr-64")}>
+        <main className={cn("flex-1 p-4 sm:p-6 transition-all duration-300", "md:mr-16", !isCollapsed && "md:mr-64")}>
           {/* Header */}
           <motion.div 
             initial={{ opacity: 0, y: -20 }}

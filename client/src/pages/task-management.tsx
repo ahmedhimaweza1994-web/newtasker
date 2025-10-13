@@ -165,7 +165,7 @@ export default function TaskManagement() {
       <div className="flex">
         <Sidebar />
       
-        <main className={cn("flex-1 p-4 sm:p-6 transition-all duration-300", "lg:mr-16", !isCollapsed && "lg:mr-64")}>
+        <main className={cn("flex-1 p-4 sm:p-6 transition-all duration-300", "md:mr-16", !isCollapsed && "md:mr-64")}>
           <MotionSection delay={0.1}>
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
               <div>
