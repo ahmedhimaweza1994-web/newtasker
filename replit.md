@@ -2,87 +2,7 @@
 
 ## Overview
 
-GWT Task Management is a comprehensive Arabic-language task and employee management system designed for companies. The application provides real-time employee activity tracking through AUX (auxiliary) status monitoring, task management with Kanban boards, HR management features, and analytics reporting. Built as a full-stack web application with modern technologies, it serves employees, sub-admins, and administrators with role-based access control.
-
-## Recent Changes
-
-### October 12, 2025 - Replit Environment Setup (GitHub Import)
-- **Initial Setup** - Successfully configured the application for the Replit environment
-  - Installed all npm dependencies (626 packages)
-  - Provisioned PostgreSQL database and pushed schema using Drizzle ORM
-  - Configured workflow to run on port 5000 with `npm run dev`
-  - Verified Vite configuration has `allowedHosts: true` for Replit proxy compatibility
-  - Set up deployment configuration with autoscale using `npm run build` and `npm start`
-  - Application successfully running with Arabic login page visible
-
-### October 12, 2025 - Dark Mode & RTL Fixes
-- **Dark Mode Improvements** - Fixed text visibility issues across the application in dark mode
-  - Navigation bar: Updated background from hardcoded white to theme-aware `bg-background dark:bg-background`
-  - Sidebar: Added explicit dark mode text classes (`dark:text-white`, `dark:text-gray-400`) for menu items and user info
-  - All components now properly support dark mode with visible text
-- **RTL Alignment** - Added `text-right` alignment to Arabic text elements in dashboard and cards
-- **Profile Upload Fix** - Backend now properly saves profile pictures and cover images
-  - Updated `PUT /api/profile` to accept and persist `profilePicture` and `coverImage` fields
-  - Updated `GET /api/profile/:id` to return both profile and cover images
-
-### October 13, 2025 - Google Calendar Integration & Performance Fixes
-- **Google Calendar Integration** - Migrated from custom OAuth to Replit connector implementation
-  - Created `server/google-calendar-integration.ts` using Replit's native Google Calendar connector
-  - Replaced legacy OAuth routes with simplified Replit connector API
-  - Meeting scheduling now uses `createGoogleMeetEvent()` from Replit connector
-  - Removed custom token management (handled automatically by Replit)
-  - Fixed corrupted routes.ts file with duplicate endpoints and orphaned code
-- **WebSocket Performance** - Fixed MaxListenersExceededWarning memory leak
-  - Moved WebSocket error listener outside connection handler
-  - Prevents adding duplicate error listeners for each client connection
-- **Vite Configuration** - Added HMR configuration for better development experience
-  - Configured WebSocket protocol and host settings in vite.config.ts
-  - Minor HMR browser console warning remains (cosmetic, doesn't affect functionality)
-
-### October 13, 2025 - VPS Portability & UX Improvements
-- **Meeting Scheduling (VPS Ready)** - Removed Replit dependency for VPS deployment
-  - Modified schedule meeting to accept custom meeting links instead of requiring Replit's Google Calendar integration
-  - Users can provide their own meeting links or system generates a deterministic fallback
-  - Fully portable to VPS environments without external service dependencies
-- **Task Workflow Enhancements** - Improved task status transitions and display
-  - Added ability to move tasks from 'under_review' back to 'in_progress' for revisions
-  - Fixed leaderboard to sort users by highest task points in descending order
-  - Filters out users with 0 points from leaderboard display
-  - Added task comments button to each task card with GET/POST API routes at `/api/tasks/:id/comments`
-- **Role-Based UI Updates** - Enhanced permissions and user experience
-  - Hidden export buttons (PDF/Excel) and active employees widget for non-admin users on reports page
-  - Only admins and sub-admins can access reporting export features
-  - Moved private chat initiation from always-visible section to popup dialog for cleaner UI
-- **Real-Time UI Improvements** - Enhanced responsiveness
-  - Fixed end shift button to immediately update UI state (timer, status) without waiting for server response
-  - Local state updates happen instantly before cache invalidation for better UX
-  - Created missing AuxStatusTracker component for shift management
-
-### October 14, 2025 - Critical Bug Fixes & VPS Enhancements
-- **Duplicate Tasks Fix** - Resolved task duplication issue in Kanban board
-  - Tasks now deduplicated by ID when user both creates and is assigned to same task
-  - Uses Map-based deduplication to ensure each task appears only once
-  - Maintains all task data while eliminating visual duplicates
-- **Leave Request Fix** - Resolved 400 error when submitting absence leave requests
-  - Fixed date formatting to ensure proper ISO string format with explicit time
-  - Start date set to 00:00:00 and end date to 23:59:59 for accurate day calculations
-  - Backend now correctly validates and processes date ranges
-- **Profile Pictures & Cover Images** - Fixed persistence issue after page reload
-  - Added static file serving middleware for `/uploads` directory in `server/index.ts`
-  - Profile pictures and cover images now properly served and persist across sessions
-  - File upload workflow fully functional from upload to display
-- **Google Calendar VPS-Compatible OAuth** - Enhanced for production deployment
-  - Completely rewrote `server/google-calendar-integration.ts` to support standard OAuth2
-  - Added VPS-compatible OAuth flow with environment variable configuration
-  - Supports both Replit connector (legacy) and standard OAuth2 credentials
-  - Added `/api/google-calendar/auth-url` and `/api/google-calendar/callback` endpoints
-  - Proper error handling with optional chaining to prevent crashes when credentials missing
-  - Instructions included in code for setting up Google Cloud Console credentials
-- **End Shift Instant Updates** - Fixed UI lag when ending shift
-  - Enhanced `aux-status-tracker.tsx` to immediately update UI state
-  - Added explicit `refetchQueries` after mutation to ensure server sync
-  - Timer, status, and AUX display now update instantly without page reload
-  - Improved user experience with immediate visual feedback
+GWT Task Management is a comprehensive Arabic-language task and employee management system designed for companies. It provides real-time employee activity tracking through AUX status monitoring, task management with Kanban boards, HR management features, and analytics reporting. Built as a full-stack web application, it supports role-based access control for employees, sub-admins, and administrators. The project aims to streamline company operations and enhance employee oversight.
 
 ## User Preferences
 
@@ -92,165 +12,62 @@ Preferred communication style: Simple, everyday language.
 
 ### Frontend Architecture
 
-**Technology Stack:**
-- React 18 with TypeScript for type-safe component development
-- Vite as the build tool and development server
-- Wouter for lightweight client-side routing
-- TanStack Query (React Query) for server state management and caching
-- Shadcn UI components built on Radix UI primitives
-- Tailwind CSS for styling with CSS variables for theming
-- RTL (Right-to-Left) support with Arabic fonts (Noto Sans Arabic)
+**Technology Stack:** React 18 (TypeScript), Vite, Wouter (routing), TanStack Query (server state), Shadcn UI (components), Radix UI (primitives), Tailwind CSS (styling), Noto Sans Arabic (fonts).
 
-**Design Patterns:**
-- Component-based architecture with reusable UI components in `/client/src/components/ui`
-- Custom hooks pattern for shared logic (auth, toast notifications, mobile detection)
-- Protected routes using HOC pattern for authentication-required pages
-- Context API for global auth state management
-- Real-time updates using WebSocket connections
+**Design Patterns:** Component-based architecture, custom hooks, HOC for protected routes, Context API for global state, real-time updates via WebSockets.
 
-**Key Features:**
-- Dark mode support with localStorage persistence
-- Responsive design with mobile breakpoint detection
-- Arabic localization throughout the UI
-- Real-time data synchronization with 5-second polling intervals
+**Key Features:** Dark mode, responsive design, Arabic localization, real-time data synchronization.
 
 ### Backend Architecture
 
-**Technology Stack:**
-- Node.js with Express.js server framework
-- TypeScript for type safety across the stack
-- Passport.js with local strategy for authentication
-- Express sessions with PostgreSQL session store
-- WebSocket server for real-time employee status updates
-- Drizzle ORM for database operations
+**Technology Stack:** Node.js, Express.js, TypeScript, Passport.js (authentication), Express sessions (PostgreSQL store), WebSocket server, Drizzle ORM.
 
-**Authentication & Security:**
-- Custom authentication using bcrypt for password hashing with scrypt algorithm
-- Session-based authentication with secure HTTP-only cookies
-- JWT-style session tokens stored in PostgreSQL
-- Role-based access control (admin, sub-admin, employee roles)
-- Password reset functionality with backend-generated tokens
+**Authentication & Security:** Session-based authentication with secure HTTP-only cookies, bcrypt hashing, role-based access control (admin, sub-admin, employee), password reset.
 
-**API Design:**
-- RESTful API endpoints under `/api` prefix
-- Middleware for authentication (`requireAuth`) and role authorization (`requireRole`)
-- Centralized error handling and logging
-- Request/response logging with duration tracking
+**API Design:** RESTful API (`/api/*`), middleware for authentication and authorization, centralized error handling, request/response logging.
 
 ### Database Architecture
 
-**Database:** PostgreSQL (via Neon serverless)
+**Database:** PostgreSQL (Neon serverless).
 
-**Schema Design:**
-- **users table**: Employee information with roles, department, profile data, salary, and timestamps
-- **auxSessions table**: Real-time activity tracking with status, duration, and notes
-- **tasks table**: Task management with status, priority, assignments, and collaboration
-- **taskCollaborators**: Many-to-many relationship for task collaboration
-- **taskNotes**: Comments and updates on tasks
-- **leaveRequests**: HR leave management with approval workflow
-- **notifications**: User notification system
-- **shifts**: Employee shift scheduling
-
-**Data Relationships:**
-- User → AUX Sessions (one-to-many)
-- User → Tasks (one-to-many as creator and assignee)
-- Tasks → Collaborators (many-to-many through junction table)
-- Tasks → Notes (one-to-many)
-- User → Leave Requests (one-to-many)
-
-**Key Design Decisions:**
-- UUID primary keys for all tables
-- Enum types for status fields (role, aux_status, task_status, etc.)
-- Soft delete pattern with `isActive` flags
-- Timestamp tracking (createdAt, updatedAt) on all entities
-- Cascading deletes for dependent records
+**Schema Design:** Tables for users, AUX sessions, tasks, task collaborators, task notes, leave requests, notifications, and shifts. UUID primary keys, enum types for status fields, soft delete (`isActive`), timestamp tracking.
 
 ### State Management
 
-**Client-Side State:**
-- TanStack Query for server state with 5-minute stale time
-- React Context for authentication state
-- Local component state for UI interactions
-- localStorage for user preferences (dark mode)
+**Client-Side:** TanStack Query for server state, React Context for authentication, local component state, localStorage for preferences.
 
-**Real-Time Updates:**
-- WebSocket connections for live employee status
-- Query invalidation on mutations for immediate UI updates
-- Optimistic updates for better user experience
-- Polling fallback with configurable intervals (1-5 seconds)
+**Real-Time Updates:** WebSocket connections for live status, query invalidation, optimistic updates, polling fallback.
 
 ## External Dependencies
 
 ### Third-Party Services
 
-**Database:**
-- Neon Serverless PostgreSQL (`@neondatabase/serverless`)
-- WebSocket support via `ws` package for serverless connections
+**Database:** Neon Serverless PostgreSQL.
 
-**Session Storage:**
-- `connect-pg-simple` for PostgreSQL-backed Express sessions
-- Session persistence in database for scalability
+**Session Storage:** `connect-pg-simple` for PostgreSQL-backed Express sessions.
 
-**UI Component Libraries:**
-- Radix UI primitives for accessible components (@radix-ui/*)
-- Shadcn UI component system
-- Embla Carousel for carousel functionality
-- cmdk for command palette
-- Chart.js for analytics visualization
+**UI Component Libraries:** Radix UI, Shadcn UI, Embla Carousel, cmdk, Chart.js.
 
-**Form Management:**
-- React Hook Form with @hookform/resolvers
-- Zod for schema validation
-- drizzle-zod for database schema to Zod conversion
+**Form Management:** React Hook Form, Zod, drizzle-zod.
 
-**Utilities:**
-- date-fns for date manipulation and formatting
-- class-variance-authority for component variants
-- clsx and tailwind-merge for className management
-- nanoid for unique ID generation
-
-**Development Tools:**
-- Replit-specific plugins (vite-plugin-runtime-error-modal, vite-plugin-cartographer, vite-plugin-dev-banner)
-- ESBuild for production bundling
-- tsx for TypeScript execution in development
+**Utilities:** date-fns, class-variance-authority, clsx, tailwind-merge, nanoid.
 
 ### API Integration Points
 
 **Internal APIs:**
-- `/api/auth` - Authentication endpoints (login, register, logout)
-- `/api/user` - Current user information
-- `/api/tasks` - Task CRUD operations
-- `/api/aux` - AUX session management
-- `/api/admin` - Admin-only endpoints for employee management
-- `/api/analytics` - Reporting and analytics data
-- `/api/notifications` - User notifications
-- `/api/profile` - User profile management
+- `/api/auth` (Authentication)
+- `/api/user` (User information)
+- `/api/tasks` (Task operations)
+- `/api/aux` (AUX session management)
+- `/api/admin` (Admin functions)
+- `/api/analytics` (Reporting)
+- `/api/notifications` (Notifications)
+- `/api/profile` (Profile management)
 
-**WebSocket Endpoints:**
-- `/ws` - Real-time employee status updates and system notifications
+**WebSocket Endpoints:** `/ws` (Real-time updates).
 
 ### Environment Configuration
 
-**Required Environment Variables:**
-- `DATABASE_URL` - PostgreSQL connection string (Neon database)
-- `SESSION_SECRET` - Secret key for session encryption (defaults to development key)
-- `NODE_ENV` - Environment mode (development/production)
+**Required Environment Variables:** `DATABASE_URL`, `SESSION_SECRET`, `NODE_ENV`.
 
-**Google Calendar OAuth Configuration:**
-- `GOOGLE_CLIENT_ID` - Google OAuth 2.0 Client ID
-- `GOOGLE_CLIENT_SECRET` - Google OAuth 2.0 Client Secret
-- `GOOGLE_REDIRECT_URI` - OAuth callback URL (e.g., `https://yourdomain.com/api/google-calendar/callback`)
-
-To set up Google Calendar integration:
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project or select an existing one
-3. Enable the Google Calendar API
-4. Go to "Credentials" and create OAuth 2.0 Client ID
-5. Add authorized redirect URIs: `https://yourdomain.com/api/google-calendar/callback`
-6. Copy the Client ID and Client Secret to your environment variables
-
-**Build Configuration:**
-- Separate client and server builds
-- Server bundled with esbuild for production
-- Client built with Vite and served as static files
-- TypeScript path aliases (@/, @shared/, @assets/)
+**Google Calendar OAuth (VPS-Compatible):** `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`. Instructions for Google Cloud Console setup are available within the codebase.
