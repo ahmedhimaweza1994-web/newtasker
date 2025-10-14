@@ -39,6 +39,11 @@ interface ProductivityStats {
   productivityPercentage: number;
 }
 
+interface UserRewards {
+  task: Task;
+  user: any;
+}
+
 export default function Dashboard() {
   const { user } = useAuth();
   const { isCollapsed } = useSidebar();
