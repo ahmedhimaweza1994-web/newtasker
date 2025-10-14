@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { MotionPageShell, MotionSection, MotionMetricCard, ResponsiveGrid } from "@/components/ui/motion-wrappers";
+import { MotionPageShell, MotionSection, MotionCardWrapper, ResponsiveGrid } from "@/components/ui/motion-wrappers";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -314,7 +314,7 @@ export default function Dashboard() {
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
             {/* Stats Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              <MotionMetricCard>
+              <MotionCardWrapper>
               <Card className="border-l-4 border-l-blue-500 hover:shadow-lg transition-all hover:scale-105" data-testid="card-total-time">
                 <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">
@@ -328,9 +328,9 @@ export default function Dashboard() {
                   </div>
                 </CardContent>
               </Card>
-              </MotionMetricCard>
+              </MotionCardWrapper>
 
-              <MotionMetricCard>
+              <MotionCardWrapper>
               <Card className="border-l-4 border-l-green-500 hover:shadow-lg transition-all hover:scale-105" data-testid="card-completed-tasks">
                 <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">
@@ -344,9 +344,9 @@ export default function Dashboard() {
                   </div>
                 </CardContent>
               </Card>
-              </MotionMetricCard>
+              </MotionCardWrapper>
 
-              <MotionMetricCard>
+              <MotionCardWrapper>
               <Card className="border-l-4 border-l-orange-500 hover:shadow-lg transition-all hover:scale-105" data-testid="card-pending-tasks">
                 <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">
@@ -360,9 +360,9 @@ export default function Dashboard() {
                   </div>
                 </CardContent>
               </Card>
-              </MotionMetricCard>
+              </MotionCardWrapper>
 
-              <MotionMetricCard>
+              <MotionCardWrapper>
               <Card className="border-l-4 border-l-purple-500 hover:shadow-lg transition-all hover:scale-105" data-testid="card-productivity">
                 <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">
@@ -378,7 +378,7 @@ export default function Dashboard() {
                   </div>
                 </CardContent>
               </Card>
-              </MotionMetricCard>
+              </MotionCardWrapper>
             </div>
 
             {/* Main Content - Tabbed Interface */}

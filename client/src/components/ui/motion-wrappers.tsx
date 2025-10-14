@@ -259,3 +259,21 @@ export function MotionListItem({ children, index, className, testId }: MotionLis
     </motion.div>
   );
 }
+
+interface MotionCardWrapperProps {
+  children: ReactNode;
+  index?: number;
+}
+
+export function MotionCardWrapper({ children, index = 0 }: MotionCardWrapperProps) {
+  return (
+    <motion.div
+      custom={index}
+      variants={metricsVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      {children}
+    </motion.div>
+  );
+}
