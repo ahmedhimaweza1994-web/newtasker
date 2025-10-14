@@ -124,7 +124,12 @@ export default function TaskManagement() {
     });
   };
 
-  const filteredTasks = (user?.role === 'admin' || user?.role === 'sub-admin' ? tasks : [...myTasks, ...assignedTasks]).filter(task => {
+  // Deduplicate tasks by ID (prevents duplicate display when user both creates and is assigned to same task)
+  const allUserTasks = user?.role === 'admin' || user?.role === 'sub-admin' 
+    ? tasks 
+    : Array.from(new Map([...myTasks, ...assignedTasks].map(task => [task.id, task])).values());
+  
+  const filteredTasks = allUserTasks.filter(task => {
     const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           task.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           task.companyName?.toLowerCase().includes(searchTerm.toLowerCase());

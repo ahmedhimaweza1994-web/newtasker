@@ -125,15 +125,14 @@ export default function MyRequests() {
       return;
     }
 
-    const startDate = new Date(leaveForm.startDate);
-    const endDate = new Date(leaveForm.endDate);
-    const days = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-
+    // Ensure dates are properly formatted as ISO strings
+    const startDate = new Date(leaveForm.startDate + 'T00:00:00');
+    const endDate = new Date(leaveForm.endDate + 'T23:59:59');
+    
     createLeaveRequestMutation.mutate({
       type: leaveForm.type,
       startDate: startDate.toISOString(),
       endDate: endDate.toISOString(),
-      days,
       reason: leaveForm.reason || '',
     });
   };

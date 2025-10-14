@@ -1089,7 +1089,40 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Google Calendar Routes (Using Replit Integration)
+  // Google Calendar Routes (VPS-Compatible OAuth2)
+  app.get("/api/google-calendar/auth-url", requireAuth, async (req, res) => {
+    try {
+      const { getGoogleAuthUrl } = await import("./google-calendar-integration");
+      const authUrl = getGoogleAuthUrl();
+      if (!authUrl) {
+        return res.status(400).json({ 
+          message: "يرجى تكوين بيانات اعتماد Google OAuth2 أولاً. راجع التعليمات في server/google-calendar-integration.ts" 
+        });
+      }
+      res.json({ authUrl });
+    } catch (error) {
+      res.status(500).json({ message: "فشل في إنشاء رابط التفويض" });
+    }
+  });
+
+  app.get("/api/google-calendar/callback", async (req, res) => {
+    try {
+      const { code } = req.query;
+      if (!code || typeof code !== 'string') {
+        return res.status(400).send('Missing authorization code');
+      }
+      
+      const { handleGoogleCallback } = await import("./google-calendar-integration");
+      await handleGoogleCallback(code);
+      
+      // Redirect to dashboard or settings page
+      res.redirect('/dashboard?google-calendar=connected');
+    } catch (error) {
+      console.error('OAuth callback error:', error);
+      res.redirect('/dashboard?google-calendar=error');
+    }
+  });
+
   app.get("/api/google-calendar/status", requireAuth, async (req, res) => {
     try {
       const connected = await isGoogleCalendarConnected();

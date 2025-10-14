@@ -60,12 +60,15 @@ export default function AuxStatusTracker() {
       const res = await apiRequest("POST", "/api/aux/end", {});
       return res.json();
     },
-    onSuccess: () => {
-      // Immediately update UI state before invalidating queries
+    onSuccess: async () => {
+      // Immediately update UI state
       setIsTimerRunning(false);
       setTimer(0);
       setCurrentStatus("ready");
-      queryClient.invalidateQueries({ queryKey: ["/api/aux/current"] });
+      
+      // Invalidate and refetch to sync with server
+      await queryClient.invalidateQueries({ queryKey: ["/api/aux/current"] });
+      await queryClient.refetchQueries({ queryKey: ["/api/aux/current"] });
     },
   });
 
