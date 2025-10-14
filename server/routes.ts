@@ -174,12 +174,11 @@ export function registerRoutes(app: Express): Server {
 
   app.post("/api/tasks/:id/comments", requireAuth, async (req, res) => {
     try {
-      const comment = await storage.createTaskNote({
-        taskId: req.params.id,
-        userId: req.user!.id,
-        content: req.body.content,
-        attachments: req.body.attachments || [],
-      });
+      const comment = await storage.createTaskNote(
+        req.params.id,
+        req.user!.id,
+        req.body.content
+      );
       res.status(201).json(comment);
     } catch (error) {
       console.error("Error creating task comment:", error);

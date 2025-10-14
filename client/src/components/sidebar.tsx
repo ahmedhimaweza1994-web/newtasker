@@ -293,173 +293,112 @@ export default function Sidebar() {
   const sidebarContent = (
     <div className="flex h-full flex-col">
       <div className="flex h-14 items-center justify-between px-4 border-b border-border">
-        <AnimatePresence mode="wait">
-          {!isCollapsed && (
-            <motion.h2 
-              
-              
-              
-              className="text-lg font-semibold text-foreground dark:text-white"
-            >
-              القائمة الرئيسية
-            </motion.h2>
-          )}
-        </AnimatePresence>
+        {!isCollapsed && (
+          <h2 className="text-lg font-semibold text-foreground dark:text-white">
+            القائمة الرئيسية
+          </h2>
+        )}
         {!isMobile && (
-          <motion.div whileTap={{ scale: 0.9 }}>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsCollapsed(!isCollapsed)}
-              className="h-9 w-9"
-              data-testid="sidebar-toggle"
-            >
-              <motion.div
-                animate={{ rotate: isCollapsed ? 180 : 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </motion.div>
-            </Button>
-          </motion.div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="h-9 w-9"
+            data-testid="sidebar-toggle"
+          >
+            <div className={cn("transition-transform duration-300", isCollapsed && "rotate-180")}>
+              <ChevronLeft className="h-4 w-4" />
+            </div>
+          </Button>
         )}
       </div>
 
       <ScrollArea className="flex-1 px-3 py-4">
         <nav className="space-y-2">
-          <AnimatePresence mode="popLayout">
-            {allNavigation.map((item, index) => (
-              <motion.div
-                key={item.name}
-                
-                
-                
-                
+          {allNavigation.map((item) => (
+            <div key={item.name}>
+              <Button
+                variant={isActive(item.href) ? "default" : "ghost"}
+                className={cn(
+                  "w-full justify-start gap-3 text-right h-11 md:h-10 transition-all duration-200",
+                  isCollapsed && "justify-center px-2",
+                  isActive(item.href) && "shadow-md"
+                )}
+                onClick={() => {
+                  setLocation(item.href);
+                  if (isMobile) setIsMobileOpen(false);
+                }}
+                data-testid={`sidebar-link-${item.href.replace('/', '')}`}
               >
-                <motion.div whileTap={{ scale: 0.95 }}>
-                  <Button
-                    variant={isActive(item.href) ? "default" : "ghost"}
-                    className={cn(
-                      "w-full justify-start gap-3 text-right h-11 md:h-10 transition-all duration-200",
-                      isCollapsed && "justify-center px-2",
-                      isActive(item.href) && "shadow-md"
+                <item.icon className="h-5 w-5 flex-shrink-0" />
+                {!isCollapsed && (
+                  <div className="flex flex-1 items-center justify-between overflow-hidden">
+                    <span className="flex-1 dark:text-white">{item.name}</span>
+                    {item.badge && (
+                      <Badge variant="secondary" className="mr-auto">
+                        {item.badge}
+                      </Badge>
                     )}
-                    onClick={() => {
-                      setLocation(item.href);
-                      if (isMobile) setIsMobileOpen(false);
-                    }}
-                    data-testid={`sidebar-link-${item.href.replace('/', '')}`}
-                  >
-                    <motion.div
-                      whileHover={{ rotate: 360 }}
-                      transition={{ duration: 0.5 }}
-                    >
-                      <item.icon className="h-5 w-5 flex-shrink-0" />
-                    </motion.div>
-                    <AnimatePresence mode="wait">
-                      {!isCollapsed && (
-                        <motion.div
-                          initial={{ opacity: 0, width: 0 }}
-                          animate={{ opacity: 1, width: "auto" }}
-                          exit={{ opacity: 0, width: 0 }}
-                          className="flex flex-1 items-center justify-between overflow-hidden"
-                        >
-                          <span className="flex-1 dark:text-white">{item.name}</span>
-                          {item.badge && (
-                            <motion.div
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              transition={{ type: "spring", stiffness: 500 }}
-                            >
-                              <Badge variant="secondary" className="mr-auto">
-                                {item.badge}
-                              </Badge>
-                            </motion.div>
-                          )}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </Button>
-                </motion.div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
+                  </div>
+                )}
+              </Button>
+            </div>
+          ))}
         </nav>
 
-        <AnimatePresence mode="wait">
-          {!isCollapsed && (
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              className="mt-8 space-y-2"
-            >
-              <h3 className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                إجراءات سريعة
-              </h3>
-              <div className="space-y-1">
-                <motion.div whileTap={{ scale: 0.95 }}>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="w-full justify-start gap-3 h-11 md:h-10" 
-                    onClick={() => setShowTaskDialog(true)}
-                    data-testid="sidebar-quick-task"
-                  >
-                    <CheckSquare className="h-4 w-4" />
-                    إضافة مهمة
-                  </Button>
-                </motion.div>
-                <motion.div whileTap={{ scale: 0.95 }}>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="w-full justify-start gap-3 h-11 md:h-10" 
-                    onClick={() => setShowMeetingDialog(true)}
-                    data-testid="sidebar-quick-schedule"
-                  >
-                    <Calendar className="h-4 w-4" />
-                    جدولة اجتماع
-                  </Button>
-                </motion.div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {!isCollapsed && (
+          <div className="mt-8 space-y-2">
+            <h3 className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              إجراءات سريعة
+            </h3>
+            <div className="space-y-1">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="w-full justify-start gap-3 h-11 md:h-10" 
+                onClick={() => setShowTaskDialog(true)}
+                data-testid="sidebar-quick-task"
+              >
+                <CheckSquare className="h-4 w-4" />
+                إضافة مهمة
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="w-full justify-start gap-3 h-11 md:h-10" 
+                onClick={() => setShowMeetingDialog(true)}
+                data-testid="sidebar-quick-schedule"
+              >
+                <Calendar className="h-4 w-4" />
+                جدولة اجتماع
+              </Button>
+            </div>
+          </div>
+        )}
       </ScrollArea>
 
       <div className="border-t border-border p-4">
-        <motion.div 
+        <div 
           className={cn(
             "flex items-center gap-3",
             isCollapsed && "justify-center"
           )}
-          whileHover={{ scale: 1.02 }}
         >
-          <motion.div 
+          <div 
             className={cn(
-              "w-2 h-2 rounded-full bg-success",
+              "w-2 h-2 rounded-full bg-success animate-pulse",
               isCollapsed && "w-3 h-3"
             )}
-            animate={{ opacity: [1, 0.5, 1] }}
-            transition={{ duration: 2, repeat: Infinity }}
           />
-          <AnimatePresence mode="wait">
-            {!isCollapsed && (
-              <motion.div 
-                initial={{ opacity: 0, x: -10 }}
-                
-                exit={{ opacity: 0, x: -10 }}
-                className="flex-1"
-              >
-                <p className="text-xs text-muted-foreground dark:text-gray-400">متصل كـ</p>
-                <p className="text-sm font-medium text-foreground dark:text-white truncate">
-                  {user?.fullName}
-                </p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
+          {!isCollapsed && (
+            <div className="flex-1">
+              <p className="text-xs text-muted-foreground dark:text-gray-400">متصل كـ</p>
+              <p className="text-sm font-medium text-foreground dark:text-white truncate">
+                {user?.fullName}
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -473,17 +412,14 @@ export default function Sidebar() {
           </SheetContent>
         </Sheet>
       ) : (
-        <motion.div 
-          initial={{ x: 100 }}
-          animate={{ x: 0 }}
-          transition={{ type: "spring", stiffness: 100, damping: 20 }}
+        <div 
           className={cn(
             "hidden md:block fixed right-0 top-16 z-40 h-[calc(100vh-4rem)] bg-card border-l border-border transition-all duration-300",
             isCollapsed ? "w-16" : "w-64"
           )}
         >
           {sidebarContent}
-        </motion.div>
+        </div>
       )}
 
       <Dialog open={showMeetingDialog} onOpenChange={setShowMeetingDialog}>

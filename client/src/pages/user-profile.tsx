@@ -204,6 +204,7 @@ export default function UserProfile() {
         const response = await fetch("/api/profile", {
           method: "PUT",
           body: formData,
+          credentials: 'include', // Include session cookie for authentication
         });
         
         if (!response.ok) {
@@ -229,6 +230,13 @@ export default function UserProfile() {
         variant: "destructive",
       });
     }
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    setEditData({});
+    setProfileImagePreview(null);
+    setCoverImagePreview(null);
   };
 
   if (profileLoading || tasksLoading) {

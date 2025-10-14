@@ -233,16 +233,8 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
   };
 
   const TaskCard = ({ task }: { task: Task }) => (
-    <motion.div
-      
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      transition={{ 
-        opacity: { duration: 0.2 }
-      }}
-      whileHover={{ y: -2, transition: { duration: 0.2 } }}
-      className="group"
+    <div
+      className="group transition-transform hover:-translate-y-1 duration-200"
       data-testid={`task-card-${task.id}`}
     >
       <Card className="p-4 sm:p-3 cursor-pointer hover:shadow-lg transition-all border-border/50 hover:border-primary/30 min-h-[120px] touch-manipulation">
@@ -370,7 +362,7 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
           </div>
         </div>
       </Card>
-    </motion.div>
+    </div>
   );
 
   const KanbanColumn = ({ 
@@ -482,117 +474,111 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
 
   return (
     <>
-      {/* Desktop View */}
-      <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-4" data-testid="kanban-desktop-view">
-        <KanbanColumn
-          title="قيد الانتظار"
-          tasks={pendingTasks}
-          icon={<Clock className="w-5 h-5 text-yellow-600 dark:text-yellow-500" />}
-          color="border-t-yellow-500"
-          testId="kanban-column-pending"
-        />
-        <KanbanColumn
-          title="قيد التنفيذ"
-          tasks={inProgressTasks}
-          icon={<AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-500" />}
-          color="border-t-blue-500"
-          testId="kanban-column-progress"
-        />
-        <KanbanColumn
-          title="تحت المراجعة"
-          tasks={underReviewTasks}
-          icon={<Eye className="w-5 h-5 text-purple-600 dark:text-purple-500" />}
-          color="border-t-purple-500"
-          testId="kanban-column-review"
-        />
-        <KanbanColumn
-          title="مكتمل"
-          tasks={completedTasks}
-          icon={<CheckCircle className="w-5 h-5 text-green-600 dark:text-green-500" />}
-          color="border-t-green-500"
-          testId="kanban-column-completed"
-        />
-      </div>
-
-      {/* Mobile View with Tabs */}
-      <div className="md:hidden" data-testid="kanban-mobile-view">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 h-auto p-1" data-testid="kanban-tabs-list">
-            <TabsTrigger value="pending" className="text-xs sm:text-sm py-2" data-testid="tab-pending">
-              <div className="flex flex-col items-center gap-1">
-                <Clock className="w-4 h-4" />
-                <span className="hidden sm:inline">قيد الانتظار</span>
-                <span className="sm:hidden">انتظار</span>
-                <Badge variant="secondary" className="text-xs mt-1">{pendingTasks.length}</Badge>
+      {/* Unified Tabs View for All Devices */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full" data-testid="kanban-tabs-view">
+        <TabsList className="grid w-full grid-cols-4 h-auto p-1" data-testid="kanban-tabs-list">
+          <TabsTrigger value="pending" className="text-xs sm:text-sm py-2" data-testid="tab-pending">
+            <div className="flex flex-col items-center gap-1">
+              <Clock className="w-4 h-4" />
+              <span className="hidden sm:inline">قيد الانتظار</span>
+              <span className="sm:hidden">انتظار</span>
+              <Badge variant="secondary" className="text-xs mt-1">{pendingTasks.length}</Badge>
+            </div>
+          </TabsTrigger>
+          <TabsTrigger value="progress" className="text-xs sm:text-sm py-2" data-testid="tab-progress">
+            <div className="flex flex-col items-center gap-1">
+              <AlertCircle className="w-4 h-4" />
+              <span className="hidden sm:inline">قيد التنفيذ</span>
+              <span className="sm:hidden">تنفيذ</span>
+              <Badge variant="secondary" className="text-xs mt-1">{inProgressTasks.length}</Badge>
+            </div>
+          </TabsTrigger>
+          <TabsTrigger value="review" className="text-xs sm:text-sm py-2" data-testid="tab-review">
+            <div className="flex flex-col items-center gap-1">
+              <Eye className="w-4 h-4" />
+              <span className="hidden sm:inline">تحت المراجعة</span>
+              <span className="sm:hidden">مراجعة</span>
+              <Badge variant="secondary" className="text-xs mt-1">{underReviewTasks.length}</Badge>
+            </div>
+          </TabsTrigger>
+          <TabsTrigger value="completed" className="text-xs sm:text-sm py-2" data-testid="tab-completed">
+            <div className="flex flex-col items-center gap-1">
+              <CheckCircle className="w-4 h-4" />
+              <span className="hidden sm:inline">مكتمل</span>
+              <span className="sm:hidden">مكتمل</span>
+              <Badge variant="secondary" className="text-xs mt-1">{completedTasks.length}</Badge>
+            </div>
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="pending" className="mt-4" data-testid="tab-content-pending">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {pendingTasks.length > 0 ? (
+              pendingTasks.map((task) => (
+                <TaskCard key={task.id} task={task} />
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12 text-muted-foreground">
+                <div className="flex flex-col items-center gap-2">
+                  <Clock className="w-12 h-12 text-yellow-600 dark:text-yellow-500" />
+                  <p className="text-sm">لا توجد مهام في الانتظار</p>
+                </div>
               </div>
-            </TabsTrigger>
-            <TabsTrigger value="progress" className="text-xs sm:text-sm py-2" data-testid="tab-progress">
-              <div className="flex flex-col items-center gap-1">
-                <AlertCircle className="w-4 h-4" />
-                <span className="hidden sm:inline">قيد التنفيذ</span>
-                <span className="sm:hidden">تنفيذ</span>
-                <Badge variant="secondary" className="text-xs mt-1">{inProgressTasks.length}</Badge>
+            )}
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="progress" className="mt-4" data-testid="tab-content-progress">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {inProgressTasks.length > 0 ? (
+              inProgressTasks.map((task) => (
+                <TaskCard key={task.id} task={task} />
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12 text-muted-foreground">
+                <div className="flex flex-col items-center gap-2">
+                  <AlertCircle className="w-12 h-12 text-blue-600 dark:text-blue-500" />
+                  <p className="text-sm">لا توجد مهام قيد التنفيذ</p>
+                </div>
               </div>
-            </TabsTrigger>
-            <TabsTrigger value="review" className="text-xs sm:text-sm py-2" data-testid="tab-review">
-              <div className="flex flex-col items-center gap-1">
-                <Eye className="w-4 h-4" />
-                <span className="hidden sm:inline">تحت المراجعة</span>
-                <span className="sm:hidden">مراجعة</span>
-                <Badge variant="secondary" className="text-xs mt-1">{underReviewTasks.length}</Badge>
+            )}
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="review" className="mt-4" data-testid="tab-content-review">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {underReviewTasks.length > 0 ? (
+              underReviewTasks.map((task) => (
+                <TaskCard key={task.id} task={task} />
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12 text-muted-foreground">
+                <div className="flex flex-col items-center gap-2">
+                  <Eye className="w-12 h-12 text-purple-600 dark:text-purple-500" />
+                  <p className="text-sm">لا توجد مهام تحت المراجعة</p>
+                </div>
               </div>
-            </TabsTrigger>
-            <TabsTrigger value="completed" className="text-xs sm:text-sm py-2" data-testid="tab-completed">
-              <div className="flex flex-col items-center gap-1">
-                <CheckCircle className="w-4 h-4" />
-                <span className="hidden sm:inline">مكتمل</span>
-                <span className="sm:hidden">مكتمل</span>
-                <Badge variant="secondary" className="text-xs mt-1">{completedTasks.length}</Badge>
+            )}
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="completed" className="mt-4" data-testid="tab-content-completed">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {completedTasks.length > 0 ? (
+              completedTasks.map((task) => (
+                <TaskCard key={task.id} task={task} />
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12 text-muted-foreground">
+                <div className="flex flex-col items-center gap-2">
+                  <CheckCircle className="w-12 h-12 text-green-600 dark:text-green-500" />
+                  <p className="text-sm">لا توجد مهام مكتملة</p>
+                </div>
               </div>
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="pending" className="mt-4" data-testid="tab-content-pending">
-            <MobileKanbanColumn
-              title="قيد الانتظار"
-              tasks={pendingTasks}
-              icon={<Clock className="w-5 h-5 text-yellow-600 dark:text-yellow-500" />}
-              color="border-t-yellow-500"
-              testId="kanban-mobile-pending"
-            />
-          </TabsContent>
-          
-          <TabsContent value="progress" className="mt-4" data-testid="tab-content-progress">
-            <MobileKanbanColumn
-              title="قيد التنفيذ"
-              tasks={inProgressTasks}
-              icon={<AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-500" />}
-              color="border-t-blue-500"
-              testId="kanban-mobile-progress"
-            />
-          </TabsContent>
-          
-          <TabsContent value="review" className="mt-4" data-testid="tab-content-review">
-            <MobileKanbanColumn
-              title="تحت المراجعة"
-              tasks={underReviewTasks}
-              icon={<Eye className="w-5 h-5 text-purple-600 dark:text-purple-500" />}
-              color="border-t-purple-500"
-              testId="kanban-mobile-review"
-            />
-          </TabsContent>
-          
-          <TabsContent value="completed" className="mt-4" data-testid="tab-content-completed">
-            <MobileKanbanColumn
-              title="مكتمل"
-              tasks={completedTasks}
-              icon={<CheckCircle className="w-5 h-5 text-green-600 dark:text-green-500" />}
-              color="border-t-green-500"
-              testId="kanban-mobile-completed"
-            />
-          </TabsContent>
-        </Tabs>
-      </div>
+            )}
+          </div>
+        </TabsContent>
+      </Tabs>
 
       <Dialog open={assignPointsDialog.open} onOpenChange={(open) => setAssignPointsDialog({ open, taskId: null })} data-testid="dialog-assign-points">
         <DialogContent className="sm:max-w-[425px]">

@@ -435,11 +435,21 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getTaskNotes(taskId: string): Promise<TaskNote[]> {
-    return await db
-      .select()
+    const notes = await db
+      .select({
+        id: taskNotes.id,
+        taskId: taskNotes.taskId,
+        userId: taskNotes.userId,
+        content: taskNotes.content,
+        createdAt: taskNotes.createdAt,
+        user: users
+      })
       .from(taskNotes)
+      .leftJoin(users, eq(taskNotes.userId, users.id))
       .where(eq(taskNotes.taskId, taskId))
       .orderBy(desc(taskNotes.createdAt));
+    
+    return notes as any;
   }
 
   // AUX Sessions

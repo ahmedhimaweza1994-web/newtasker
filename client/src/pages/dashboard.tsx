@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import { MotionPageShell, MotionSection, MotionMetricCard, ResponsiveGrid } from "@/components/ui/motion-wrappers";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -264,7 +265,7 @@ export default function Dashboard() {
        
         <main className={cn("flex-1 p-4 sm:p-6 transition-all duration-300", "md:mr-16" , !isCollapsed && "md:mr-64")}>
           {/* Hero Section with Gradient */}
-          <div
+          <MotionSection
             className="relative bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 overflow-hidden"
             style={{
               background: 'hsl(167, 70%, 48%)',
@@ -303,11 +304,12 @@ export default function Dashboard() {
                 </div>
               </div>
             </div>
-          </div>
+          </MotionSection>
 
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
             {/* Stats Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+              <MotionMetricCard>
               <Card className="border-l-4 border-l-blue-500 hover:shadow-lg transition-all hover:scale-105" data-testid="card-total-time">
                 <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">
@@ -321,7 +323,9 @@ export default function Dashboard() {
                   </div>
                 </CardContent>
               </Card>
+              </MotionMetricCard>
 
+              <MotionMetricCard>
               <Card className="border-l-4 border-l-green-500 hover:shadow-lg transition-all hover:scale-105" data-testid="card-completed-tasks">
                 <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">
@@ -335,7 +339,9 @@ export default function Dashboard() {
                   </div>
                 </CardContent>
               </Card>
+              </MotionMetricCard>
 
+              <MotionMetricCard>
               <Card className="border-l-4 border-l-orange-500 hover:shadow-lg transition-all hover:scale-105" data-testid="card-pending-tasks">
                 <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">
@@ -349,7 +355,9 @@ export default function Dashboard() {
                   </div>
                 </CardContent>
               </Card>
+              </MotionMetricCard>
 
+              <MotionMetricCard>
               <Card className="border-l-4 border-l-purple-500 hover:shadow-lg transition-all hover:scale-105" data-testid="card-productivity">
                 <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">
@@ -365,6 +373,7 @@ export default function Dashboard() {
                   </div>
                 </CardContent>
               </Card>
+              </MotionMetricCard>
             </div>
 
             {/* Main Content - Tabbed Interface */}
