@@ -58,6 +58,32 @@ GWT Task Management is a comprehensive Arabic-language task and employee managem
   - Local state updates happen instantly before cache invalidation for better UX
   - Created missing AuxStatusTracker component for shift management
 
+### October 14, 2025 - Critical Bug Fixes & VPS Enhancements
+- **Duplicate Tasks Fix** - Resolved task duplication issue in Kanban board
+  - Tasks now deduplicated by ID when user both creates and is assigned to same task
+  - Uses Map-based deduplication to ensure each task appears only once
+  - Maintains all task data while eliminating visual duplicates
+- **Leave Request Fix** - Resolved 400 error when submitting absence leave requests
+  - Fixed date formatting to ensure proper ISO string format with explicit time
+  - Start date set to 00:00:00 and end date to 23:59:59 for accurate day calculations
+  - Backend now correctly validates and processes date ranges
+- **Profile Pictures & Cover Images** - Fixed persistence issue after page reload
+  - Added static file serving middleware for `/uploads` directory in `server/index.ts`
+  - Profile pictures and cover images now properly served and persist across sessions
+  - File upload workflow fully functional from upload to display
+- **Google Calendar VPS-Compatible OAuth** - Enhanced for production deployment
+  - Completely rewrote `server/google-calendar-integration.ts` to support standard OAuth2
+  - Added VPS-compatible OAuth flow with environment variable configuration
+  - Supports both Replit connector (legacy) and standard OAuth2 credentials
+  - Added `/api/google-calendar/auth-url` and `/api/google-calendar/callback` endpoints
+  - Proper error handling with optional chaining to prevent crashes when credentials missing
+  - Instructions included in code for setting up Google Cloud Console credentials
+- **End Shift Instant Updates** - Fixed UI lag when ending shift
+  - Enhanced `aux-status-tracker.tsx` to immediately update UI state
+  - Added explicit `refetchQueries` after mutation to ensure server sync
+  - Timer, status, and AUX display now update instantly without page reload
+  - Improved user experience with immediate visual feedback
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.

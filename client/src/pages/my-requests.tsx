@@ -125,9 +125,12 @@ export default function MyRequests() {
       return;
     }
 
-    // Ensure dates are properly formatted as ISO strings
-    const startDate = new Date(leaveForm.startDate + 'T00:00:00');
-    const endDate = new Date(leaveForm.endDate + 'T23:59:59');
+    // Use UTC dates to avoid timezone issues
+    const [startYear, startMonth, startDay] = leaveForm.startDate.split('-').map(Number);
+    const [endYear, endMonth, endDay] = leaveForm.endDate.split('-').map(Number);
+    
+    const startDate = new Date(Date.UTC(startYear, startMonth - 1, startDay, 0, 0, 0));
+    const endDate = new Date(Date.UTC(endYear, endMonth - 1, endDay, 23, 59, 59));
     
     createLeaveRequestMutation.mutate({
       type: leaveForm.type,
