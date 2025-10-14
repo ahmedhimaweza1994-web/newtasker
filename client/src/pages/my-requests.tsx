@@ -30,6 +30,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { LeaveRequest, SalaryAdvanceRequest } from "@shared/schema";
 import { motion } from "framer-motion";
 import { MotionPageShell, MotionSection, MotionMetricCard, ResponsiveGrid } from "@/components/ui/motion-wrappers";
+import { formatArabicDate } from "@/lib/arabic-date";
 
 export default function MyRequests() {
   const { user } = useAuth();
@@ -366,7 +367,7 @@ export default function MyRequests() {
                                     {leaveTypeLabels[request.type]}
                                   </CardTitle>
                                   <CardDescription className="mt-2 text-sm">
-                                    {new Date(request.startDate).toLocaleDateString('ar-SA')} - {new Date(request.endDate).toLocaleDateString('ar-SA')}
+                                    {formatArabicDate(request.startDate)} - {formatArabicDate(request.endDate)}
                                     {' '}({request.days} أيام)
                                   </CardDescription>
                                 </div>
@@ -502,7 +503,7 @@ export default function MyRequests() {
                                     {parseFloat(request.amount).toFixed(2)} ريال
                                   </CardTitle>
                                   <CardDescription className="mt-2 text-sm">
-                                    {request.repaymentDate && `تاريخ السداد: ${new Date(request.repaymentDate).toLocaleDateString('ar-SA')}`}
+                                    {request.repaymentDate && `تاريخ السداد: ${formatArabicDate(request.repaymentDate)}`}
                                   </CardDescription>
                                 </div>
                                 {getStatusBadge(request.status)}

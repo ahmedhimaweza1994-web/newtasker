@@ -9,6 +9,7 @@ import { MotionPageShell, MotionSection, MotionMetricCard, ResponsiveGrid, Motio
 import { useQuery } from "@tanstack/react-query";
 import { Clock, CheckCircle2, TrendingUp, Coffee } from "lucide-react";
 import { motion } from "framer-motion";
+import { formatArabicDate } from "@/lib/arabic-date";
 
 export default function EmployeeDashboard() {
   const { user } = useAuth();
@@ -135,7 +136,7 @@ export default function EmployeeDashboard() {
                             </span>
                             {task.dueDate && (
                               <span className="text-xs text-muted-foreground">
-                                موعد: {new Date(task.dueDate).toLocaleDateString('ar-EG')}
+                                موعد: {formatArabicDate(task.dueDate)}
                               </span>
                             )}
                           </div>
@@ -173,7 +174,7 @@ export default function EmployeeDashboard() {
                           <p className="text-sm text-foreground break-words">{notification.title}</p>
                           <p className="text-xs text-muted-foreground mt-1 break-words">{notification.message}</p>
                           <p className="text-xs text-muted-foreground">
-                            {new Date(notification.createdAt).toLocaleString('ar-EG')}
+                            {formatArabicDate(notification.createdAt)}
                           </p>
                         </div>
                       </div>

@@ -41,6 +41,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Task } from "@shared/schema";
 import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { formatArabicDate } from "@/lib/arabic-date";
 
 interface TaskKanbanProps {
   pendingTasks: Task[];
@@ -332,7 +333,7 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
           {task.dueDate && (
             <div className="flex items-center gap-2 text-sm sm:text-xs text-muted-foreground" data-testid={`task-due-date-${task.id}`}>
               <Calendar className="w-4 h-4 sm:w-3 sm:h-3" />
-              {new Date(task.dueDate).toLocaleDateString('ar')}
+              {formatArabicDate(task.dueDate)}
             </div>
           )}
 
@@ -712,7 +713,7 @@ function TaskCommentsContent({ taskId, commentText, setCommentText, onClose }: {
               <div className="flex items-center gap-2 mb-2">
                 <p className="text-sm font-medium" data-testid={`comment-author-${comment.id || index}`}>{comment.user?.fullName || "مستخدم"}</p>
                 <p className="text-xs text-muted-foreground" data-testid={`comment-time-${comment.id || index}`}>
-                  {new Date(comment.createdAt).toLocaleString("ar-SA")}
+                  {formatArabicDate(comment.createdAt)}
                 </p>
               </div>
               <p className="text-sm" data-testid={`comment-content-${comment.id || index}`}>{comment.content}</p>

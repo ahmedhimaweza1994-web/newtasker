@@ -19,6 +19,7 @@ import { MotionPageShell, MotionSection, MotionMetricCard, ResponsiveGrid } from
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
+import { formatArabicDate } from "@/lib/arabic-date";
 import {
   Mail,
   Calendar,
@@ -254,7 +255,7 @@ export default function UserProfile() {
       <Navigation />
       <div className="flex">
         <Sidebar />
-        <main className={cn("flex-1 transition-all duration-300", isCollapsed ? "mr-16" : "mr-64")}>
+        <main className={cn("flex-1 transition-all duration-300", "md:mr-16", !isCollapsed && "md:mr-64")}>
           {/* Modern Cover Section */}
           <motion.div 
             className="relative h-48 md:h-64 overflow-hidden group"
@@ -385,7 +386,7 @@ export default function UserProfile() {
                         )}
                         <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/50 rounded-lg">
                           <Calendar className="w-4 h-4 text-primary" />
-                          <span>انضم {new Date(profile.hireDate).toLocaleDateString("ar-SA", { year: "numeric", month: "long" })}</span>
+                          <span>انضم {formatArabicDate(profile.hireDate)}</span>
                         </div>
                       </div>
                     </div>

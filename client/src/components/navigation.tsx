@@ -26,6 +26,7 @@ import { useWebSocket } from "@/lib/websocket";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Notification, Task, User as UserType } from "@shared/schema";
+import { formatArabicDate } from "@/lib/arabic-date";
 
 export default function Navigation() {
   const { user, logoutMutation } = useAuth();
@@ -336,7 +337,7 @@ export default function Navigation() {
                               <p className="text-sm font-medium">{notification.title}</p>
                               <p className="text-sm text-muted-foreground mt-1">{notification.message}</p>
                               <p className="text-xs text-muted-foreground mt-2">
-                                {new Date(notification.createdAt).toLocaleDateString('ar-EG')}
+                                {formatArabicDate(notification.createdAt)}
                               </p>
                             </div>
                             {!notification.isRead && (

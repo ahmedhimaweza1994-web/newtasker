@@ -366,7 +366,7 @@ export default function Sidebar() {
                 variant="ghost" 
                 size="sm" 
                 className="w-full justify-start gap-3 h-11 md:h-10" 
-                onClick={() => setShowMeetingDialog(true)}
+                onClick={() => window.open('https://meet.google.com/new', '_blank')}
                 data-testid="sidebar-quick-schedule"
               >
                 <Calendar className="h-4 w-4" />

@@ -56,8 +56,8 @@ export default function AuxStatusTracker() {
   });
 
   const endSessionMutation = useMutation({
-    mutationFn: async () => {
-      const res = await apiRequest("POST", "/api/aux/end", {});
+    mutationFn: async (sessionId: string) => {
+      const res = await apiRequest("POST", `/api/aux/end/${sessionId}`, {});
       return res.json();
     },
     onSuccess: async () => {
@@ -74,9 +74,15 @@ export default function AuxStatusTracker() {
 
   const handleStatusChange = async (status: string) => {
     if (currentSession && !currentSession.endTime) {
-      await endSessionMutation.mutateAsync();
+      await endSessionMutation.mutateAsync(currentSession.id);
     }
     startSessionMutation.mutate(status);
+  };
+
+  const handleEndShift = async () => {
+    if (currentSession && !currentSession.endTime) {
+      await endSessionMutation.mutateAsync(currentSession.id);
+    }
   };
 
   return (
@@ -85,6 +91,7 @@ export default function AuxStatusTracker() {
       timer={timer}
       isTimerRunning={isTimerRunning}
       onStatusChange={handleStatusChange}
+      onEndShift={handleEndShift}
     />
   );
 }

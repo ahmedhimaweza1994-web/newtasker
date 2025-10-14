@@ -10,16 +10,17 @@ interface LeaderboardProps {
   showTitle?: boolean;
 }
 
-export default function Leaderboard({ limit = 5, showTitle = true }: LeaderboardProps) {
+export default function Leaderboard({ limit, showTitle = true }: LeaderboardProps) {
   const { data: users = [], isLoading } = useQuery<User[]>({
     queryKey: ["/api/users"],
   });
 
-  // Sort users by totalPoints in descending order (highest first)
-  const topUsers = [...users]
-    .filter((u) => u.totalPoints && u.totalPoints > 0)
-    .sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0))
-    .slice(0, limit);
+  // Sort all users by totalPoints in descending order (highest first)
+  const sortedUsers = [...users]
+    .sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0));
+  
+  // Apply limit only if specified, otherwise show all users
+  const topUsers = limit ? sortedUsers.slice(0, limit) : sortedUsers;
 
   const getRankIcon = (rank: number) => {
     switch (rank) {

@@ -21,13 +21,15 @@ interface AuxStatusCardProps {
   timer: number;
   isTimerRunning: boolean;
   onStatusChange: (status: string) => void;
+  onEndShift: () => void;
 }
 
 export default function AuxStatusCard({
   currentStatus,
   timer,
   isTimerRunning,
-  onStatusChange
+  onStatusChange,
+  onEndShift
 }: AuxStatusCardProps) {
   const [currentNote, setCurrentNote] = useState("");
   const [noteStatus, setNoteStatus] = useState("in_progress");
@@ -231,6 +233,7 @@ export default function AuxStatusCard({
             variant="destructive" 
             className="flex-1"
             disabled={!isTimerRunning}
+            onClick={onEndShift}
             data-testid="button-stop-timer"
           >
             <Square className="w-4 h-4 ml-2" />

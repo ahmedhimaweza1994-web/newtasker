@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { 
   Send, MessageSquare, Users, Smile, Paperclip, Mic, 
@@ -460,6 +460,12 @@ export default function Chat() {
     return otherMember?.fullName || 'دردشة خاصة';
   };
 
+  const getRoomAvatar = (room: ChatRoom) => {
+    if (room.type === 'group') return null;
+    const otherMember = room.members.find(m => m.id !== user?.id);
+    return otherMember?.profilePicture || null;
+  };
+
   const getReplyMessage = (replyId?: string) => {
     return messages.find(m => m.id === replyId);
   };
@@ -684,6 +690,9 @@ export default function Chat() {
                           <Menu className="w-5 h-5" />
                         </Button>
                         <Avatar className="ring-2 ring-primary/30 shrink-0 h-9 w-9 md:h-10 md:w-10">
+                          {selectedRoom.type === 'private' && getRoomAvatar(selectedRoom) && (
+                            <AvatarImage src={getRoomAvatar(selectedRoom)!} alt={getRoomName(selectedRoom)} className="object-cover" />
+                          )}
                           <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-white text-sm">
                             {selectedRoom.type === 'group' ? <Users className="w-4 h-4" /> : getRoomName(selectedRoom)[0]}
                           </AvatarFallback>
@@ -776,6 +785,7 @@ export default function Chat() {
                               className="flex-shrink-0"
                             >
                               <Avatar className="ring-2 ring-border">
+                                <AvatarImage src={message.sender.profilePicture} alt={message.sender.fullName} className="object-cover" />
                                 <AvatarFallback className={cn(
                                   isOwnMessage && "bg-gradient-to-br from-primary to-accent text-white"
                                 )}>
@@ -851,9 +861,10 @@ export default function Chat() {
                                   "text-xs mt-1",
                                   isOwnMessage ? "text-white/70" : "text-muted-foreground"
                                 )}>
-                                  {new Date(message.createdAt).toLocaleTimeString("ar", {
+                                  {new Date(message.createdAt).toLocaleTimeString("ar-SA", {
                                     hour: "2-digit",
                                     minute: "2-digit",
+                                    hour12: true
                                   })}
                                 </p>
                               </motion.div>
@@ -1136,6 +1147,9 @@ export default function Chat() {
                     <MotionSection delay={0.1} className="p-4 border-b border-border bg-card/80 backdrop-blur-sm flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <Avatar className="ring-2 ring-primary/30">
+                          {selectedRoom.type === 'private' && getRoomAvatar(selectedRoom) && (
+                            <AvatarImage src={getRoomAvatar(selectedRoom)!} alt={getRoomName(selectedRoom)} className="object-cover" />
+                          )}
                           <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-white">
                             {selectedRoom.type === 'group' ? <Users className="w-4 h-4" /> : getRoomName(selectedRoom)[0]}
                           </AvatarFallback>
@@ -1302,9 +1316,10 @@ export default function Chat() {
                                       "text-xs mt-1",
                                       isOwnMessage ? "text-white/70" : "text-muted-foreground"
                                     )}>
-                                      {new Date(message.createdAt).toLocaleTimeString("ar", {
+                                      {new Date(message.createdAt).toLocaleTimeString("ar-SA", {
                                         hour: "2-digit",
                                         minute: "2-digit",
+                                        hour12: true
                                       })}
                                     </p>
                                   </motion.div>

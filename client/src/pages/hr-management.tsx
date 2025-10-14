@@ -35,6 +35,7 @@ import { Redirect, Link } from "wouter";
 import type { User, LeaveRequest, SalaryAdvanceRequest } from "@shared/schema";
 import { MotionPageShell, MotionSection, MotionMetricCard, ResponsiveGrid } from "@/components/ui/motion-wrappers";
 import { motion } from "framer-motion";
+import { formatArabicDate } from "@/lib/arabic-date";
 
 interface HRStats {
   totalEmployees: number;
@@ -501,7 +502,7 @@ export default function HRManagement() {
                                   <Badge variant={getStatusColor(request.status) as any}>{getStatusLabel(request.status)}</Badge>
                                 </div>
                                 <p className="text-sm text-muted-foreground">
-                                  {new Date(request.startDate).toLocaleDateString('ar-EG')} - {new Date(request.endDate).toLocaleDateString('ar-EG')} ({request.days} أيام)
+                                  {formatArabicDate(request.startDate)} - {formatArabicDate(request.endDate)} ({request.days} أيام)
                                 </p>
                                 {request.reason && (
                                   <p className="text-sm mt-2">{request.reason}</p>
@@ -551,11 +552,11 @@ export default function HRManagement() {
                                   <Badge variant={getStatusColor(request.status) as any}>{getStatusLabel(request.status)}</Badge>
                                 </div>
                                 <p className="text-sm text-muted-foreground">
-                                  تاريخ الطلب: {new Date(request.createdAt).toLocaleDateString('ar-EG')}
+                                  تاريخ الطلب: {formatArabicDate(request.createdAt)}
                                 </p>
                                 {request.repaymentDate && (
                                   <p className="text-sm text-muted-foreground">
-                                    تاريخ السداد: {new Date(request.repaymentDate).toLocaleDateString('ar-EG')}
+                                    تاريخ السداد: {formatArabicDate(request.repaymentDate)}
                                   </p>
                                 )}
                                 {request.reason && (
@@ -813,7 +814,7 @@ export default function HRManagement() {
                               <div className="flex items-center gap-2 mt-1 flex-wrap">
                                 <Badge variant="outline">{getLeaveTypeLabel(request.type)}</Badge>
                                 <span className="text-xs text-muted-foreground">
-                                  {request.days} أيام • {new Date(request.startDate).toLocaleDateString('ar-EG')}
+                                  {request.days} أيام • {formatArabicDate(request.startDate)}
                                 </span>
                               </div>
                               {request.reason && (
@@ -891,7 +892,7 @@ export default function HRManagement() {
                                 <span className="text-base sm:text-lg font-bold">{Number(request.amount).toLocaleString()} ر.س</span>
                                 {request.repaymentDate && (
                                   <span className="text-xs text-muted-foreground">
-                                    • السداد: {new Date(request.repaymentDate).toLocaleDateString('ar-EG')}
+                                    • السداد: {formatArabicDate(request.repaymentDate)}
                                   </span>
                                 )}
                               </div>
