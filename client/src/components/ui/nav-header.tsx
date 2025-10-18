@@ -10,19 +10,49 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
 import { Bell, Search, Moon, Sun, LogOut, User, Settings, Menu } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useWebSocket } from "@/lib/websocket";
 
 interface NavHeaderProps {
   onMenuToggle?: () => void;
   showMenuToggle?: boolean;
 }
 
+interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  type: string;
+  isRead: boolean;
+  metadata?: any;
+  createdAt: string;
+}
+
 export default function NavHeader({ onMenuToggle, showMenuToggle = false }: NavHeaderProps) {
   const { user, logoutMutation } = useAuth();
   const [, setLocation] = useLocation();
   const [isDark, setIsDark] = useState(false);
+  const { lastMessage } = useWebSocket();
+
+  const { data: notifications = [] } = useQuery<Notification[]>({
+    queryKey: ["/api/notifications"],
+    refetchInterval: 5000,
+  });
+
+  const markAsReadMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await apiRequest("PUT", `/api/notifications/${id}/read`, {});
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
+    },
+  });
 
   useEffect(() => {
     const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -31,6 +61,12 @@ export default function NavHeader({ onMenuToggle, showMenuToggle = false }: NavH
       document.documentElement.classList.add('dark');
     }
   }, []);
+
+  useEffect(() => {
+    if (lastMessage?.type === 'new_notification') {
+      queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
+    }
+  }, [lastMessage]);
 
   const toggleDarkMode = () => {
     const newDarkMode = !isDark;
@@ -50,6 +86,17 @@ export default function NavHeader({ onMenuToggle, showMenuToggle = false }: NavH
   const handleProfileClick = () => {
     setLocation(`/profile/${user?.id}`);
   };
+
+  const handleNotificationClick = (notification: Notification) => {
+    markAsReadMutation.mutate(notification.id);
+    
+    if (notification.metadata?.roomId) {
+      const messageId = notification.metadata?.messageId || '';
+      setLocation(`/chat?roomId=${notification.metadata.roomId}${messageId ? `&messageId=${messageId}` : ''}`);
+    }
+  };
+
+  const unreadCount = notifications.filter(n => !n.isRead).length;
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-white dark:bg-gray-900">
@@ -99,10 +146,51 @@ export default function NavHeader({ onMenuToggle, showMenuToggle = false }: NavH
           </Button>
 
           {/* Notifications */}
-          <Button variant="ghost" size="sm" className="relative" data-testid="nav-notifications">
-            <Bell className="h-5 w-5" />
-            <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-destructive"></span>
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="relative" data-testid="nav-notifications">
+                <Bell className="h-5 w-5" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-[10px] text-white">
+                    {unreadCount}
+                  </span>
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-80" align="end">
+              <DropdownMenuLabel>الإشعارات</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <ScrollArea className="h-[300px]">
+                {notifications.length === 0 ? (
+                  <div className="p-4 text-center text-sm text-muted-foreground">
+                    لا توجد إشعارات
+                  </div>
+                ) : (
+                  notifications.map((notification) => (
+                    <DropdownMenuItem
+                      key={notification.id}
+                      className="flex-col items-start gap-1 p-3 cursor-pointer"
+                      onClick={() => handleNotificationClick(notification)}
+                      data-testid={`notification-item-${notification.id}`}
+                    >
+                      <div className="flex w-full items-start justify-between">
+                        <span className="font-medium text-sm">{notification.title}</span>
+                        {!notification.isRead && (
+                          <Badge variant="default" className="h-2 w-2 p-0 rounded-full" />
+                        )}
+                      </div>
+                      <span className="text-xs text-muted-foreground line-clamp-2">
+                        {notification.message}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(notification.createdAt).toLocaleDateString('ar-SA')}
+                      </span>
+                    </DropdownMenuItem>
+                  ))
+                )}
+              </ScrollArea>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           {/* Dark mode toggle */}
           <Button variant="ghost" size="sm" onClick={toggleDarkMode} data-testid="nav-dark-toggle">

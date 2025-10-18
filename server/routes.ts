@@ -1024,7 +1024,7 @@ export function registerRoutes(app: Express): Server {
             room?.name || 'رسالة جديدة',
             `${req.user!.fullName}: ${req.body.content || 'أرسل رسالة'}`,
             'info',
-            { roomId: req.body.roomId }
+            { roomId: req.body.roomId, messageId: message.id }
           );
           
           // Broadcast notification
@@ -1281,7 +1281,7 @@ export function registerRoutes(app: Express): Server {
             room?.name || 'رسالة جديدة',
             `${req.user!.fullName}: ${req.body.content || 'أرسل رسالة'}`,
             'info',
-            { roomId: req.body.roomId }
+            { roomId: req.body.roomId, messageId: message.id }
           );
           
           // Broadcast notification

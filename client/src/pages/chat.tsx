@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useSidebar } from "@/contexts/sidebar-context";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
+import { useSearch } from "wouter";
 import Navigation from "@/components/navigation";
 import Sidebar from "@/components/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -55,6 +56,7 @@ interface User {
   id: string;
   fullName: string;
   email: string;
+  profilePicture?: string;
 }
 
 interface ChatRoom {
@@ -82,10 +84,14 @@ export default function Chat() {
   const { isCollapsed } = useSidebar();
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const searchParams = useSearch();
+  const urlRoomId = new URLSearchParams(searchParams).get('roomId');
+  const urlMessageId = new URLSearchParams(searchParams).get('messageId');
   const [selectedRoom, setSelectedRoom] = useState<ChatRoom | null>(null);
   const [messageText, setMessageText] = useState("");
   const [createRoomOpen, setCreateRoomOpen] = useState(false);
   const [newRoomName, setNewRoomName] = useState("");
+  const [newRoomImage, setNewRoomImage] = useState("");
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [replyingTo, setReplyingTo] = useState<ChatMessage | null>(null);
   const [isRecording, setIsRecording] = useState(false);
@@ -97,9 +103,14 @@ export default function Chat() {
   const [ringtone, setRingtone] = useState<HTMLAudioElement | null>(null);
   const [isInCall, setIsInCall] = useState(false);
   const [incomingCall, setIncomingCall] = useState<{ from: User; roomId: string } | null>(null);
+  const [callDuration, setCallDuration] = useState(0);
+  const [callStartTime, setCallStartTime] = useState<number | null>(null);
   const [isTyping, setIsTyping] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
+  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
+  const callDurationIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const callStartTimeRef = useRef<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -148,6 +159,7 @@ export default function Chat() {
       queryClient.invalidateQueries({ queryKey: ["/api/chat/rooms"] });
       setCreateRoomOpen(false);
       setNewRoomName("");
+      setNewRoomImage("");
       setSelectedMembers([]);
       toast({
         title: "تم إنشاء الغرفة",
@@ -303,6 +315,17 @@ export default function Chat() {
           ringtone.pause();
           ringtone.currentTime = 0;
         }
+        
+        const startTime = Date.now();
+        setCallStartTime(startTime);
+        callStartTimeRef.current = startTime;
+        
+        const interval = setInterval(() => {
+          if (callStartTimeRef.current !== null) {
+            setCallDuration(Math.floor((Date.now() - callStartTimeRef.current) / 1000));
+          }
+        }, 1000);
+        callDurationIntervalRef.current = interval;
       };
 
       const offer = await pc.createOffer();
@@ -311,7 +334,8 @@ export default function Chat() {
       sendMessage({ 
         type: 'call_offer', 
         roomId: activeCallRoomIdRef.current, 
-        offer 
+        offer,
+        from: user
       });
       
       if (ringtone) {
@@ -345,7 +369,16 @@ export default function Chat() {
       ringtone.pause();
       ringtone.currentTime = 0;
     }
+    
+    if (callDurationIntervalRef.current) {
+      clearInterval(callDurationIntervalRef.current);
+      callDurationIntervalRef.current = null;
+    }
+    
     setIsInCall(false);
+    setCallDuration(0);
+    setCallStartTime(null);
+    callStartTimeRef.current = null;
     activeCallRoomIdRef.current = null;
     
     if (sendEndSignal && callRoomId) {
@@ -367,7 +400,28 @@ export default function Chat() {
       name: newRoomName,
       type: "group",
       memberIds: selectedMembers,
+      image: newRoomImage || undefined,
     });
+  };
+
+  const handleRoomImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "خطأ",
+        description: "يرجى اختيار صورة فقط",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setNewRoomImage(reader.result as string);
+    };
+    reader.readAsDataURL(file);
   };
 
   const insertMention = (userName: string) => {
@@ -406,6 +460,59 @@ export default function Chat() {
   }, []);
 
   useEffect(() => {
+    if ('Notification' in window) {
+      setNotificationPermission(Notification.permission);
+      
+      if (Notification.permission === 'default') {
+        Notification.requestPermission().then(permission => {
+          setNotificationPermission(permission);
+        });
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (urlRoomId && rooms.length > 0 && !selectedRoom) {
+      const room = rooms.find(r => r.id === urlRoomId);
+      if (room) {
+        setSelectedRoom(room);
+      }
+    }
+  }, [urlRoomId, rooms, selectedRoom]);
+
+  useEffect(() => {
+    if (urlMessageId && messages.length > 0) {
+      setTimeout(() => {
+        const messageElement = document.getElementById(`message-${urlMessageId}`);
+        if (messageElement) {
+          messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          messageElement.classList.add('bg-primary/10');
+          setTimeout(() => {
+            messageElement.classList.remove('bg-primary/10');
+          }, 2000);
+        }
+      }, 500);
+    }
+  }, [urlMessageId, messages]);
+
+  useEffect(() => {
+    if (lastMessage?.type === 'new_message' && lastMessage.data && selectedRoom) {
+      const message = lastMessage.data;
+      if (message.senderId !== user?.id && message.roomId === selectedRoom.id) {
+        if ('Notification' in window && Notification.permission === 'granted') {
+          const senderName = message.sender?.fullName || 'مستخدم';
+          const roomName = selectedRoom.type === 'group' ? selectedRoom.name : senderName;
+          new Notification(roomName || 'رسالة جديدة', {
+            body: message.content || 'أرسل رسالة',
+            icon: '/favicon.ico',
+            tag: `message-${message.id}`,
+          });
+        }
+      }
+    }
+  }, [lastMessage, user?.id, selectedRoom]);
+
+  useEffect(() => {
     if (!lastMessage) return;
 
     const handleCallMessage = async () => {
@@ -434,6 +541,17 @@ export default function Chat() {
             }
             remoteAudioRef.current.srcObject = event.streams[0];
             remoteAudioRef.current.play();
+            
+            const startTime = Date.now();
+            setCallStartTime(startTime);
+            callStartTimeRef.current = startTime;
+            
+            const interval = setInterval(() => {
+              if (callStartTimeRef.current !== null) {
+                setCallDuration(Math.floor((Date.now() - callStartTimeRef.current) / 1000));
+              }
+            }, 1000);
+            callDurationIntervalRef.current = interval;
           };
 
           await newPc.setRemoteDescription(new RTCSessionDescription(lastMessage.offer));
@@ -461,7 +579,7 @@ export default function Chat() {
   };
 
   const getRoomAvatar = (room: ChatRoom) => {
-    if (room.type === 'group') return null;
+    if (room.type === 'group') return room.image || null;
     const otherMember = room.members.find(m => m.id !== user?.id);
     return otherMember?.profilePicture || null;
   };
@@ -517,6 +635,25 @@ export default function Chat() {
                     data-testid="input-room-name"
                     className="mt-2"
                   />
+                </div>
+                <div>
+                  <Label htmlFor="room-image">صورة الغرفة (اختياري)</Label>
+                  <div className="mt-2 flex items-center gap-4">
+                    <Input
+                      id="room-image"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleRoomImageChange}
+                      data-testid="input-room-image"
+                      className="flex-1"
+                    />
+                    {newRoomImage && (
+                      <Avatar className="h-12 w-12">
+                        <AvatarImage src={newRoomImage} alt="Room preview" />
+                        <AvatarFallback>صورة</AvatarFallback>
+                      </Avatar>
+                    )}
+                  </div>
                 </div>
                 <div>
                   <Label>الأعضاء</Label>
@@ -590,6 +727,9 @@ export default function Chat() {
                   whileTap={{ scale: 0.95 }}
                 >
                   <Avatar className="ring-2 ring-primary/20">
+                    {getRoomAvatar(room) && (
+                      <AvatarImage src={getRoomAvatar(room)!} alt={getRoomName(room)} className="object-cover" />
+                    )}
                     <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-white">
                       {room.type === 'group' ? <Users className="w-4 h-4" /> : getRoomName(room)[0]}
                     </AvatarFallback>
