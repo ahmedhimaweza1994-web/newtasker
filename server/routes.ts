@@ -5,7 +5,19 @@ import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { createGoogleMeetEvent, isGoogleCalendarConnected } from "./google-calendar-integration";
 import multer from 'multer';
-const upload = multer({ dest: 'uploads/' });
+import path from 'path';
+
+const multerStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/');
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ storage: multerStorage });
 
 function requireAuth(req: any, res: any, next: any) {
   if (!req.isAuthenticated()) {
