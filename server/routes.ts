@@ -84,6 +84,7 @@ export function registerRoutes(app: Express): Server {
         ...req.body,
         createdBy: req.user!.id,
         companyName: req.body.companyName || null,
+        assignedTo: req.body.assignedTo || null,
       };
       const task = await storage.createTask(taskData);
       
@@ -99,8 +100,8 @@ export function registerRoutes(app: Express): Server {
       
       res.status(201).json(task);
     } catch (error) {
-      console.error("Error creating task:", error);
-      res.status(500).json({ message: "حدث خطأ في إنشاء المهمة" });
+      console.error("Error creating task:", error instanceof Error ? error.message : error, error instanceof Error ? error.stack : "");
+      res.status(500).json({ message: "حدث خطأ في إنشاء المهمة", error: error instanceof Error ? error.message : String(error) });
     }
   });
 
