@@ -950,10 +950,28 @@ export function registerRoutes(app: Express): Server {
   // Chat Rooms Routes
   app.post("/api/chat/rooms", requireAuth, async (req, res) => {
     try {
+      let imageUrl = undefined;
+      
+      // Handle base64 image upload
+      if (req.body.image && req.body.image.startsWith('data:image/')) {
+        try {
+          const base64Data = req.body.image.split(',')[1];
+          const imageBuffer = Buffer.from(base64Data, 'base64');
+          const extension = req.body.image.split(';')[0].split('/')[1];
+          const filename = Date.now() + '-' + Math.round(Math.random() * 1E9) + '.' + extension;
+          const fs = await import('fs/promises');
+          await fs.writeFile(`uploads/${filename}`, imageBuffer);
+          imageUrl = `/uploads/${filename}`;
+        } catch (imgError) {
+          console.error("Error saving room image:", imgError);
+        }
+      }
+      
       const room = await storage.createChatRoom({
         name: req.body.name,
         type: req.body.type || 'group',
         createdBy: req.user!.id,
+        image: imageUrl,
       });
       
       if (req.body.memberIds && Array.isArray(req.body.memberIds)) {

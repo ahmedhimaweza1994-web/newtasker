@@ -925,14 +925,21 @@ export default function Chat() {
                               className="flex-shrink-0"
                             >
                               <Avatar className="ring-2 ring-border">
-                                <AvatarImage src={message.sender.profilePicture} alt={message.sender.fullName} className="object-cover" />
+                                <AvatarImage 
+                                  src={message.sender.profilePicture || undefined} 
+                                  alt={message.sender.fullName} 
+                                  className="object-cover"
+                                  onError={(e) => {
+                                    console.error('Avatar image failed to load:', message.sender.profilePicture);
+                                    e.currentTarget.style.display = 'none';
+                                  }}
+                                />
                                 <AvatarFallback className={cn(
                                   isOwnMessage && "bg-gradient-to-br from-primary to-accent text-white"
                                 )}>
                                   {message.sender.fullName[0]}
                                 </AvatarFallback>
-                              </Avatar>
-                            </motion.div>
+                              </Avatar>                            </motion.div>
                             <div className={cn(
                               "flex-1 space-y-1",
                               isOwnMessage && "items-end flex flex-col"
