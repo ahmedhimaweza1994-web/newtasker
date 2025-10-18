@@ -49,6 +49,28 @@ import { pool } from "./db";
 
 const PostgresSessionStore = connectPg(session);
 
+const userPublicFields = {
+  id: users.id,
+  fullName: users.fullName,
+  email: users.email,
+  profilePicture: users.profilePicture,
+  coverImage: users.coverImage,
+  department: users.department,
+  jobTitle: users.jobTitle,
+  role: users.role,
+  bio: users.bio,
+  phoneNumber: users.phoneNumber,
+  address: users.address,
+  dateOfBirth: users.dateOfBirth,
+  hireDate: users.hireDate,
+  salary: users.salary,
+  totalPoints: users.totalPoints,
+  isActive: users.isActive,
+  lastLogin: users.lastLogin,
+  createdAt: users.createdAt,
+  updatedAt: users.updatedAt,
+};
+
 export interface IStorage {
   // Auth & Users
   getUser(id: string): Promise<User | undefined>;
@@ -80,82 +102,83 @@ export interface IStorage {
   getTaskNotes(taskId: string): Promise<TaskNote[]>;
  
   // AUX Sessions
-  startAuxSession(session: InsertAuxSession): Promise<AuxSession>;
-  endAuxSession(sessionId: string, notes?: string): Promise<AuxSession | undefined>;
-  getCurrentAuxSession(userId: string): Promise<AuxSession | undefined>;
-  getUserAuxSessions(userId: string, startDate?: Date, endDate?: Date): Promise<AuxSession[]>;
+  createAuxSession(session: InsertAuxSession): Promise<AuxSession>;
+  endAuxSession(userId: string): Promise<AuxSession | undefined>;
+  getUserAuxSessions(userId: string): Promise<AuxSession[]>;
   getAllAuxSessions(): Promise<AuxSession[]>;
-  getAllActiveAuxSessions(): Promise<(AuxSession & { user: User })[]>;
+  getActiveAuxSession(userId: string): Promise<AuxSession | undefined>;
+  getAllActiveAuxSessions(): Promise<any[]>;
  
   // Leave Requests
   createLeaveRequest(request: InsertLeaveRequest): Promise<LeaveRequest>;
   getLeaveRequest(id: string): Promise<LeaveRequest | undefined>;
   getUserLeaveRequests(userId: string): Promise<LeaveRequest[]>;
-  getPendingLeaveRequests(): Promise<(LeaveRequest & { user: User })[]>;
   getAllLeaveRequests(): Promise<LeaveRequest[]>;
-  updateLeaveRequest(id: string, updates: Partial<LeaveRequest>): Promise<LeaveRequest | undefined>;
+  getPendingLeaveRequests(): Promise<LeaveRequest[]>;
+  updateLeaveRequest(id: string, status: 'approved' | 'rejected', approvedBy: string, rejectionReason?: string): Promise<LeaveRequest | undefined>;
  
   // Salary Advance Requests
   createSalaryAdvanceRequest(request: InsertSalaryAdvanceRequest): Promise<SalaryAdvanceRequest>;
+  getSalaryAdvanceRequest(id: string): Promise<SalaryAdvanceRequest | undefined>;
   getUserSalaryAdvanceRequests(userId: string): Promise<SalaryAdvanceRequest[]>;
-  getPendingSalaryAdvanceRequests(): Promise<(SalaryAdvanceRequest & { user: User })[]>;
-  updateSalaryAdvanceRequest(id: string, updates: Partial<SalaryAdvanceRequest>): Promise<SalaryAdvanceRequest | undefined>;
+  getAllSalaryAdvanceRequests(): Promise<SalaryAdvanceRequest[]>;
+  updateSalaryAdvanceRequest(id: string, status: 'approved' | 'rejected', approvedBy: string, rejectionReason?: string, repaymentDate?: Date): Promise<SalaryAdvanceRequest | undefined>;
+ 
+  // Shifts
+  createShift(shift: { userId: string, startTime: Date, endTime: Date, breakDuration?: number }): Promise<Shift>;
+  getUserShifts(userId: string): Promise<Shift[]>;
+  getAllShifts(): Promise<Shift[]>;
+  getActiveShift(userId: string): Promise<Shift | undefined>;
  
   // Notifications
   createNotification(userId: string, title: string, message: string, type: string, metadata?: any): Promise<Notification>;
-  getUserNotifications(userId: string, unreadOnly?: boolean): Promise<Notification[]>;
-  markNotificationRead(id: string): Promise<void>;
+  getUserNotifications(userId: string): Promise<Notification[]>;
+  markNotificationAsRead(id: string): Promise<Notification | undefined>;
+  markAllNotificationsAsRead(userId: string): Promise<void>;
+  deleteNotification(id: string): Promise<boolean>;
  
-  // Analytics
-  getUserProductivityStats(userId: string, startDate: Date, endDate: Date): Promise<any>;
-  getDepartmentStats(): Promise<any>;
-  getSystemStats(): Promise<any>;
- 
-  sessionStore: session.Store;
   // Chat Rooms
   createChatRoom(room: InsertChatRoom): Promise<ChatRoom>;
-  getOrCreatePrivateChat(user1Id: string, user2Id: string): Promise<ChatRoom>;
-  getUserChatRooms(userId: string): Promise<(ChatRoom & { members: User[], lastMessage?: ChatMessage })[]>;
-  getChatRoom(roomId: string): Promise<ChatRoom | undefined>;
-  addChatRoomMember(roomId: string, userId: string): Promise<void>;
-  getChatRoomMembers(roomId: string): Promise<User[]>;
-  updateChatRoomImage(roomId: string, image: string): Promise<ChatRoom>;
+  getOrCreatePrivateChat(user1Id: string, user2Id: string): Promise<ChatRoom & { members: Omit<User, 'password'>[] }>;
   getOrCreateCommonRoom(): Promise<ChatRoom>;
   ensureUserInCommonRoom(userId: string): Promise<void>;
-
+  getUserChatRooms(userId: string): Promise<(ChatRoom & { members: Omit<User, 'password'>[], lastMessage?: ChatMessage })[]>;
+  getChatRoom(roomId: string): Promise<ChatRoom | undefined>;
+  getChatRoomMembers(roomId: string): Promise<Omit<User, 'password'>[]>;
+  addChatRoomMember(roomId: string, userId: string): Promise<void>;
+  updateChatRoomImage(roomId: string, image: string): Promise<ChatRoom>;
+ 
   // Chat Messages
   createChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
-  getChatMessages(roomId: string, limit?: number): Promise<(ChatMessage & { sender: User, reactions: MessageReaction[] })[]>;
+  getChatMessages(roomId: string, limit?: number): Promise<(ChatMessage & { sender: Omit<User, 'password'>, reactions: MessageReaction[] })[]>;
   updateChatMessage(messageId: string, content: string): Promise<ChatMessage | undefined>;
   deleteChatMessage(messageId: string): Promise<boolean>;
-
+ 
   // Message Reactions
   addMessageReaction(messageId: string, userId: string, emoji: string): Promise<MessageReaction & { action: 'added' | 'removed' | 'switched' }>;
-  removeMessageReaction(messageId: string, userId: string, emoji: string): Promise<void>;
-
+  removeMessageReaction(messageId: string, userId: string, emoji: string): Promise<boolean>;
+ 
   // Meetings
   createMeeting(meeting: InsertMeeting): Promise<Meeting>;
-  addMeetingParticipant(meetingId: string, userId: string): Promise<void>;
+  getMeeting(id: string): Promise<Meeting | undefined>;
+  getAllMeetings(): Promise<Meeting[]>;
   getUserMeetings(userId: string): Promise<Meeting[]>;
-  getMeeting(meetingId: string): Promise<(Meeting & { participants: User[] }) | undefined>;
-
-  // Google Calendar Tokens
-  saveGoogleCalendarToken(userId: string, tokenData: InsertGoogleCalendarToken): Promise<GoogleCalendarToken>;
+  updateMeeting(id: string, updates: Partial<Meeting>): Promise<Meeting | undefined>;
+  deleteMeeting(id: string): Promise<boolean>;
+  addMeetingParticipant(meetingId: string, userId: string): Promise<void>;
+  removeMeetingParticipant(meetingId: string, userId: string): Promise<void>;
+  getMeetingParticipants(meetingId: string): Promise<User[]>;
+ 
+  // Google Calendar OAuth
+  saveGoogleCalendarToken(userId: string, accessToken: string, refreshToken: string, expiresAt: Date, scope: string): Promise<GoogleCalendarToken>;
   getGoogleCalendarToken(userId: string): Promise<GoogleCalendarToken | undefined>;
-  updateGoogleCalendarToken(userId: string, accessToken: string, expiresAt: Date): Promise<void>;
   deleteGoogleCalendarToken(userId: string): Promise<boolean>;
-
-  getUserRewards(userId: string): Promise<any[]>;
+ 
+  sessionStore: session.Store;
 }
 
-export class DatabaseStorage implements IStorage {
-  sessionStore: session.Store;
-  constructor() {
-    this.sessionStore = new PostgresSessionStore({
-      pool,
-      createTableIfMissing: true
-    });
-  }
+export class MemStorage implements IStorage {
+  sessionStore = new PostgresSessionStore({ pool, createTableIfMissing: true });
 
   // Auth & Users
   async getUser(id: string): Promise<User | undefined> {
@@ -168,9 +191,9 @@ export class DatabaseStorage implements IStorage {
     return user || undefined;
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const [user] = await db.insert(users).values(insertUser).returning();
-    return user;
+  async createUser(user: InsertUser): Promise<User> {
+    const [newUser] = await db.insert(users).values(user).returning();
+    return newUser;
   }
 
   async updateUser(id: string, updates: Partial<User>): Promise<User | undefined> {
@@ -190,30 +213,18 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUsers(): Promise<User[]> {
-    return await db.select().from(users).where(eq(users.isActive, true));
+    return await db.select().from(users);
   }
 
   async deleteUser(id: string): Promise<boolean> {
-    try {
-      const result = await db.delete(users).where(eq(users.id, id)).returning();
-      return result.length > 0;
-    } catch (error) {
-      console.error("Error deleting user:", error);
-      return false;
-    }
+    const result = await db.delete(users).where(eq(users.id, id));
+    return result.rowCount! > 0;
   }
 
   // Tasks
   async createTask(task: InsertTask): Promise<Task> {
-    console.log('Raw task data:', task);
-    const fixedTask = {
-      ...task,
-      dueDate: task.dueDate ? new Date(task.dueDate) : null,
-      companyName: task.companyName || null,
-    } as typeof tasks.$inferInsert;
-    console.log('Fixed task data:', fixedTask);
-    const [createdTask] = await db.insert(tasks).values(fixedTask).returning();
-    return createdTask;
+    const [newTask] = await db.insert(tasks).values(task).returning();
+    return newTask;
   }
 
   async getTask(id: string): Promise<Task | undefined> {
@@ -223,79 +234,27 @@ export class DatabaseStorage implements IStorage {
 
   async getUserTasks(userId: string): Promise<Task[]> {
     return await db
-      .select({
-        id: tasks.id,
-        title: tasks.title,
-        description: tasks.description,
-        companyName: tasks.companyName,
-        status: tasks.status,
-        priority: tasks.priority,
-        createdBy: tasks.createdBy,
-        assignedTo: tasks.assignedTo,
-        dueDate: tasks.dueDate,
-        completedAt: tasks.completedAt,
-        estimatedHours: tasks.estimatedHours,
-        actualHours: tasks.actualHours,
-        performanceRating: tasks.performanceRating,
-        rewardPoints: tasks.rewardPoints,
-        ratedBy: tasks.ratedBy,
-        ratedAt: tasks.ratedAt,
-        tags: tasks.tags,
-        attachments: tasks.attachments,
-        createdAt: tasks.createdAt,
-        updatedAt: tasks.updatedAt,
-        createdByUser: users,
-        assignedToUser: users,
-      })
+      .select()
       .from(tasks)
-      .leftJoin(users, eq(tasks.createdBy, users.id))
-      .where(eq(tasks.createdBy, userId))
+      .where(or(
+        eq(tasks.createdBy, userId),
+        eq(tasks.assignedTo, userId)
+      ))
       .orderBy(desc(tasks.createdAt));
   }
 
   async getAssignedTasks(userId: string): Promise<Task[]> {
     return await db
-      .select({
-        id: tasks.id,
-        title: tasks.title,
-        description: tasks.description,
-        companyName: tasks.companyName,
-        status: tasks.status,
-        priority: tasks.priority,
-        createdBy: tasks.createdBy,
-        assignedTo: tasks.assignedTo,
-        dueDate: tasks.dueDate,
-        completedAt: tasks.completedAt,
-        estimatedHours: tasks.estimatedHours,
-        actualHours: tasks.actualHours,
-        performanceRating: tasks.performanceRating,
-        rewardPoints: tasks.rewardPoints,
-        ratedBy: tasks.ratedBy,
-        ratedAt: tasks.ratedAt,
-        tags: tasks.tags,
-        attachments: tasks.attachments,
-        createdAt: tasks.createdAt,
-        updatedAt: tasks.updatedAt,
-        createdByUser: users,
-        assignedToUser: users,
-      })
+      .select()
       .from(tasks)
-      .leftJoin(users, eq(tasks.assignedTo, users.id))
       .where(eq(tasks.assignedTo, userId))
       .orderBy(desc(tasks.createdAt));
   }
 
   async updateTask(id: string, updates: Partial<Task>): Promise<Task | undefined> {
-    const now = new Date();
-    const fixedUpdates = {
-      ...updates,
-      updatedAt: updates.updatedAt ? new Date(updates.updatedAt) : now,
-      dueDate: updates.dueDate ? new Date(updates.dueDate) : updates.dueDate,
-      companyName: updates.companyName || null,
-    };
     const [task] = await db
       .update(tasks)
-      .set(fixedUpdates)
+      .set({ ...updates, updatedAt: new Date() })
       .where(eq(tasks.id, id))
       .returning();
     return task || undefined;
@@ -307,63 +266,43 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllTasks(): Promise<Task[]> {
-    return await db
-      .select({
-        id: tasks.id,
-        title: tasks.title,
-        description: tasks.description,
-        companyName: tasks.companyName,
-        status: tasks.status,
-        priority: tasks.priority,
-        createdBy: tasks.createdBy,
-        assignedTo: tasks.assignedTo,
-        dueDate: tasks.dueDate,
-        completedAt: tasks.completedAt,
-        estimatedHours: tasks.estimatedHours,
-        actualHours: tasks.actualHours,
-        performanceRating: tasks.performanceRating,
-        rewardPoints: tasks.rewardPoints,
-        ratedBy: tasks.ratedBy,
-        ratedAt: tasks.ratedAt,
-        tags: tasks.tags,
-        attachments: tasks.attachments,
-        createdAt: tasks.createdAt,
-        updatedAt: tasks.updatedAt,
-        createdByUser: users,
-        assignedToUser: users,
-      })
-      .from(tasks)
-      .leftJoin(users, or(eq(tasks.createdBy, users.id), eq(tasks.assignedTo, users.id)))
-      .orderBy(desc(tasks.createdAt));
+    return await db.select().from(tasks).orderBy(desc(tasks.createdAt));
   }
 
   async rateTask(taskId: string, rating: number, ratedBy: string): Promise<Task> {
-    const [task] = await db
+    const task = await this.getTask(taskId);
+    if (!task) {
+      throw new Error("Task not found");
+    }
+
+    let rewardPoints = 0;
+    if (rating === 5) rewardPoints = 10;
+    else if (rating === 4) rewardPoints = 7;
+    else if (rating === 3) rewardPoints = 5;
+
+    const [updatedTask] = await db
       .update(tasks)
       .set({
         performanceRating: rating,
+        rewardPoints,
         ratedBy,
         ratedAt: new Date(),
         updatedAt: new Date()
       })
       .where(eq(tasks.id, taskId))
       .returning();
-    
-    if (!task) {
-      throw new Error('Task not found');
+
+    if (task.assignedTo && updatedTask.rewardPoints > 0) {
+      const [user] = await db.select().from(users).where(eq(users.id, task.assignedTo));
+      if (user) {
+        await db
+          .update(users)
+          .set({ totalPoints: (user.totalPoints || 0) + updatedTask.rewardPoints })
+          .where(eq(users.id, task.assignedTo));
+      }
     }
 
-    if (task.assignedTo) {
-      await db
-        .update(users)
-        .set({
-          totalPoints: sql`total_points + ${rating}`,
-          updatedAt: new Date()
-        })
-        .where(eq(users.id, task.assignedTo));
-    }
-
-    return task;
+    return updatedTask;
   }
 
   async approveTaskReview(taskId: string, approverId: string): Promise<Task> {
@@ -374,33 +313,10 @@ export class DatabaseStorage implements IStorage {
         completedAt: new Date(),
         updatedAt: new Date()
       })
-      .where(and(
-        eq(tasks.id, taskId),
-        eq(tasks.status, 'under_review')
-      ))
+      .where(eq(tasks.id, taskId))
       .returning();
-    
-    if (!task) {
-      throw new Error('Task not found or not under review');
-    }
 
     return task;
-  }
-
-  async getUserRewards(userId: string): Promise<any[]> {
-    return await db
-      .select({
-        task: tasks,
-        user: users,
-      })
-      .from(tasks)
-      .innerJoin(users, eq(tasks.assignedTo, users.id))
-      .where(and(
-        eq(users.id, userId),
-        notNull(tasks.rewardPoints),
-        gt(tasks.rewardPoints, 0)
-      ))
-      .orderBy(desc(tasks.createdAt));
   }
 
   // Task Collaborators
@@ -411,20 +327,21 @@ export class DatabaseStorage implements IStorage {
   async removeTaskCollaborator(taskId: string, userId: string): Promise<void> {
     await db
       .delete(taskCollaborators)
-      .where(and(
-        eq(taskCollaborators.taskId, taskId),
-        eq(taskCollaborators.userId, userId)
-      ));
+      .where(
+        and(
+          eq(taskCollaborators.taskId, taskId),
+          eq(taskCollaborators.userId, userId)
+        )
+      );
   }
 
   async getTaskCollaborators(taskId: string): Promise<User[]> {
-    const result = await db
+    const collaborators = await db
       .select({ user: users })
       .from(taskCollaborators)
       .innerJoin(users, eq(taskCollaborators.userId, users.id))
       .where(eq(taskCollaborators.taskId, taskId));
-   
-    return result.map(r => r.user);
+    return collaborators.map(c => c.user);
   }
 
   // Task Notes
@@ -437,101 +354,41 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getTaskNotes(taskId: string): Promise<TaskNote[]> {
-    const notes = await db
-      .select({
-        id: taskNotes.id,
-        taskId: taskNotes.taskId,
-        userId: taskNotes.userId,
-        content: taskNotes.content,
-        createdAt: taskNotes.createdAt,
-        user: users
-      })
+    return await db
+      .select()
       .from(taskNotes)
-      .leftJoin(users, eq(taskNotes.userId, users.id))
       .where(eq(taskNotes.taskId, taskId))
       .orderBy(desc(taskNotes.createdAt));
-    
-    return notes as any;
   }
 
   // AUX Sessions
-  async startAuxSession(session: InsertAuxSession): Promise<AuxSession> {
-    await db
-      .update(auxSessions)
-      .set({
-        endTime: new Date(),
-        duration: sql`EXTRACT(epoch FROM (NOW() - start_time))::integer`
-      })
-      .where(and(
-        eq(auxSessions.userId, session.userId),
-        isNull(auxSessions.endTime)
-      ));
+  async createAuxSession(session: InsertAuxSession): Promise<AuxSession> {
     const [newSession] = await db.insert(auxSessions).values(session).returning();
     return newSession;
   }
 
-  async endAuxSession(sessionId: string, notes?: string): Promise<AuxSession | undefined> {
+  async endAuxSession(userId: string): Promise<AuxSession | undefined> {
+    const activeSession = await this.getActiveAuxSession(userId);
+    if (!activeSession) return undefined;
+
+    const endTime = new Date();
+    const duration = Math.floor((endTime.getTime() - activeSession.startTime.getTime()) / 1000);
+
     const [session] = await db
       .update(auxSessions)
-      .set({
-        endTime: new Date(),
-        duration: sql`EXTRACT(epoch FROM (NOW() - start_time))::integer`,
-        notes: notes || null
-      })
-      .where(eq(auxSessions.id, sessionId))
+      .set({ endTime, duration })
+      .where(eq(auxSessions.id, activeSession.id))
       .returning();
+
     return session || undefined;
   }
 
-  async getCurrentAuxSession(userId: string): Promise<AuxSession | undefined> {
-    const [session] = await db
+  async getUserAuxSessions(userId: string): Promise<AuxSession[]> {
+    return await db
       .select()
       .from(auxSessions)
-      .where(and(
-        eq(auxSessions.userId, userId),
-        isNull(auxSessions.endTime)
-      ));
-    return session || undefined;
-  }
-
-  async getUserAuxSessions(userId: string, startDate?: Date, endDate?: Date): Promise<AuxSession[]> {
-    const conditions = [eq(auxSessions.userId, userId)];
-   
-    if (startDate) {
-      conditions.push(gte(auxSessions.startTime, startDate));
-    }
-   
-    if (endDate) {
-      conditions.push(lte(auxSessions.startTime, endDate));
-    }
-   
-    return await db.select().from(auxSessions)
-      .where(and(...conditions))
+      .where(eq(auxSessions.userId, userId))
       .orderBy(desc(auxSessions.startTime));
-  }
-
-  async getAllActiveAuxSessions(): Promise<(AuxSession & { user: User })[]> {
-    const result = await db
-      .select({
-        id: auxSessions.id,
-        userId: auxSessions.userId,
-        status: auxSessions.status,
-        startTime: auxSessions.startTime,
-        endTime: auxSessions.endTime,
-        duration: auxSessions.duration,
-        notes: auxSessions.notes,
-        createdAt: auxSessions.createdAt,
-        user: users
-      })
-      .from(auxSessions)
-      .innerJoin(users, eq(auxSessions.userId, users.id))
-      .where(and(
-        isNull(auxSessions.endTime),
-        eq(users.isActive, true)
-      ))
-      .orderBy(auxSessions.startTime);
-   
-    return result;
   }
 
   async getAllAuxSessions(): Promise<AuxSession[]> {
@@ -541,14 +398,50 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(auxSessions.startTime));
   }
 
+  async getActiveAuxSession(userId: string): Promise<AuxSession | undefined> {
+    const [session] = await db
+      .select()
+      .from(auxSessions)
+      .where(
+        and(
+          eq(auxSessions.userId, userId),
+          isNull(auxSessions.endTime)
+        )
+      )
+      .orderBy(desc(auxSessions.startTime))
+      .limit(1);
+
+    return session || undefined;
+  }
+
+  async getAllActiveAuxSessions(): Promise<any[]> {
+    const activeSessions = await db
+      .select({
+        session: auxSessions,
+        user: userPublicFields,
+      })
+      .from(auxSessions)
+      .innerJoin(users, eq(auxSessions.userId, users.id))
+      .where(isNull(auxSessions.endTime))
+      .orderBy(desc(auxSessions.startTime));
+
+    return activeSessions.map(({ session, user }) => ({
+      ...session,
+      user,
+    }));
+  }
+
   // Leave Requests
   async createLeaveRequest(request: InsertLeaveRequest): Promise<LeaveRequest> {
-    const [leaveRequest] = await db.insert(leaveRequests).values(request).returning();
-    return leaveRequest;
+    const [newRequest] = await db.insert(leaveRequests).values(request).returning();
+    return newRequest;
   }
 
   async getLeaveRequest(id: string): Promise<LeaveRequest | undefined> {
-    const [request] = await db.select().from(leaveRequests).where(eq(leaveRequests.id, id));
+    const [request] = await db
+      .select()
+      .from(leaveRequests)
+      .where(eq(leaveRequests.id, id));
     return request || undefined;
   }
 
@@ -560,32 +453,6 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(leaveRequests.createdAt));
   }
 
-  async getPendingLeaveRequests(): Promise<(LeaveRequest & { user: User })[]> {
-    const result = await db
-      .select({
-        id: leaveRequests.id,
-        userId: leaveRequests.userId,
-        type: leaveRequests.type,
-        startDate: leaveRequests.startDate,
-        endDate: leaveRequests.endDate,
-        days: leaveRequests.days,
-        reason: leaveRequests.reason,
-        status: leaveRequests.status,
-        approvedBy: leaveRequests.approvedBy,
-        approvedAt: leaveRequests.approvedAt,
-        rejectionReason: leaveRequests.rejectionReason,
-        createdAt: leaveRequests.createdAt,
-        updatedAt: leaveRequests.updatedAt,
-        user: users
-      })
-      .from(leaveRequests)
-      .innerJoin(users, eq(leaveRequests.userId, users.id))
-      .where(eq(leaveRequests.status, 'pending'))
-      .orderBy(desc(leaveRequests.createdAt));
-   
-    return result;
-  }
-
   async getAllLeaveRequests(): Promise<LeaveRequest[]> {
     return await db
       .select()
@@ -593,27 +460,47 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(leaveRequests.createdAt));
   }
 
-  async updateLeaveRequest(id: string, updates: Partial<LeaveRequest>): Promise<LeaveRequest | undefined> {
-    const now = new Date();
-    const fixedUpdates = {
-      ...updates,
-      updatedAt: updates.updatedAt ? new Date(updates.updatedAt) : now,
-      startDate: updates.startDate ? new Date(updates.startDate) : updates.startDate,
-      endDate: updates.endDate ? new Date(updates.endDate) : updates.endDate,
-      approvedAt: updates.approvedAt ? new Date(updates.approvedAt) : updates.approvedAt,
-    };
+  async getPendingLeaveRequests(): Promise<LeaveRequest[]> {
+    return await db
+      .select()
+      .from(leaveRequests)
+      .where(eq(leaveRequests.status, 'pending'))
+      .orderBy(desc(leaveRequests.createdAt));
+  }
+
+  async updateLeaveRequest(
+    id: string,
+    status: 'approved' | 'rejected',
+    approvedBy: string,
+    rejectionReason?: string
+  ): Promise<LeaveRequest | undefined> {
     const [request] = await db
       .update(leaveRequests)
-      .set(fixedUpdates)
+      .set({
+        status,
+        approvedBy,
+        approvedAt: new Date(),
+        rejectionReason,
+        updatedAt: new Date(),
+      })
       .where(eq(leaveRequests.id, id))
       .returning();
+
     return request || undefined;
   }
 
   // Salary Advance Requests
   async createSalaryAdvanceRequest(request: InsertSalaryAdvanceRequest): Promise<SalaryAdvanceRequest> {
-    const [advanceRequest] = await db.insert(salaryAdvanceRequests).values(request).returning();
-    return advanceRequest;
+    const [newRequest] = await db.insert(salaryAdvanceRequests).values(request).returning();
+    return newRequest;
+  }
+
+  async getSalaryAdvanceRequest(id: string): Promise<SalaryAdvanceRequest | undefined> {
+    const [request] = await db
+      .select()
+      .from(salaryAdvanceRequests)
+      .where(eq(salaryAdvanceRequests.id, id));
+    return request || undefined;
   }
 
   async getUserSalaryAdvanceRequests(userId: string): Promise<SalaryAdvanceRequest[]> {
@@ -624,155 +511,163 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(salaryAdvanceRequests.createdAt));
   }
 
-  async getPendingSalaryAdvanceRequests(): Promise<(SalaryAdvanceRequest & { user: User })[]> {
-    const result = await db
-      .select({
-        id: salaryAdvanceRequests.id,
-        userId: salaryAdvanceRequests.userId,
-        amount: salaryAdvanceRequests.amount,
-        reason: salaryAdvanceRequests.reason,
-        status: salaryAdvanceRequests.status,
-        approvedBy: salaryAdvanceRequests.approvedBy,
-        approvedAt: salaryAdvanceRequests.approvedAt,
-        rejectionReason: salaryAdvanceRequests.rejectionReason,
-        repaymentDate: salaryAdvanceRequests.repaymentDate,
-        createdAt: salaryAdvanceRequests.createdAt,
-        updatedAt: salaryAdvanceRequests.updatedAt,
-        user: users
-      })
+  async getAllSalaryAdvanceRequests(): Promise<SalaryAdvanceRequest[]> {
+    return await db
+      .select()
       .from(salaryAdvanceRequests)
-      .innerJoin(users, eq(salaryAdvanceRequests.userId, users.id))
-      .where(eq(salaryAdvanceRequests.status, 'pending'))
       .orderBy(desc(salaryAdvanceRequests.createdAt));
-   
-    return result;
   }
 
-  async updateSalaryAdvanceRequest(id: string, updates: Partial<SalaryAdvanceRequest>): Promise<SalaryAdvanceRequest | undefined> {
-    const now = new Date();
-    const fixedUpdates = {
-      ...updates,
-      updatedAt: updates.updatedAt ? new Date(updates.updatedAt) : now,
-      approvedAt: updates.approvedAt ? new Date(updates.approvedAt) : updates.approvedAt,
-      repaymentDate: updates.repaymentDate ? new Date(updates.repaymentDate) : updates.repaymentDate,
-    };
+  async updateSalaryAdvanceRequest(
+    id: string,
+    status: 'approved' | 'rejected',
+    approvedBy: string,
+    rejectionReason?: string,
+    repaymentDate?: Date
+  ): Promise<SalaryAdvanceRequest | undefined> {
     const [request] = await db
       .update(salaryAdvanceRequests)
-      .set(fixedUpdates)
+      .set({
+        status,
+        approvedBy,
+        approvedAt: new Date(),
+        rejectionReason,
+        repaymentDate,
+        updatedAt: new Date(),
+      })
       .where(eq(salaryAdvanceRequests.id, id))
       .returning();
+
     return request || undefined;
   }
 
+  // Shifts
+  async createShift(shift: { userId: string, startTime: Date, endTime: Date, breakDuration?: number }): Promise<Shift> {
+    const [newShift] = await db.insert(shifts).values(shift).returning();
+    return newShift;
+  }
+
+  async getUserShifts(userId: string): Promise<Shift[]> {
+    return await db
+      .select()
+      .from(shifts)
+      .where(eq(shifts.userId, userId))
+      .orderBy(desc(shifts.startTime));
+  }
+
+  async getAllShifts(): Promise<Shift[]> {
+    return await db
+      .select()
+      .from(shifts)
+      .orderBy(desc(shifts.startTime));
+  }
+
+  async getActiveShift(userId: string): Promise<Shift | undefined> {
+    const [shift] = await db
+      .select()
+      .from(shifts)
+      .where(
+        and(
+          eq(shifts.userId, userId),
+          eq(shifts.isActive, true)
+        )
+      )
+      .orderBy(desc(shifts.startTime))
+      .limit(1);
+
+    return shift || undefined;
+  }
+
   // Notifications
-  async createNotification(userId: string, title: string, message: string, type: string, metadata?: any): Promise<Notification> {
+  async createNotification(
+    userId: string,
+    title: string,
+    message: string,
+    type: string,
+    metadata?: any
+  ): Promise<Notification> {
     const [notification] = await db
       .insert(notifications)
-      .values({ userId, title, message, type, metadata: metadata || null })
+      .values({ userId, title, message, type, metadata })
       .returning();
     return notification;
   }
 
-  async getUserNotifications(userId: string, unreadOnly?: boolean): Promise<Notification[]> {
-    const conditions = [eq(notifications.userId, userId)];
-   
-    if (unreadOnly) {
-      conditions.push(eq(notifications.isRead, false));
-    }
-   
-    return await db.select().from(notifications)
-      .where(and(...conditions))
+  async getUserNotifications(userId: string): Promise<Notification[]> {
+    return await db
+      .select()
+      .from(notifications)
+      .where(eq(notifications.userId, userId))
       .orderBy(desc(notifications.createdAt));
   }
 
-  async markNotificationRead(id: string): Promise<void> {
+  async markNotificationAsRead(id: string): Promise<Notification | undefined> {
+    const [notification] = await db
+      .update(notifications)
+      .set({ isRead: true })
+      .where(eq(notifications.id, id))
+      .returning();
+    return notification || undefined;
+  }
+
+  async markAllNotificationsAsRead(userId: string): Promise<void> {
     await db
       .update(notifications)
       .set({ isRead: true })
-      .where(eq(notifications.id, id));
+      .where(eq(notifications.userId, userId));
   }
 
-  // Analytics
-  async getUserProductivityStats(userId: string, startDate: Date, endDate: Date): Promise<any> {
-    const result = await db
-      .select({
-        status: auxSessions.status,
-        totalDuration: sql<number>`SUM(COALESCE(duration, EXTRACT(epoch FROM (NOW() - start_time))::integer))`,
-        sessionCount: count()
-      })
-      .from(auxSessions)
-      .where(and(
-        eq(auxSessions.userId, userId),
-        gte(auxSessions.startTime, startDate),
-        lte(auxSessions.startTime, endDate)
-      ))
-      .groupBy(auxSessions.status);
-   
-    return result;
-  }
-
-  async getDepartmentStats(): Promise<any> {
-    const result = await db
-      .select({
-        department: users.department,
-        employeeCount: count(),
-        activeEmployees: sql<number>`COUNT(*) FILTER (WHERE is_active = true)`
-      })
-      .from(users)
-      .groupBy(users.department);
-   
-    return result;
-  }
-
-  async getSystemStats(): Promise<any> {
-    const [stats] = await db
-      .select({
-        totalUsers: count(users.id),
-        activeUsers: sql<number>`COUNT(*) FILTER (WHERE is_active = true)`,
-        totalTasks: sql<number>`(SELECT COUNT(*) FROM ${tasks})`,
-        completedTasks: sql<number>`(SELECT COUNT(*) FROM ${tasks} WHERE status = 'completed')`,
-        pendingLeaveRequests: sql<number>`(SELECT COUNT(*) FROM ${leaveRequests} WHERE status = 'pending')`
-      })
-      .from(users);
-   
-    return stats;
+  async deleteNotification(id: string): Promise<boolean> {
+    const result = await db.delete(notifications).where(eq(notifications.id, id));
+    return result.rowCount! > 0;
   }
 
   // Chat Rooms
   async createChatRoom(room: InsertChatRoom): Promise<ChatRoom> {
-    const [chatRoom] = await db.insert(chatRooms).values(room).returning();
-    return chatRoom;
+    const [newRoom] = await db.insert(chatRooms).values(room).returning();
+    return newRoom;
   }
 
-  async getOrCreatePrivateChat(user1Id: string, user2Id: string): Promise<ChatRoom & { members: User[] }> {
+  async getOrCreatePrivateChat(user1Id: string, user2Id: string): Promise<ChatRoom & { members: Omit<User, 'password'>[] }> {
     const existingRooms = await db
-      .select({
-        room: chatRooms,
-      })
-      .from(chatRooms)
-      .innerJoin(chatRoomMembers, eq(chatRooms.id, chatRoomMembers.roomId))
-      .where(
-        and(
-          eq(chatRooms.type, 'private'),
-          or(
-            eq(chatRoomMembers.userId, user1Id),
-            eq(chatRoomMembers.userId, user2Id)
-          )
-        )
-      )
-      .groupBy(chatRooms.id)
-      .having(sql`COUNT(DISTINCT ${chatRoomMembers.userId}) = 2`);
+      .select({ roomId: chatRoomMembers.roomId })
+      .from(chatRoomMembers)
+      .where(eq(chatRoomMembers.userId, user1Id))
+      .innerJoin(chatRooms, eq(chatRoomMembers.roomId, chatRooms.id))
+      .where(eq(chatRooms.type, 'private'));
 
-    let roomId: string;
-    if (existingRooms.length > 0) {
-      roomId = existingRooms[0].room.id;
-    } else {
-      const [newRoom] = await db.insert(chatRooms).values({
-        type: 'private',
-        createdBy: user1Id,
-      }).returning();
-      roomId = newRoom.id;
+    for (const { roomId } of existingRooms) {
+      const members = await db
+        .select({ userId: chatRoomMembers.userId })
+        .from(chatRoomMembers)
+        .where(eq(chatRoomMembers.roomId, roomId));
 
+      const memberIds = members.map(m => m.userId);
+      if (memberIds.length === 2 &&
+          memberIds.includes(user1Id) &&
+          memberIds.includes(user2Id)) {
+        const [room] = await db.select().from(chatRooms).where(eq(chatRooms.id, roomId));
+        const roomMembers = await db
+          .select(userPublicFields)
+          .from(chatRoomMembers)
+          .innerJoin(users, eq(chatRoomMembers.userId, users.id))
+          .where(eq(chatRoomMembers.roomId, roomId));
+
+        return {
+          ...room,
+          members: roomMembers,
+        };
+      }
+    }
+
+    const [firstUser] = await db.select().from(users).where(eq(users.id, user1Id));
+    const [newRoom] = await db.insert(chatRooms).values({
+      type: 'private',
+      createdBy: user1Id,
+    }).returning();
+
+    const roomId = newRoom.id;
+    if (roomId) {
       await db.insert(chatRoomMembers).values([
         { roomId: newRoom.id, userId: user1Id },
         { roomId: newRoom.id, userId: user2Id },
@@ -781,14 +676,14 @@ export class DatabaseStorage implements IStorage {
 
     const [room] = await db.select().from(chatRooms).where(eq(chatRooms.id, roomId));
     const members = await db
-      .select({ user: users })
+      .select(userPublicFields)
       .from(chatRoomMembers)
       .innerJoin(users, eq(chatRoomMembers.userId, users.id))
       .where(eq(chatRoomMembers.roomId, roomId));
 
     return {
       ...room,
-      members: members.map(m => m.user),
+      members,
     };
   }
 
@@ -846,7 +741,7 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async getUserChatRooms(userId: string): Promise<(ChatRoom & { members: User[], lastMessage?: ChatMessage })[]> {
+  async getUserChatRooms(userId: string): Promise<(ChatRoom & { members: Omit<User, 'password'>[], lastMessage?: ChatMessage })[]> {
     const rooms = await db
       .select({
         room: chatRooms,
@@ -859,7 +754,7 @@ export class DatabaseStorage implements IStorage {
     const result = [];
     for (const { room } of rooms) {
       const members = await db
-        .select({ user: users })
+        .select(userPublicFields)
         .from(chatRoomMembers)
         .innerJoin(users, eq(chatRoomMembers.userId, users.id))
         .where(eq(chatRoomMembers.roomId, room.id));
@@ -873,7 +768,7 @@ export class DatabaseStorage implements IStorage {
 
       result.push({
         ...room,
-        members: members.map(m => m.user),
+        members,
         lastMessage,
       });
     }
@@ -886,13 +781,13 @@ export class DatabaseStorage implements IStorage {
     return room || undefined;
   }
 
-  async getChatRoomMembers(roomId: string): Promise<User[]> {
+  async getChatRoomMembers(roomId: string): Promise<Omit<User, 'password'>[]> {
     const members = await db
-      .select({ user: users })
+      .select(userPublicFields)
       .from(chatRoomMembers)
       .innerJoin(users, eq(chatRoomMembers.userId, users.id))
       .where(eq(chatRoomMembers.roomId, roomId));
-    return members.map(m => m.user);
+    return members;
   }
 
   async addChatRoomMember(roomId: string, userId: string): Promise<void> {
@@ -924,11 +819,11 @@ export class DatabaseStorage implements IStorage {
     return chatMessage;
   }
 
-  async getChatMessages(roomId: string, limit: number = 50): Promise<(ChatMessage & { sender: User, reactions: MessageReaction[] })[]> {
+  async getChatMessages(roomId: string, limit: number = 50): Promise<(ChatMessage & { sender: Omit<User, 'password'>, reactions: MessageReaction[] })[]> {
     const messages = await db
       .select({
         message: chatMessages,
-        sender: users,
+        sender: userPublicFields,
       })
       .from(chatMessages)
       .innerJoin(users, eq(chatMessages.senderId, users.id))
@@ -1000,14 +895,15 @@ export class DatabaseStorage implements IStorage {
     return { ...reaction, action: 'added' };
   }
 
-  async removeMessageReaction(messageId: string, userId: string, emoji: string): Promise<void> {
-    await db
+  async removeMessageReaction(messageId: string, userId: string, emoji: string): Promise<boolean> {
+    const result = await db
       .delete(messageReactions)
       .where(and(
         eq(messageReactions.messageId, messageId),
         eq(messageReactions.userId, userId),
         eq(messageReactions.emoji, emoji)
       ));
+    return result.rowCount! > 0;
   }
 
   // Meetings
@@ -1016,52 +912,86 @@ export class DatabaseStorage implements IStorage {
     return newMeeting;
   }
 
-  async addMeetingParticipant(meetingId: string, userId: string): Promise<void> {
-    await db.insert(meetingParticipants).values({ meetingId, userId });
+  async getMeeting(id: string): Promise<Meeting | undefined> {
+    const [meeting] = await db.select().from(meetings).where(eq(meetings.id, id));
+    return meeting || undefined;
+  }
+
+  async getAllMeetings(): Promise<Meeting[]> {
+    return await db.select().from(meetings).orderBy(desc(meetings.startTime));
   }
 
   async getUserMeetings(userId: string): Promise<Meeting[]> {
-    const result = await db
+    const participations = await db
       .select({ meeting: meetings })
       .from(meetingParticipants)
       .innerJoin(meetings, eq(meetingParticipants.meetingId, meetings.id))
       .where(eq(meetingParticipants.userId, userId))
       .orderBy(desc(meetings.startTime));
 
-    return result.map(r => r.meeting);
+    return participations.map(p => p.meeting);
   }
 
-  async getMeeting(meetingId: string): Promise<(Meeting & { participants: User[] }) | undefined> {
-    const [meeting] = await db.select().from(meetings).where(eq(meetings.id, meetingId));
-    if (!meeting) return undefined;
+  async updateMeeting(id: string, updates: Partial<Meeting>): Promise<Meeting | undefined> {
+    const [meeting] = await db
+      .update(meetings)
+      .set(updates)
+      .where(eq(meetings.id, id))
+      .returning();
+    return meeting || undefined;
+  }
 
+  async deleteMeeting(id: string): Promise<boolean> {
+    const result = await db.delete(meetings).where(eq(meetings.id, id));
+    return result.rowCount! > 0;
+  }
+
+  async addMeetingParticipant(meetingId: string, userId: string): Promise<void> {
+    await db.insert(meetingParticipants).values({ meetingId, userId });
+  }
+
+  async removeMeetingParticipant(meetingId: string, userId: string): Promise<void> {
+    await db
+      .delete(meetingParticipants)
+      .where(
+        and(
+          eq(meetingParticipants.meetingId, meetingId),
+          eq(meetingParticipants.userId, userId)
+        )
+      );
+  }
+
+  async getMeetingParticipants(meetingId: string): Promise<User[]> {
     const participants = await db
       .select({ user: users })
       .from(meetingParticipants)
       .innerJoin(users, eq(meetingParticipants.userId, users.id))
       .where(eq(meetingParticipants.meetingId, meetingId));
-
-    return {
-      ...meeting,
-      participants: participants.map(p => p.user),
-    };
+    return participants.map(p => p.user);
   }
 
-  // Google Calendar Tokens
-  async saveGoogleCalendarToken(userId: string, tokenData: InsertGoogleCalendarToken): Promise<GoogleCalendarToken> {
+  // Google Calendar OAuth
+  async saveGoogleCalendarToken(
+    userId: string,
+    accessToken: string,
+    refreshToken: string,
+    expiresAt: Date,
+    scope: string
+  ): Promise<GoogleCalendarToken> {
+    const existing = await this.getGoogleCalendarToken(userId);
+
+    if (existing) {
+      const [token] = await db
+        .update(googleCalendarTokens)
+        .set({ accessToken, refreshToken, expiresAt, scope, updatedAt: new Date() })
+        .where(eq(googleCalendarTokens.userId, userId))
+        .returning();
+      return token;
+    }
+
     const [token] = await db
       .insert(googleCalendarTokens)
-      .values({ ...tokenData, userId })
-      .onConflictDoUpdate({
-        target: googleCalendarTokens.userId,
-        set: {
-          accessToken: tokenData.accessToken,
-          refreshToken: tokenData.refreshToken,
-          expiresAt: tokenData.expiresAt,
-          scope: tokenData.scope,
-          updatedAt: new Date(),
-        },
-      })
+      .values({ userId, accessToken, refreshToken, expiresAt, scope })
       .returning();
     return token;
   }
@@ -1074,19 +1004,12 @@ export class DatabaseStorage implements IStorage {
     return token || undefined;
   }
 
-  async updateGoogleCalendarToken(userId: string, accessToken: string, expiresAt: Date): Promise<void> {
-    await db
-      .update(googleCalendarTokens)
-      .set({ accessToken, expiresAt, updatedAt: new Date() })
-      .where(eq(googleCalendarTokens.userId, userId));
-  }
-
   async deleteGoogleCalendarToken(userId: string): Promise<boolean> {
     const result = await db
       .delete(googleCalendarTokens)
       .where(eq(googleCalendarTokens.userId, userId));
-    return result.rowCount !== null && result.rowCount > 0;
+    return result.rowCount! > 0;
   }
 }
 
-export const storage = new DatabaseStorage();
+export const storage = new MemStorage();
