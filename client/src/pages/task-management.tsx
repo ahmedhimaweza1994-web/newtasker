@@ -116,12 +116,17 @@ export default function TaskManagement() {
 
   const handleCreateTask = (e: React.FormEvent) => {
     e.preventDefault();
-    createTaskMutation.mutate({
+    const taskData: any = {
       ...newTask,
-      dueDate: newTask.dueDate ? new Date(newTask.dueDate) : undefined,
       assignedTo: newTask.assignedTo || undefined,
       companyName: newTask.companyName || undefined,
-    });
+    };
+    
+    if (newTask.dueDate) {
+      taskData.dueDate = new Date(newTask.dueDate).toISOString();
+    }
+    
+    createTaskMutation.mutate(taskData);
   };
 
   // Deduplicate tasks by ID (prevents duplicate display when user both creates and is assigned to same task)
