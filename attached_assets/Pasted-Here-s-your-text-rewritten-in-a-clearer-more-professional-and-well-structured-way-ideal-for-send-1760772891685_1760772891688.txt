@@ -1,0 +1,60 @@
+Here’s your text rewritten in a clearer, more professional, and well-structured way — ideal for sending to a developer or project manager:
+
+---
+
+### **App Issues and Required Fixes**
+
+The application currently has several issues that need to be addressed and improved:
+
+---
+
+#### **1. Chat Notifications**
+
+* The chat feature does not send notifications like other parts of the app. When a user sends a message, the recipient receives no alert.
+* We need to ensure that **all messages and app activities** trigger proper notifications.
+* When a user clicks a message notification from the notifications section, it should **open the relevant chat and message directly**.
+* The app should also support **browser notifications**, so users get alerts even when they are not on the app tab.
+* The browser should prompt users to **allow notifications**, similar to other modern web apps.
+
+---
+
+#### **2. Chat Call Function**
+
+* The **call feature in chat is not working properly**.
+* When one user initiates a call, it shows as “calling,” but the recipient does not receive any call or notification.
+* This feature needs to be fixed to ensure **calls work reliably and both users receive proper call alerts**.
+
+---
+
+#### **3. Profile Pictures in Chat**
+
+* Users’ **profile pictures are not appearing** in the chat.
+* When sending a message, it currently shows only the **initials of the user’s name** instead of their assigned profile image.
+* We need to ensure that **profile images are displayed consistently across the entire app**, including chat.
+
+---
+
+#### **4. Group Chat Images**
+
+* Add a new feature allowing users to **assign a group image** to each chat group created.
+* The assigned image should **appear in the chat list**, replacing the group name initials.
+
+---
+
+#### **5. Tasks Page Improvements**
+
+1. **Task Details View:**
+
+   * Add a **view (eye) icon** for each task.
+   * When clicked, it should display all task details — including **name, description, assigned users, comments**, etc.
+   * Include an **Edit button** that allows the user to update the task details and save the changes.
+
+2. **Duplicate Task Issue:**
+
+   * Currently, when a user creates a task and assigns it to another user, the system **creates two separate tasks** (one for the creator and one for the assignee).
+   * This needs to be changed so that the task is **created only once**.
+   * The task should display **both users’ names (creator and assignee)** on the same entry instead of duplicating it.
+
+---
+
+Would you like me to format this as a **developer task list / bug report** (with bullet points and technical notes), or as a **formal document/report** to send to management?

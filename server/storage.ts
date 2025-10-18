@@ -102,7 +102,7 @@ export interface IStorage {
   updateSalaryAdvanceRequest(id: string, updates: Partial<SalaryAdvanceRequest>): Promise<SalaryAdvanceRequest | undefined>;
  
   // Notifications
-  createNotification(userId: string, title: string, message: string, type: string): Promise<Notification>;
+  createNotification(userId: string, title: string, message: string, type: string, metadata?: any): Promise<Notification>;
   getUserNotifications(userId: string, unreadOnly?: boolean): Promise<Notification[]>;
   markNotificationRead(id: string): Promise<void>;
  
@@ -118,6 +118,8 @@ export interface IStorage {
   getUserChatRooms(userId: string): Promise<(ChatRoom & { members: User[], lastMessage?: ChatMessage })[]>;
   getChatRoom(roomId: string): Promise<ChatRoom | undefined>;
   addChatRoomMember(roomId: string, userId: string): Promise<void>;
+  getChatRoomMembers(roomId: string): Promise<User[]>;
+  updateChatRoomImage(roomId: string, image: string): Promise<ChatRoom>;
   getOrCreateCommonRoom(): Promise<ChatRoom>;
   ensureUserInCommonRoom(userId: string): Promise<void>;
 
@@ -663,10 +665,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Notifications
-  async createNotification(userId: string, title: string, message: string, type: string): Promise<Notification> {
+  async createNotification(userId: string, title: string, message: string, type: string, metadata?: any): Promise<Notification> {
     const [notification] = await db
       .insert(notifications)
-      .values({ userId, title, message, type })
+      .values({ userId, title, message, type, metadata: metadata || null })
       .returning();
     return notification;
   }
@@ -884,9 +886,23 @@ export class DatabaseStorage implements IStorage {
     return room || undefined;
   }
 
+  async getChatRoomMembers(roomId: string): Promise<User[]> {
+    const members = await db
+      .select({ user: users })
+      .from(chatRoomMembers)
+      .innerJoin(users, eq(chatRoomMembers.userId, users.id))
+      .where(eq(chatRoomMembers.roomId, roomId));
+    return members.map(m => m.user);
+  }
+
   async addChatRoomMember(roomId: string, userId: string): Promise<void> {
     await db.insert(chatRoomMembers).values({ roomId, userId });
   }
+  async updateChatRoomImage(roomId: string, image: string): Promise<ChatRoom> {
+    const [room] = await db.update(chatRooms).set({ image }).where(eq(chatRooms.id, roomId)).returning();
+    return room;
+  }
+
 
   // Chat Messages
   async createChatMessage(message: InsertChatMessage): Promise<ChatMessage> {

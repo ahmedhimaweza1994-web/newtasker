@@ -153,6 +153,7 @@ export const notifications = pgTable("notifications", {
 export const chatRooms = pgTable("chat_rooms", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name"),
+  image: text("image"),
   type: chatRoomTypeEnum("type").notNull().default('group'),
   createdBy: uuid("created_by").notNull().references(() => users.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at").notNull().defaultNow(),

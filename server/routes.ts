@@ -912,6 +912,17 @@ export function registerRoutes(app: Express): Server {
               }
             });
             break;
+          case 'call_offer':
+          case 'call_answer':
+          case 'ice_candidate':
+          case 'call_end':
+            // Broadcast call signaling messages to all clients
+            wss.clients.forEach((client) => {
+              if (client !== ws && client.readyState === ws.OPEN) {
+                client.send(JSON.stringify(data));
+              }
+            });
+            break;
         }
       } catch (error) {
         console.error('WebSocket message error:', error);
@@ -980,6 +991,15 @@ export function registerRoutes(app: Express): Server {
       res.status(500).json({ message: "حدث خطأ في جلب غرفة الدردشة" });
     }
   });
+  app.put("/api/chat/rooms/:id/image", requireAuth, async (req, res) => {
+    try {
+      const room = await storage.updateChatRoomImage(req.params.id, req.body.image);
+      res.json(room);
+    } catch (error) {
+      res.status(500).json({ message: "حدث خطأ في تحديث صورة الغرفة" });
+    }
+  });
+
 
   // Chat Messages Routes
   app.post("/api/chat/messages", requireAuth, async (req, res) => {
@@ -992,6 +1012,32 @@ export function registerRoutes(app: Express): Server {
         attachments: req.body.attachments,
         replyTo: req.body.replyTo,
       });
+      
+      // Create notifications for room members
+      const room = await storage.getChatRoom(req.body.roomId);
+      const roomMembers = await storage.getChatRoomMembers(req.body.roomId);
+      
+      for (const member of roomMembers) {
+        if (member.id !== req.user!.id) {
+          const notification = await storage.createNotification(
+            member.id,
+            room?.name || 'رسالة جديدة',
+            `${req.user!.fullName}: ${req.body.content || 'أرسل رسالة'}`,
+            'info',
+            { roomId: req.body.roomId }
+          );
+          
+          // Broadcast notification
+          wss.clients.forEach((client) => {
+            if (client.readyState === client.OPEN) {
+              client.send(JSON.stringify({
+                type: 'new_notification',
+                data: notification
+              }));
+            }
+          });
+        }
+      }
       
       wss.clients.forEach((client) => {
         if (client.readyState === client.OPEN) {
@@ -1223,6 +1269,32 @@ export function registerRoutes(app: Express): Server {
           type: "meeting"
         }],
       });
+      
+      // Create notifications for room members
+      const room = await storage.getChatRoom(req.body.roomId);
+      const roomMembers = await storage.getChatRoomMembers(req.body.roomId);
+      
+      for (const member of roomMembers) {
+        if (member.id !== req.user!.id) {
+          const notification = await storage.createNotification(
+            member.id,
+            room?.name || 'رسالة جديدة',
+            `${req.user!.fullName}: ${req.body.content || 'أرسل رسالة'}`,
+            'info',
+            { roomId: req.body.roomId }
+          );
+          
+          // Broadcast notification
+          wss.clients.forEach((client) => {
+            if (client.readyState === client.OPEN) {
+              client.send(JSON.stringify({
+                type: 'new_notification',
+                data: notification
+              }));
+            }
+          });
+        }
+      }
       
       for (const participantId of participantIds) {
         const notification = await storage.createNotification(

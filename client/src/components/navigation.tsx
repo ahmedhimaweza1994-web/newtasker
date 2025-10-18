@@ -24,6 +24,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useWebSocket } from "@/lib/websocket";
 import { useToast } from "@/hooks/use-toast";
+import { useBrowserNotifications } from "@/hooks/use-browser-notifications";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Notification, Task, User as UserType } from "@shared/schema";
 import { formatArabicDate } from "@/lib/arabic-date";
@@ -37,6 +38,7 @@ export default function Navigation() {
   const [showSearchResults, setShowSearchResults] = useState(false);
   const { lastMessage } = useWebSocket();
   const { toast } = useToast();
+  const { permission, requestPermission, showNotification, isSupported } = useBrowserNotifications();
 
   const { data: notifications = [] } = useQuery<Notification[]>({
     queryKey: ["/api/notifications"],
@@ -100,12 +102,24 @@ export default function Navigation() {
             variant: notification.type === 'error' ? 'destructive' : 'default',
           });
           queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
+          
+          // Show browser notification
+          if (isSupported && permission === 'granted') {
+            showNotification(notification);
+          }
         }
       } else if (lastMessage.type === 'new_message' && lastMessage.data) {
         queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
       }
     }
-  }, [lastMessage, user, toast]);
+  }, [lastMessage, user, toast, permission, isSupported, showNotification]);
+
+  // Request browser notification permission on first load
+  useEffect(() => {
+    if (isSupported && permission === 'default' && user) {
+      requestPermission();
+    }
+  }, [isSupported, permission, user, requestPermission]);
 
   useEffect(() => {
     const darkMode = localStorage.getItem('darkMode') === 'true';
