@@ -14,6 +14,8 @@ export const leaveStatusEnum = pgEnum('leave_status', ['pending', 'approved', 'r
 export const advanceStatusEnum = pgEnum('advance_status', ['pending', 'approved', 'rejected']);
 export const chatRoomTypeEnum = pgEnum('chat_room_type', ['private', 'group']);
 export const messageTypeEnum = pgEnum('message_type', ['text', 'image', 'file', 'meeting_link']);
+export const callTypeEnum = pgEnum('call_type', ['audio', 'video']);
+export const callStatusEnum = pgEnum('call_status', ['initiated', 'ringing', 'connected', 'ended', 'missed', 'rejected', 'busy', 'failed']);
 
 // Users table
 export const users = pgTable("users", {
@@ -225,6 +227,20 @@ export const googleCalendarTokens = pgTable("google_calendar_tokens", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+// Call Logs
+export const callLogs = pgTable("call_logs", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  roomId: uuid("room_id").notNull().references(() => chatRooms.id, { onDelete: "cascade" }),
+  callerId: uuid("caller_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  receiverId: uuid("receiver_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  callType: callTypeEnum("call_type").notNull().default('audio'),
+  status: callStatusEnum("status").notNull().default('initiated'),
+  startedAt: timestamp("started_at").notNull().defaultNow(),
+  endedAt: timestamp("ended_at"),
+  duration: integer("duration"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many, one }) => ({
   auxSessions: many(auxSessions),
@@ -243,6 +259,8 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   scheduledMeetings: many(meetings),
   meetingParticipations: many(meetingParticipants),
   googleCalendarToken: one(googleCalendarTokens),
+  callerLogs: many(callLogs, { relationName: "callerLogs" }),
+  receiverLogs: many(callLogs, { relationName: "receiverLogs" }),
 }));
 
 export const auxSessionsRelations = relations(auxSessions, ({ one }) => ({
@@ -321,6 +339,12 @@ export const googleCalendarTokensRelations = relations(googleCalendarTokens, ({ 
   user: one(users, { fields: [googleCalendarTokens.userId], references: [users.id] }),
 }));
 
+
+export const callLogsRelations = relations(callLogs, ({ one }) => ({
+  room: one(chatRooms, { fields: [callLogs.roomId], references: [chatRooms.id] }),
+  caller: one(users, { fields: [callLogs.callerId], references: [users.id], relationName: "callerLogs" }),
+  receiver: one(users, { fields: [callLogs.receiverId], references: [users.id], relationName: "receiverLogs" }),
+}));
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -381,6 +405,11 @@ export const insertGoogleCalendarTokenSchema = createInsertSchema(googleCalendar
   id: true,
   createdAt: true,
   updatedAt: true,
+
+});
+export const insertCallLogSchema = createInsertSchema(callLogs).omit({
+  id: true,
+  createdAt: true,
 });
 
 // Types
@@ -409,3 +438,5 @@ export type InsertMeeting = z.infer<typeof insertMeetingSchema>;
 export type MeetingParticipant = typeof meetingParticipants.$inferSelect;
 export type GoogleCalendarToken = typeof googleCalendarTokens.$inferSelect;
 export type InsertGoogleCalendarToken = z.infer<typeof insertGoogleCalendarTokenSchema>;
+export type CallLog = typeof callLogs.$inferSelect;
+export type InsertCallLog = z.infer<typeof insertCallLogSchema>;

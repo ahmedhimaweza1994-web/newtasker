@@ -15,6 +15,7 @@ import {
   meetings,
   meetingParticipants,
   googleCalendarTokens,
+  callLogs,
   type User,
   type InsertUser,
   type Task,
@@ -38,6 +39,8 @@ import {
   type InsertMeeting,
   type MeetingParticipant,
   type GoogleCalendarToken,
+  type CallLog,
+  type InsertCallLog,
   type InsertGoogleCalendarToken,
   advanceStatusEnum
 } from "@shared/schema";
