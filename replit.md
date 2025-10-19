@@ -4,6 +4,23 @@
 
 GWT Task Management is a comprehensive Arabic-language task and employee management system designed for companies. It provides real-time employee activity tracking through AUX status monitoring, task management with Kanban boards, HR management features, and analytics reporting. Built as a full-stack web application, it supports role-based access control for employees, sub-admins, and administrators. The project aims to streamline company operations and enhance employee oversight.
 
+## Recent Changes
+
+**October 19, 2025 - Calling Feature Synchronization Fix (v1.1.0)**
+
+Fixed critical synchronization issue in the WebRTC calling system where callers would remain stuck on "جاري الاتصال..." (Connecting) while receivers saw a connected call with running timer.
+
+**Root Cause:** Receiver-side code was prematurely setting call status to 'connected' before WebRTC media streams were actually established.
+
+**Fixes Applied:**
+- Removed all premature status transitions on both caller and receiver sides
+- Both parties now wait for actual WebRTC `ontrack` event before transitioning to 'connected'
+- Guarded `ontrack` handler to prevent duplicate status updates when multiple tracks (audio/video) arrive
+- Fixed connection state monitoring to ignore transient 'disconnected' states
+- Database status now accurately reflects actual WebRTC connection state
+
+**Result:** Caller and receiver now transition to 'connected' simultaneously when media is flowing, call timers start at the same time, and the system is robust against network fluctuations.
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.

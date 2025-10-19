@@ -502,5 +502,80 @@ peerConnection.iceConnectionState  // Should be 'connected' or 'completed'
 ---
 
 **Last Updated:** October 19, 2025  
-**Version:** 1.0.0  
+**Version:** 1.1.0  
+**Status:** Production Ready ✅
+
+---
+
+## 🔧 Update Log - Version 1.1.0
+
+### Additional Fixes Applied (October 19, 2025)
+
+**Issue Identified:** Receiver-side premature status transitions causing caller to remain stuck on "جاري الاتصال..." (Connecting...) while receiver showed connected call.
+
+**Root Cause:** 
+1. GlobalCallManager was setting `callStatus: 'connected'` immediately after sending/receiving answer, before WebRTC media actually flowed
+2. Multiple premature transitions in both `handleAcceptCall` and `call_answer` handler
+3. Connection state monitoring was terminating calls on transient "disconnected" states
+4. Multiple database updates when both audio and video tracks arrived
+
+**Fixes Applied:**
+
+1. **Removed All Premature Status Updates:**
+   - ❌ Removed `setActiveCall({...callStatus: 'connected'})` after sending answer
+   - ❌ Removed `setActiveCall({...callStatus: 'connected'})` in `call_answer` handler
+   - ✅ Database now updated to 'connecting' until media actually flows
+
+2. **Guarded OnTrack Handler:**
+   ```typescript
+   pc.ontrack = (event) => {
+     setActiveCall(prev => {
+       if (!prev) return null;
+       
+       // Only transition to connected on first track
+       if (prev.callStatus !== 'connected') {
+         playCallConnect();
+         apiRequest('PATCH', `/api/calls/${callId}/status`, { status: 'connected' });
+         return { ...prev, remoteStream: event.streams[0], callStatus: 'connected' };
+       }
+       
+       // Subsequent tracks - just update stream
+       return { ...prev, remoteStream: event.streams[0] };
+     });
+   };
+   ```
+   - ✅ Transitions to 'connected' only on first track
+   - ✅ Prevents duplicate database updates
+   - ✅ Connection sound plays only once
+
+3. **Fixed Connection State Monitoring:**
+   ```typescript
+   pc.onconnectionstatechange = () => {
+     // Changed from 'disconnected' to only terminal states
+     if (pc.connectionState === 'failed' || pc.connectionState === 'closed') {
+       handleEndCall();
+     }
+   };
+   ```
+   - ✅ No longer terminates on transient 'disconnected' state
+   - ✅ Prevents false-positive call drops during network jitter
+   - ✅ Applied to both caller and receiver sides
+
+**Result:**
+- ✅ Caller and receiver now transition to 'connected' simultaneously
+- ✅ Call timer starts at the same time for both parties
+- ✅ No more stuck "جاري الاتصال..." state
+- ✅ Robust against network fluctuations
+- ✅ Single database update per status transition
+
+**Testing Recommendations:**
+1. Test full call lifecycle (accept, reject, hangup)
+2. Test with brief network interruptions
+3. Monitor logs for any duplicate `ontrack` firings
+4. Verify UI status matches database status
+
+---
+
+**Last Updated:** October 19, 2025  
+**Version:** 1.1.0  
 **Status:** Production Ready ✅
