@@ -150,6 +150,27 @@ export default function Navigation() {
     setLocation('/settings');
   };
 
+  const handleNotificationClick = (notification: Notification) => {
+    if (!notification.isRead) {
+      markAsReadMutation.mutate(notification.id);
+    }
+
+    if (notification.category === 'message' && notification.metadata?.roomId) {
+      const metadata = notification.metadata as any;
+      const messageId = metadata?.messageId || '';
+      setLocation(`/chat?roomId=${metadata.roomId}${messageId ? `&messageId=${messageId}` : ''}`);
+    } else if (notification.category === 'task' && notification.metadata?.taskId) {
+      const metadata = notification.metadata as any;
+      setLocation(`/tasks?taskId=${metadata.taskId}`);
+    } else if (notification.category === 'call') {
+      setLocation(`/call-history`);
+    } else if (notification.category === 'leave_request') {
+      setLocation(`/hr`);
+    } else {
+      setLocation('/dashboard');
+    }
+  };
+
   return (
     <motion.nav 
       initial={{ y: -100 }}
@@ -340,7 +361,7 @@ export default function Navigation() {
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: index * 0.05 }}
                           className={`p-4 cursor-pointer hover:bg-muted/50 transition-colors ${!notification.isRead ? 'bg-muted/30' : ''}`}
-                          onClick={() => !notification.isRead && markAsReadMutation.mutate(notification.id)}
+                          onClick={() => handleNotificationClick(notification)}
                           data-testid={`notification-${notification.id}`}
                           whileHover={{ x: 5 }}
                         >
