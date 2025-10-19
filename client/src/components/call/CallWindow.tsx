@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Phone, PhoneOff, Mic, MicOff, Video, VideoOff } from "lucide-react";
 import { cn, getMediaUrl } from "@/lib/utils";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 interface CallWindowProps {
   isOpen: boolean;
@@ -68,6 +69,9 @@ export function CallWindow({
         className="sm:max-w-[600px] p-0 overflow-hidden bg-gradient-to-br from-purple-900 via-blue-900 to-teal-900 dark:from-purple-950 dark:via-blue-950 dark:to-teal-950 border-none"
         data-testid="dialog-call-window"
       >
+        <VisuallyHidden>
+          <DialogTitle>{callType === 'video' ? 'مكالمة فيديو' : 'مكالمة صوتية'} - {otherUser.fullName}</DialogTitle>
+        </VisuallyHidden>
         <div className="relative min-h-[500px] flex flex-col">
           {callType === 'video' && callStatus === 'connected' ? (
             <div className="relative flex-1">

@@ -1735,6 +1735,16 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  app.get("/api/calls/room/:roomId", requireAuth, async (req, res) => {
+    try {
+      const callLogs = await storage.getRoomCallLogs(req.params.roomId);
+      res.json(callLogs);
+    } catch (error) {
+      console.error("Error fetching room call logs:", error);
+      res.status(500).json({ message: "حدث خطأ في جلب سجل مكالمات الغرفة" });
+    }
+  });
+
 
   return httpServer;
 }

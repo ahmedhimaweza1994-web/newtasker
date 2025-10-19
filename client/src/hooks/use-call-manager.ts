@@ -2,6 +2,7 @@ import { useState, useRef, useCallback } from "react";
 import { useWebSocket } from "@/lib/websocket";
 import { useCallSounds } from "./use-call-sounds";
 import { apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/hooks/use-auth";
 
 export type CallType = 'audio' | 'video';
 export type CallStatus = 'idle' | 'initiating' | 'ringing' | 'connecting' | 'connected' | 'ended';
@@ -25,6 +26,7 @@ interface CallState {
 export function useCallManager() {
   const { sendMessage, lastMessage } = useWebSocket();
   const { playRingtone, stopRingtone, playCallEnd, playCallConnect } = useCallSounds();
+  const { user } = useAuth();
   
   const [callState, setCallState] = useState<CallState>({
     callLogId: null,
@@ -122,13 +124,21 @@ export function useCallManager() {
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
 
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
       sendMessage({
         type: 'call_offer',
         roomId,
         callLogId: callLog.id,
         callType,
         offer,
-        from: otherUser
+        from: {
+          id: user.id,
+          fullName: user.fullName,
+          profilePicture: user.profilePicture
+        }
       });
 
       playRingtone();
@@ -137,7 +147,7 @@ export function useCallManager() {
       console.error("Error starting call:", error);
       endCall(true);
     }
-  }, [sendMessage, playRingtone, stopRingtone, playCallConnect]);
+  }, [sendMessage, playRingtone, stopRingtone, playCallConnect, user]);
 
   const endCall = useCallback((sendSignal: boolean = true) => {
     if (peerConnectionRef.current) {

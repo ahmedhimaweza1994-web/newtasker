@@ -762,17 +762,12 @@ export default function Chat() {
                               whileHover={{ scale: 1.1 }}
                               className="flex-shrink-0"
                             >
-                              <Avatar className="ring-2 ring-border" key={`avatar-${message.sender.id}`}>
-                                {message.sender.profilePicture && (
-                                  <AvatarImage 
-                                    src={getMediaUrl(message.sender.profilePicture)} 
-                                    alt={message.sender.fullName} 
-                                    className="object-cover"
-                                    onError={(e) => {
-                                      e.currentTarget.style.display = 'none';
-                                    }}
-                                  />
-                                )}
+                              <Avatar className="ring-2 ring-border">
+                                <AvatarImage 
+                                  src={getMediaUrl(message.sender.profilePicture)} 
+                                  alt={message.sender.fullName} 
+                                  className="object-cover"
+                                />
                                 <AvatarFallback className={cn(
                                   "bg-gradient-to-br from-primary/20 to-accent/20",
                                   isOwnMessage && "bg-gradient-to-br from-primary to-accent text-white"
@@ -1228,17 +1223,12 @@ export default function Chat() {
                                   whileHover={{ scale: 1.1 }}
                                   className="flex-shrink-0"
                                 >
-                                  <Avatar className="ring-2 ring-border" key={`avatar-mobile-${message.sender.id}`}>
-                                    {message.sender.profilePicture && (
-                                      <AvatarImage 
-                                        src={getMediaUrl(message.sender.profilePicture)} 
-                                        alt={message.sender.fullName} 
-                                        className="object-cover"
-                                        onError={(e) => {
-                                          e.currentTarget.style.display = 'none';
-                                        }}
-                                      />
-                                    )}
+                                  <Avatar className="ring-2 ring-border">
+                                    <AvatarImage 
+                                      src={getMediaUrl(message.sender.profilePicture)} 
+                                      alt={message.sender.fullName} 
+                                      className="object-cover"
+                                    />
                                     <AvatarFallback className={cn(
                                       "bg-gradient-to-br from-primary/20 to-accent/20",
                                       isOwnMessage && "bg-gradient-to-br from-primary to-accent text-white"

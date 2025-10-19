@@ -183,6 +183,7 @@ export interface IStorage {
   createCallLog(callLog: InsertCallLog): Promise<CallLog>;
   getCallLog(id: string): Promise<CallLog | undefined>;
   getUserCallLogs(userId: string): Promise<any[]>;
+  getRoomCallLogs(roomId: string): Promise<any[]>;
   updateCallLog(id: string, updates: Partial<CallLog>): Promise<CallLog | undefined>;
 
   sessionStore: session.Store;
@@ -1099,6 +1100,55 @@ export class MemStorage implements IStorage {
       .leftJoin(sql`(SELECT id, full_name, profile_picture FROM users) AS caller`, eq(callLogs.callerId, sql`caller.id`))
       .leftJoin(sql`(SELECT id, full_name, profile_picture FROM users) AS receiver`, eq(callLogs.receiverId, sql`receiver.id`))
       .where(or(eq(callLogs.callerId, userId), eq(callLogs.receiverId, userId)))
+      .orderBy(desc(callLogs.startedAt));
+
+    return logs.map(log => ({
+      ...log,
+      caller: log.callerData,
+      receiver: log.receiverData,
+    }));
+  }
+
+  async getRoomCallLogs(roomId: string): Promise<any[]> {
+    const caller = db.select({
+      id: users.id,
+      fullName: users.fullName,
+      profilePicture: users.profilePicture,
+    }).from(users).as('caller');
+    
+    const receiver = db.select({
+      id: users.id,
+      fullName: users.fullName,
+      profilePicture: users.profilePicture,
+    }).from(users).as('receiver');
+
+    const logs = await db
+      .select({
+        id: callLogs.id,
+        roomId: callLogs.roomId,
+        callerId: callLogs.callerId,
+        receiverId: callLogs.receiverId,
+        callType: callLogs.callType,
+        status: callLogs.status,
+        startedAt: callLogs.startedAt,
+        endedAt: callLogs.endedAt,
+        duration: callLogs.duration,
+        createdAt: callLogs.createdAt,
+        callerData: {
+          id: sql`${caller}.id`,
+          fullName: sql`${caller}.full_name`,
+          profilePicture: sql`${caller}.profile_picture`,
+        },
+        receiverData: {
+          id: sql`${receiver}.id`,
+          fullName: sql`${receiver}.full_name`,
+          profilePicture: sql`${receiver}.profile_picture`,
+        },
+      })
+      .from(callLogs)
+      .leftJoin(sql`(SELECT id, full_name, profile_picture FROM users) AS caller`, eq(callLogs.callerId, sql`caller.id`))
+      .leftJoin(sql`(SELECT id, full_name, profile_picture FROM users) AS receiver`, eq(callLogs.receiverId, sql`receiver.id`))
+      .where(eq(callLogs.roomId, roomId))
       .orderBy(desc(callLogs.startedAt));
 
     return logs.map(log => ({

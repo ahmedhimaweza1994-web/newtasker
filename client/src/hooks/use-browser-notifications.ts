@@ -36,11 +36,13 @@ export function useBrowserNotifications() {
         browserNotification.close();
         
         if (notification.category === 'message' && notification.metadata?.roomId) {
-          const messageId = notification.metadata?.messageId || '';
-          setLocation(`/chat?roomId=${notification.metadata.roomId}${messageId ? `&messageId=${messageId}` : ''}`);
+          const metadata = notification.metadata as any;
+          const messageId = metadata?.messageId || '';
+          setLocation(`/chat?roomId=${metadata.roomId}${messageId ? `&messageId=${messageId}` : ''}`);
         } else if (notification.category === 'task' && notification.metadata?.taskId) {
-          setLocation(`/tasks?taskId=${notification.metadata.taskId}`);
-        } else if (notification.category === 'call' && notification.metadata?.roomId) {
+          const metadata = notification.metadata as any;
+          setLocation(`/tasks?taskId=${metadata.taskId}`);
+        } else if (notification.category === 'call') {
           setLocation(`/call-history`);
         } else if (notification.category === 'leave_request') {
           setLocation(`/hr`);
