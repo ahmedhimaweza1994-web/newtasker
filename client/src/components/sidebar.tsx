@@ -21,7 +21,8 @@ import {
   UserCog,
   MessageSquare,
   DollarSign,
-  AlertCircle
+  AlertCircle,
+  Phone
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useLocation } from "wouter";
@@ -116,6 +117,12 @@ export default function Sidebar() {
       href: "/chat",
       icon: MessageSquare,
       badge: unreadMessages > 0 ? unreadMessages.toString() : null,
+    },
+    {
+      name: "سجل المكالمات",
+      href: "/call-history",
+      icon: Phone,
+      badge: null,
     },
     {
       name: "طلباتي",

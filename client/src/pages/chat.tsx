@@ -20,6 +20,9 @@ import {
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useWebSocket } from "@/lib/websocket";
+import { useCallManager } from "@/hooks/use-call-manager";
+import { CallWindow } from "@/components/call/CallWindow";
+import { IncomingCallDialog } from "@/components/call/IncomingCallDialog";
 import {
   Dialog,
   DialogContent,
@@ -101,26 +104,18 @@ export default function Chat() {
   const [showMentions, setShowMentions] = useState(false);
   const [attachments, setAttachments] = useState<any[]>([]);
   const [openReactionPopover, setOpenReactionPopover] = useState<string | null>(null);
-  const [ringtone, setRingtone] = useState<HTMLAudioElement | null>(null);
-  const [isInCall, setIsInCall] = useState(false);
-  const [incomingCall, setIncomingCall] = useState<{ from: User; roomId: string } | null>(null);
-  const [callDuration, setCallDuration] = useState(0);
-  const [callStartTime, setCallStartTime] = useState<number | null>(null);
   const [isTyping, setIsTyping] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
-  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
-  const callDurationIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const callStartTimeRef = useRef<number | null>(null);
+  const [incomingCallFrom, setIncomingCallFrom] = useState<User | null>(null);
+  const [incomingCallType, setIncomingCallType] = useState<'audio' | 'video'>('audio');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
-  const localStreamRef = useRef<MediaStream | null>(null);
-  const remoteAudioRef = useRef<HTMLAudioElement | null>(null);
-  const activeCallRoomIdRef = useRef<string | null>(null);
   const { isConnected, lastMessage, sendMessage } = useWebSocket();
   const { handleMessageNotification } = useEnhancedNotifications();
+  
+  const { callState, startCall, endCall, toggleMute, toggleVideo, localVideoRef, remoteVideoRef } = useCallManager();
 
   const { data: rooms = [] } = useQuery<ChatRoom[]>({
     queryKey: ["/api/chat/rooms"],
@@ -282,110 +277,29 @@ export default function Chat() {
     });
   };
 
-  const startCall = async () => {
+  const handleStartAudioCall = () => {
     if (!selectedRoom || selectedRoom.type !== 'private') return;
+    const otherUser = selectedRoom.members.find(m => m.id !== user?.id);
+    if (!otherUser) return;
     
-    try {
-      activeCallRoomIdRef.current = selectedRoom.id;
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      localStreamRef.current = stream;
-      
-      const pc = new RTCPeerConnection({
-        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
-      });
-      peerConnectionRef.current = pc;
-
-      stream.getTracks().forEach(track => pc.addTrack(track, stream));
-      
-      pc.onicecandidate = (event) => {
-        if (event.candidate && activeCallRoomIdRef.current) {
-          sendMessage({ 
-            type: 'ice_candidate', 
-            roomId: activeCallRoomIdRef.current, 
-            candidate: event.candidate 
-          });
-        }
-      };
-
-      pc.ontrack = (event) => {
-        if (!remoteAudioRef.current) {
-          remoteAudioRef.current = new Audio();
-        }
-        remoteAudioRef.current.srcObject = event.streams[0];
-        remoteAudioRef.current.play();
-        if (ringtone) {
-          ringtone.pause();
-          ringtone.currentTime = 0;
-        }
-        
-        const startTime = Date.now();
-        setCallStartTime(startTime);
-        callStartTimeRef.current = startTime;
-        
-        const interval = setInterval(() => {
-          if (callStartTimeRef.current !== null) {
-            setCallDuration(Math.floor((Date.now() - callStartTimeRef.current) / 1000));
-          }
-        }, 1000);
-        callDurationIntervalRef.current = interval;
-      };
-
-      const offer = await pc.createOffer();
-      await pc.setLocalDescription(offer);
-      
-      sendMessage({ 
-        type: 'call_offer', 
-        roomId: activeCallRoomIdRef.current, 
-        offer,
-        from: user
-      });
-      
-      if (ringtone) {
-        ringtone.loop = true;
-        ringtone.play().catch(console.error);
-      }
-      
-      setIsInCall(true);
-      toast({ title: "جاري الاتصال...", description: "انتظر إجابة المستخدم الآخر" });
-    } catch (error) {
-      toast({ title: "خطأ", description: "لا يمكن بدء المكالمة", variant: "destructive" });
-    }
+    startCall(selectedRoom.id, otherUser.id, otherUser, 'audio');
   };
 
-  const endCall = (sendEndSignal = true) => {
-    const callRoomId = activeCallRoomIdRef.current;
+  const handleStartVideoCall = () => {
+    if (!selectedRoom || selectedRoom.type !== 'private') return;
+    const otherUser = selectedRoom.members.find(m => m.id !== user?.id);
+    if (!otherUser) return;
     
-    if (localStreamRef.current) {
-      localStreamRef.current.getTracks().forEach(track => track.stop());
-      localStreamRef.current = null;
-    }
-    if (peerConnectionRef.current) {
-      peerConnectionRef.current.close();
-      peerConnectionRef.current = null;
-    }
-    if (remoteAudioRef.current) {
-      remoteAudioRef.current.pause();
-      remoteAudioRef.current.srcObject = null;
-    }
-    if (ringtone) {
-      ringtone.pause();
-      ringtone.currentTime = 0;
-    }
-    
-    if (callDurationIntervalRef.current) {
-      clearInterval(callDurationIntervalRef.current);
-      callDurationIntervalRef.current = null;
-    }
-    
-    setIsInCall(false);
-    setCallDuration(0);
-    setCallStartTime(null);
-    callStartTimeRef.current = null;
-    activeCallRoomIdRef.current = null;
-    
-    if (sendEndSignal && callRoomId) {
-      sendMessage({ type: 'call_end', roomId: callRoomId });
-    }
+    startCall(selectedRoom.id, otherUser.id, otherUser, 'video');
+  };
+
+  const handleAcceptCall = () => {
+    setIncomingCallFrom(null);
+  };
+
+  const handleDeclineCall = () => {
+    setIncomingCallFrom(null);
+    endCall(true);
   };
 
   const handleCreateRoom = () => {
@@ -447,31 +361,6 @@ export default function Chat() {
     }
   }, [messageText]);
 
-  useEffect(() => {
-    const ringtoneAudio = new Audio();
-    ringtoneAudio.src = 'data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAADhAC7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7v////////////////////////////////////////////////////////////////AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAAAAAAAAAAAA4SPI67WAAAAAAAAAAAAAAAAAAAAAAAA//tQZAAP8AAAaQAAAAgAAA0gAAABAAABpAAAACAAADSAAAAETEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//sUZJ4P8AAAaQAAAAgAAA0gAAABAAABpAAAACAAADSAAAAEVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVQ==';
-    ringtoneAudio.volume = 0.5;
-    setRingtone(ringtoneAudio);
-    
-    return () => {
-      if (ringtoneAudio) {
-        ringtoneAudio.pause();
-        ringtoneAudio.src = '';
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    if ('Notification' in window) {
-      setNotificationPermission(Notification.permission);
-      
-      if (Notification.permission === 'default') {
-        Notification.requestPermission().then(permission => {
-          setNotificationPermission(permission);
-        });
-      }
-    }
-  }, []);
 
   useEffect(() => {
     if (urlRoomId && rooms.length > 0 && !selectedRoom) {
@@ -514,61 +403,10 @@ export default function Chat() {
   useEffect(() => {
     if (!lastMessage) return;
 
-    const handleCallMessage = async () => {
-      const pc = peerConnectionRef.current;
-      const activeRoomId = activeCallRoomIdRef.current;
-
-      if (lastMessage.type === 'call_offer') {
-        if (!activeRoomId) {
-          activeCallRoomIdRef.current = lastMessage.roomId;
-          const newPc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
-          peerConnectionRef.current = newPc;
-          
-          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          localStreamRef.current = stream;
-          stream.getTracks().forEach(track => newPc.addTrack(track, stream));
-
-          newPc.onicecandidate = (event) => {
-            if (event.candidate && activeCallRoomIdRef.current) {
-              sendMessage({ type: 'ice_candidate', roomId: activeCallRoomIdRef.current, candidate: event.candidate });
-            }
-          };
-
-          newPc.ontrack = (event) => {
-            if (!remoteAudioRef.current) {
-              remoteAudioRef.current = new Audio();
-            }
-            remoteAudioRef.current.srcObject = event.streams[0];
-            remoteAudioRef.current.play();
-            
-            const startTime = Date.now();
-            setCallStartTime(startTime);
-            callStartTimeRef.current = startTime;
-            
-            const interval = setInterval(() => {
-              if (callStartTimeRef.current !== null) {
-                setCallDuration(Math.floor((Date.now() - callStartTimeRef.current) / 1000));
-              }
-            }, 1000);
-            callDurationIntervalRef.current = interval;
-          };
-
-          await newPc.setRemoteDescription(new RTCSessionDescription(lastMessage.offer));
-          const answer = await newPc.createAnswer();
-          await newPc.setLocalDescription(answer);
-          sendMessage({ type: 'call_answer', roomId: lastMessage.roomId, answer });
-          setIsInCall(true);
-        }
-      } else if (lastMessage.type === 'call_answer' && pc && lastMessage.roomId === activeRoomId) {
-        await pc.setRemoteDescription(new RTCSessionDescription(lastMessage.answer));
-      } else if (lastMessage.type === 'ice_candidate' && pc && lastMessage.roomId === activeRoomId) {
-        await pc.addIceCandidate(new RTCIceCandidate(lastMessage.candidate));
-      } else if (lastMessage.type === 'call_end' && lastMessage.roomId === activeRoomId) {
-        endCall(false);
-      }
-    };
-
-    handleCallMessage().catch(console.error);
+    if (lastMessage.type === 'call_offer' && lastMessage.from) {
+      setIncomingCallFrom(lastMessage.from);
+      setIncomingCallType(lastMessage.callType || 'audio');
+    }
   }, [lastMessage]);
 
   const getRoomName = (room: ChatRoom) => {
@@ -848,27 +686,32 @@ export default function Chat() {
                       </div>
                       <div className="flex items-center gap-1 md:gap-2 shrink-0">
                         {selectedRoom.type === 'private' && (
-                          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                            <Button
-                              variant={isInCall ? "destructive" : "outline"}
-                              size="sm"
-                              className="gap-1 md:gap-2 h-9 md:h-10"
-                              onClick={isInCall ? endCall : startCall}
-                              data-testid="button-call"
-                            >
-                              {isInCall ? (
-                                <>
-                                  <PhoneOff className="w-4 h-4" />
-                                  <span className="hidden sm:inline">إنهاء</span>
-                                </>
-                              ) : (
-                                <>
-                                  <Phone className="w-4 h-4" />
-                                  <span className="hidden sm:inline">مكالمة</span>
-                                </>
-                              )}
-                            </Button>
-                          </motion.div>
+                          <>
+                            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="gap-1 md:gap-2 h-9 md:h-10"
+                                onClick={handleStartAudioCall}
+                                data-testid="button-audio-call"
+                              >
+                                <Phone className="w-4 h-4" />
+                                <span className="hidden sm:inline">صوت</span>
+                              </Button>
+                            </motion.div>
+                            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="gap-1 md:gap-2 h-9 md:h-10"
+                                onClick={handleStartVideoCall}
+                                data-testid="button-video-call"
+                              >
+                                <Video className="w-4 h-4" />
+                                <span className="hidden sm:inline">فيديو</span>
+                              </Button>
+                            </motion.div>
+                          </>
                         )}
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -880,10 +723,6 @@ export default function Chat() {
                             <DropdownMenuItem>
                               <Search className="w-4 h-4 ml-2" />
                               بحث في المحادثة
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Video className="w-4 h-4 ml-2" />
-                              مكالمة فيديو
                             </DropdownMenuItem>
                             <DropdownMenuItem className="text-destructive">
                               <Trash2 className="w-4 h-4 ml-2" />
@@ -1308,27 +1147,32 @@ export default function Chat() {
                       </div>
                       <div className="flex items-center gap-2">
                         {selectedRoom.type === 'private' && (
-                          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                            <Button
-                              variant={isInCall ? "destructive" : "outline"}
-                              size="sm"
-                              className="gap-2"
-                              onClick={isInCall ? endCall : startCall}
-                              data-testid="button-call"
-                            >
-                              {isInCall ? (
-                                <>
-                                  <PhoneOff className="w-4 h-4" />
-                                  <span>إنهاء</span>
-                                </>
-                              ) : (
-                                <>
-                                  <Phone className="w-4 h-4" />
-                                  <span>مكالمة</span>
-                                </>
-                              )}
-                            </Button>
-                          </motion.div>
+                          <>
+                            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="gap-2"
+                                onClick={handleStartAudioCall}
+                                data-testid="button-audio-call"
+                              >
+                                <Phone className="w-4 h-4" />
+                                <span>صوت</span>
+                              </Button>
+                            </motion.div>
+                            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="gap-2"
+                                onClick={handleStartVideoCall}
+                                data-testid="button-video-call"
+                              >
+                                <Video className="w-4 h-4" />
+                                <span>فيديو</span>
+                              </Button>
+                            </motion.div>
+                          </>
                         )}
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -1340,10 +1184,6 @@ export default function Chat() {
                             <DropdownMenuItem>
                               <Search className="w-4 h-4 ml-2" />
                               بحث في المحادثة
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Video className="w-4 h-4 ml-2" />
-                              مكالمة فيديو
                             </DropdownMenuItem>
                             <DropdownMenuItem className="text-destructive">
                               <Trash2 className="w-4 h-4 ml-2" />
@@ -1728,6 +1568,30 @@ export default function Chat() {
           )}
         </main>
       </div>
+      
+      <CallWindow
+        isOpen={callState.status !== 'idle'}
+        callType={callState.callType}
+        isOutgoing={callState.isOutgoing}
+        otherUser={callState.otherUser || { id: '', fullName: '', profilePicture: '' }}
+        callStatus={callState.status === 'ringing' ? 'ringing' : callState.status === 'connecting' ? 'connecting' : 'connected'}
+        duration={callState.duration}
+        isMuted={callState.isMuted}
+        isVideoEnabled={callState.isVideoEnabled}
+        localVideoRef={localVideoRef}
+        remoteVideoRef={remoteVideoRef}
+        onToggleMute={toggleMute}
+        onToggleVideo={toggleVideo}
+        onEndCall={() => endCall(true)}
+      />
+      
+      <IncomingCallDialog
+        isOpen={!!incomingCallFrom}
+        caller={incomingCallFrom || { id: '', fullName: '', profilePicture: '' }}
+        callType={incomingCallType}
+        onAccept={handleAcceptCall}
+        onDecline={handleDeclineCall}
+      />
     </MotionPageShell>
   );
 }
