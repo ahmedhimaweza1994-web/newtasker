@@ -5,7 +5,19 @@ import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { createGoogleMeetEvent, isGoogleCalendarConnected } from "./google-calendar-integration";
 import multer from 'multer';
-const upload = multer({ dest: 'uploads/' });
+import path from 'path';
+
+const multerStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/');
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ storage: multerStorage });
 
 function requireAuth(req: any, res: any, next: any) {
   if (!req.isAuthenticated()) {
@@ -72,23 +84,34 @@ export function registerRoutes(app: Express): Server {
         ...req.body,
         createdBy: req.user!.id,
         companyName: req.body.companyName || null,
+        assignedTo: req.body.assignedTo || null,
+        // Convert ISO string dates to Date objects for Drizzle
+        dueDate: req.body.dueDate ? new Date(req.body.dueDate) : undefined,
       };
       const task = await storage.createTask(taskData);
       
       // Send notification if assigned to someone
       if (task.assignedTo && task.assignedTo !== req.user!.id) {
-        await storage.createNotification(
-          task.assignedTo,
-          "مهمة جديدة معينة لك",
-          `تم تعيين مهمة "${task.title}" لك`,
-          "info"
-        );
+        await storage.createNotification({
+          userId: task.assignedTo,
+          title: "مهمة جديدة معينة لك",
+          message: `تم تعيين مهمة "${task.title}" لك`,
+          type: "info",
+          category: "task",
+          metadata: {
+            resourceId: task.id,
+            taskId: task.id,
+            userId: req.user!.id,
+            userName: req.user!.fullName,
+            userAvatar: req.user!.profilePicture || undefined
+          }
+        });
       }
       
       res.status(201).json(task);
     } catch (error) {
-      console.error("Error creating task:", error);
-      res.status(500).json({ message: "حدث خطأ في إنشاء المهمة" });
+      console.error("Error creating task:", error instanceof Error ? error.message : error, error instanceof Error ? error.stack : "");
+      res.status(500).json({ message: "حدث خطأ في إنشاء المهمة", error: error instanceof Error ? error.message : String(error) });
     }
   });
 
@@ -99,6 +122,12 @@ export function registerRoutes(app: Express): Server {
       if (!existingTask) {
         return res.status(404).json({ message: "المهمة غير موجودة" });
       }
+      // Prepare update data with date conversions
+      const updateData = {
+        ...req.body,
+        dueDate: req.body.dueDate ? new Date(req.body.dueDate) : undefined,
+      };
+
 
       // Check if trying to update status to 'completed'
       if (req.body.status === 'completed') {
@@ -108,14 +137,14 @@ export function registerRoutes(app: Express): Server {
         if (isCreator || isAdminOrSubAdmin) {
           // Allow direct completion and set completedAt
           const task = await storage.updateTask(req.params.id, {
-            ...req.body,
+            ...updateData,
             completedAt: new Date()
           });
           res.json(task);
         } else {
           // Change status to 'under_review' instead
           const task = await storage.updateTask(req.params.id, {
-            ...req.body,
+            ...updateData,
             status: 'under_review'
           });
 
@@ -133,7 +162,7 @@ export function registerRoutes(app: Express): Server {
         }
       } else {
         // Normal update for other status changes
-        const task = await storage.updateTask(req.params.id, req.body);
+        const task = await storage.updateTask(req.params.id, updateData);
         res.json(task);
       }
     } catch (error) {
@@ -174,12 +203,11 @@ export function registerRoutes(app: Express): Server {
 
   app.post("/api/tasks/:id/comments", requireAuth, async (req, res) => {
     try {
-      const comment = await storage.createTaskNote({
-        taskId: req.params.id,
-        userId: req.user!.id,
-        content: req.body.content,
-        attachments: req.body.attachments || [],
-      });
+      const comment = await storage.createTaskNote(
+        req.params.id,
+        req.user!.id,
+        req.body.content
+      );
       res.status(201).json(comment);
     } catch (error) {
       console.error("Error creating task comment:", error);
@@ -539,9 +567,20 @@ export function registerRoutes(app: Express): Server {
   // Leave requests routes
   app.post("/api/leaves", requireAuth, async (req, res) => {
     try {
-      // Validate and calculate days automatically from start and end dates
-      const startDate = new Date(req.body.startDate);
-      const endDate = new Date(req.body.endDate);
+      // Parse dates from YYYY-MM-DD format
+      const startDateStr = req.body.startDate;
+      const endDateStr = req.body.endDate;
+      
+      if (!startDateStr || !endDateStr) {
+        return res.status(400).json({ message: "يرجى تحديد تاريخ البداية والنهاية" });
+      }
+      
+      // Create dates at midnight local time
+      const [startYear, startMonth, startDay] = startDateStr.split('-').map(Number);
+      const [endYear, endMonth, endDay] = endDateStr.split('-').map(Number);
+      
+      const startDate = new Date(startYear, startMonth - 1, startDay, 0, 0, 0);
+      const endDate = new Date(endYear, endMonth - 1, endDay, 23, 59, 59);
       
       // Validate dates
       if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
@@ -552,12 +591,27 @@ export function registerRoutes(app: Express): Server {
         return res.status(400).json({ message: "تاريخ البداية يجب أن يكون قبل أو يساوي تاريخ النهاية" });
       }
       
-      // Normalize to start of day to avoid time-based miscalculations
-      startDate.setHours(0, 0, 0, 0);
-      endDate.setHours(0, 0, 0, 0);
-      
       // Calculate inclusive day count (at least 1)
-      const days = Math.max(1, Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+      const days = Math.max(1, Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)));
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
       
       // Explicitly construct payload with whitelisted fields only
       const leaveRequest = await storage.createLeaveRequest({
@@ -729,7 +783,7 @@ export function registerRoutes(app: Express): Server {
 
   app.put("/api/notifications/:id/read", requireAuth, async (req, res) => {
     try {
-      await storage.markNotificationRead(req.params.id);
+      await storage.markNotificationAsRead(req.params.id);
       res.json({ message: "تم تحديث الإشعار" });
     } catch (error) {
       res.status(500).json({ message: "حدث خطأ في تحديث الإشعار" });
@@ -887,6 +941,17 @@ export function registerRoutes(app: Express): Server {
               }
             });
             break;
+          case 'call_offer':
+          case 'call_answer':
+          case 'ice_candidate':
+          case 'call_end':
+            // Broadcast call signaling messages to all clients
+            wss.clients.forEach((client) => {
+              if (client !== ws && client.readyState === ws.OPEN) {
+                client.send(JSON.stringify(data));
+              }
+            });
+            break;
         }
       } catch (error) {
         console.error('WebSocket message error:', error);
@@ -902,10 +967,28 @@ export function registerRoutes(app: Express): Server {
   // Chat Rooms Routes
   app.post("/api/chat/rooms", requireAuth, async (req, res) => {
     try {
+      let imageUrl = undefined;
+      
+      // Handle base64 image upload
+      if (req.body.image && req.body.image.startsWith('data:image/')) {
+        try {
+          const base64Data = req.body.image.split(',')[1];
+          const imageBuffer = Buffer.from(base64Data, 'base64');
+          const extension = req.body.image.split(';')[0].split('/')[1];
+          const filename = Date.now() + '-' + Math.round(Math.random() * 1E9) + '.' + extension;
+          const fs = await import('fs/promises');
+          await fs.writeFile(`uploads/${filename}`, imageBuffer);
+          imageUrl = `/uploads/${filename}`;
+        } catch (imgError) {
+          console.error("Error saving room image:", imgError);
+        }
+      }
+      
       const room = await storage.createChatRoom({
         name: req.body.name,
         type: req.body.type || 'group',
         createdBy: req.user!.id,
+        image: imageUrl,
       });
       
       if (req.body.memberIds && Array.isArray(req.body.memberIds)) {
@@ -955,6 +1038,15 @@ export function registerRoutes(app: Express): Server {
       res.status(500).json({ message: "حدث خطأ في جلب غرفة الدردشة" });
     }
   });
+  app.put("/api/chat/rooms/:id/image", requireAuth, async (req, res) => {
+    try {
+      const room = await storage.updateChatRoomImage(req.params.id, req.body.image);
+      res.json(room);
+    } catch (error) {
+      res.status(500).json({ message: "حدث خطأ في تحديث صورة الغرفة" });
+    }
+  });
+
 
   // Chat Messages Routes
   app.post("/api/chat/messages", requireAuth, async (req, res) => {
@@ -967,6 +1059,32 @@ export function registerRoutes(app: Express): Server {
         attachments: req.body.attachments,
         replyTo: req.body.replyTo,
       });
+      
+      // Create notifications for room members
+      const room = await storage.getChatRoom(req.body.roomId);
+      const roomMembers = await storage.getChatRoomMembers(req.body.roomId);
+      
+      for (const member of roomMembers) {
+        if (member.id !== req.user!.id) {
+          const notification = await storage.createNotification(
+            member.id,
+            room?.name || 'رسالة جديدة',
+            `${req.user!.fullName}: ${req.body.content || 'أرسل رسالة'}`,
+            'info',
+            { roomId: req.body.roomId, messageId: message.id }
+          );
+          
+          // Broadcast notification
+          wss.clients.forEach((client) => {
+            if (client.readyState === client.OPEN) {
+              client.send(JSON.stringify({
+                type: 'new_notification',
+                data: notification
+              }));
+            }
+          });
+        }
+      }
       
       wss.clients.forEach((client) => {
         if (client.readyState === client.OPEN) {
@@ -1090,7 +1208,40 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Google Calendar Routes (Using Replit Integration)
+  // Google Calendar Routes (VPS-Compatible OAuth2)
+  app.get("/api/google-calendar/auth-url", requireAuth, async (req, res) => {
+    try {
+      const { getGoogleAuthUrl } = await import("./google-calendar-integration");
+      const authUrl = getGoogleAuthUrl();
+      if (!authUrl) {
+        return res.status(400).json({ 
+          message: "يرجى تكوين بيانات اعتماد Google OAuth2 أولاً. راجع التعليمات في server/google-calendar-integration.ts" 
+        });
+      }
+      res.json({ authUrl });
+    } catch (error) {
+      res.status(500).json({ message: "فشل في إنشاء رابط التفويض" });
+    }
+  });
+
+  app.get("/api/google-calendar/callback", async (req, res) => {
+    try {
+      const { code } = req.query;
+      if (!code || typeof code !== 'string') {
+        return res.status(400).send('Missing authorization code');
+      }
+      
+      const { handleGoogleCallback } = await import("./google-calendar-integration");
+      await handleGoogleCallback(code);
+      
+      // Redirect to dashboard or settings page
+      res.redirect('/dashboard?google-calendar=connected');
+    } catch (error) {
+      console.error('OAuth callback error:', error);
+      res.redirect('/dashboard?google-calendar=error');
+    }
+  });
+
   app.get("/api/google-calendar/status", requireAuth, async (req, res) => {
     try {
       const connected = await isGoogleCalendarConnected();
@@ -1103,6 +1254,22 @@ export function registerRoutes(app: Express): Server {
   app.post("/api/google-calendar/schedule-meeting", requireAuth, async (req, res) => {
     try {
       const { title, participantIds, startTime, endTime, meetingLink } = req.body;
+      
+      // Validation
+      if (!title || !participantIds || !Array.isArray(participantIds) || participantIds.length === 0) {
+        return res.status(400).json({ message: "العنوان والمشاركين مطلوبان" });
+      }
+      
+      const start = new Date(startTime);
+      const end = new Date(endTime);
+      
+      if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+        return res.status(400).json({ message: "تواريخ غير صالحة" });
+      }
+      
+      if (start >= end) {
+        return res.status(400).json({ message: "وقت البدء يجب أن يكون قبل وقت النهاية" });
+      }
       
       // Allow users to provide their own meeting link instead of relying on Google Calendar
       const finalMeetingLink = meetingLink || `https://meet.example.com/${Date.now()}-${Math.random().toString(36).substring(7)}`;
@@ -1150,6 +1317,32 @@ export function registerRoutes(app: Express): Server {
         }],
       });
       
+      // Create notifications for room members
+      const room = await storage.getChatRoom(req.body.roomId);
+      const roomMembers = await storage.getChatRoomMembers(req.body.roomId);
+      
+      for (const member of roomMembers) {
+        if (member.id !== req.user!.id) {
+          const notification = await storage.createNotification(
+            member.id,
+            room?.name || 'رسالة جديدة',
+            `${req.user!.fullName}: ${req.body.content || 'أرسل رسالة'}`,
+            'info',
+            { roomId: req.body.roomId, messageId: message.id }
+          );
+          
+          // Broadcast notification
+          wss.clients.forEach((client) => {
+            if (client.readyState === client.OPEN) {
+              client.send(JSON.stringify({
+                type: 'new_notification',
+                data: notification
+              }));
+            }
+          });
+        }
+      }
+      
       for (const participantId of participantIds) {
         const notification = await storage.createNotification(
           participantId,
@@ -1182,6 +1375,46 @@ export function registerRoutes(app: Express): Server {
       });
       
       res.status(201).json({ ...meeting, chatRoomId: chatRoom.id });
+    } catch (error) {
+      console.error("Error scheduling meeting:", error);
+      res.status(500).json({ message: "حدث خطأ في جدولة الاجتماع" });
+    }
+  });
+
+  // Meeting scheduling route (legacy endpoint for sidebar)
+  app.post("/api/meetings/schedule", requireAuth, async (req, res) => {
+    try {
+      const { title, participantIds } = req.body;
+      
+      if (!title || !participantIds || !Array.isArray(participantIds) || participantIds.length === 0) {
+        return res.status(400).json({ message: "العنوان والمشاركين مطلوبان" });
+      }
+      
+      const meetingLink = `https://meet.example.com/${Date.now()}-${Math.random().toString(36).substring(7)}`;
+      
+      const meeting = await storage.createMeeting({
+        title,
+        description: `اجتماع مع ${participantIds.length} مشارك`,
+        meetingLink,
+        scheduledBy: req.user!.id,
+        startTime: new Date(),
+        endTime: null,
+      });
+      
+      for (const participantId of participantIds) {
+        await storage.addMeetingParticipant(meeting.id, participantId);
+        const privateRoom = await storage.getOrCreatePrivateChat(req.user!.id, participantId);
+        await storage.createChatMessage({
+          roomId: privateRoom.id,
+          senderId: req.user!.id,
+          content: `🎥 ${title}\n\nانضم للاجتماع: ${meetingLink}`,
+          messageType: "meeting_link",
+          attachments: [{ name: title, url: meetingLink, type: "meeting" }],
+        });
+        await storage.createNotification(participantId, "اجتماع جديد", `${req.user!.fullName} قام بجدولة اجتماع: ${title}`, "info");
+      }
+      
+      res.status(201).json({ ...meeting, meetingLink });
     } catch (error) {
       console.error("Error scheduling meeting:", error);
       res.status(500).json({ message: "حدث خطأ في جدولة الاجتماع" });

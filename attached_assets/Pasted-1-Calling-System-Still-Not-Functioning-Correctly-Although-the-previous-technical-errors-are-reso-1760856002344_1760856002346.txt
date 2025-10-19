@@ -1,0 +1,54 @@
+1. Calling System – Still Not Functioning Correctly
+
+Although the previous technical errors are resolved, the core functionality is still broken.
+
+❌ Current Problems:
+
+When a user initiates a call, the recipient never receives any call signal or popup.
+
+There is no incoming call notification, ringtone, or accept/decline dialog — nothing shows up for the other user.
+
+This indicates a possible WebRTC connection issue, missing event broadcast, or socket communication problem preventing the call signal from reaching the other user.
+
+✅ Tasks:
+
+Diagnose and fix why call events (incoming, ringing, accepted) are not delivered between users.
+
+Ensure the call triggers a visible popup + ringtone for the recipient — no matter which page they are on.
+
+Once the recipient accepts, open the existing call management popup with full features (mute, end, video toggle, etc.).
+
+Verify that calls work end-to-end across multiple users and sessions.
+
+Test both voice and video calls for reliability and synchronization. 
+
+
+1. Call Signaling Issue
+Problem: Call WebSocket messages (call_offer, call_answer, ice_candidate) are currently broadcast to ALL connected clients instead of only the intended recipient.
+
+Location: server/routes.ts lines ~944-954
+
+Impact: Recipients don't receive proper call signals because the messages aren't being routed to specific users.
+
+Fix needed: Implement user-to-WebSocket client mapping and route call messages only to participants.
+
+2. Notification Broadcasting Issue
+Problem: Notifications are broadcast to all WebSocket clients instead of only the intended recipient.
+
+Location: Multiple places in server/routes.ts where notifications are created
+
+Impact: Users may receive notifications for their own actions (self-notifications).
+
+Fix needed: Update all notification broadcasts to send only to the specific user who should receive it.
+
+3. Unread Counter Updates
+Status: Partially fixed - marking as read now works, but the counter may not update in real-time across all UI components.
+
+Fix needed: Ensure react-query cache invalidation happens correctly when notifications are marked as read.
+
+ fix the remaining issues with the WebSocket call signaling and notification broadcasting? This will require:
+
+Updating the WebSocket message routing to track user-to-client mappings
+Updating all notification broadcasts to target specific users 
+
+and also you look if there is any other issue

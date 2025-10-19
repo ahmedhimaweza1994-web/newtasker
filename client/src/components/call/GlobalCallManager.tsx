@@ -98,6 +98,8 @@ export function GlobalCallManager() {
         type: 'call_answer',
         roomId: incomingCall.roomId,
         callLogId: incomingCall.callLogId,
+        to: incomingCall.from.id,
+        receiverId: incomingCall.from.id,
       });
 
       await apiRequest('PATCH', `/api/calls/${incomingCall.callLogId}/status`, {
@@ -122,6 +124,8 @@ export function GlobalCallManager() {
       type: 'call_decline',
       roomId: incomingCall.roomId,
       callLogId: incomingCall.callLogId,
+      to: incomingCall.from.id,
+      receiverId: incomingCall.from.id,
     });
 
     await apiRequest('PATCH', `/api/calls/${incomingCall.callLogId}/status`, {
@@ -142,6 +146,8 @@ export function GlobalCallManager() {
       type: 'call_end',
       roomId: activeCall.roomId,
       callLogId: activeCall.callLogId,
+      to: activeCall.otherUser.id,
+      receiverId: activeCall.otherUser.id,
     });
 
     await apiRequest('PATCH', `/api/calls/${activeCall.callLogId}/status`, {

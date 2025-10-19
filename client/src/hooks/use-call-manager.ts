@@ -94,7 +94,9 @@ export function useCallManager() {
             type: 'ice_candidate',
             roomId,
             callLogId: callLog.id,
-            candidate: event.candidate
+            candidate: event.candidate,
+            to: receiverId,
+            receiverId: receiverId
           });
         }
       };
@@ -138,7 +140,9 @@ export function useCallManager() {
           id: user.id,
           fullName: user.fullName,
           profilePicture: user.profilePicture
-        }
+        },
+        to: receiverId,
+        receiverId: receiverId
       });
 
       playRingtone();
@@ -168,11 +172,13 @@ export function useCallManager() {
       callDurationIntervalRef.current = null;
     }
 
-    if (sendSignal && callState.roomId && callState.callLogId) {
+    if (sendSignal && callState.roomId && callState.callLogId && callState.otherUser) {
       sendMessage({
         type: 'call_end',
         roomId: callState.roomId,
-        callLogId: callState.callLogId
+        callLogId: callState.callLogId,
+        to: callState.otherUser.id,
+        receiverId: callState.otherUser.id
       });
 
       if (callState.callLogId) {

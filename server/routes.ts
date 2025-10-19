@@ -635,14 +635,10 @@ export function registerRoutes(app: Express): Server {
           "info"
         );
         
-        // Broadcast notification via WebSocket
-        wss.clients.forEach((client) => {
-          if (client.readyState === client.OPEN) {
-            client.send(JSON.stringify({
-              type: 'new_notification',
-              data: notification
-            }));
-          }
+        // Send notification via WebSocket to specific user
+        sendToUser(notification.userId, {
+          type: 'new_notification',
+          data: notification
         });
       }
       
@@ -693,15 +689,11 @@ export function registerRoutes(app: Express): Server {
         leaveRequest.status === 'approved' ? 'success' : 'error'
       );
       
-      // Broadcast notification via WebSocket
-      wss.clients.forEach((client) => {
-        if (client.readyState === client.OPEN) {
-          client.send(JSON.stringify({
-            type: 'new_notification',
-            data: notification
-          }));
-        }
-      });
+      // Send notification via WebSocket to specific user
+        sendToUser(notification.userId, {
+          type: 'new_notification',
+          data: notification
+        });
       
       res.json(leaveRequest);
     } catch (error) {
@@ -914,11 +906,40 @@ export function registerRoutes(app: Express): Server {
   // WebSocket server for real-time updates
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
 
+  // Map to track userId -> Set of WebSocket clients
+  const userConnections = new Map<string, Set<any>>();
+
+  // Helper function to send message to specific user
+  function sendToUser(userId: string, message: any) {
+    const connections = userConnections.get(userId);
+    if (connections) {
+      connections.forEach((client) => {
+        if (client.readyState === client.OPEN) {
+          client.send(JSON.stringify(message));
+        }
+      });
+    }
+  }
+
+  // Helper function to send message to all members of a chat room
+  async function sendToRoomMembers(roomId: string, message: any, excludeUserId?: string) {
+    try {
+      const members = await storage.getChatRoomMembers(roomId);
+      members.forEach((member) => {
+        if (!excludeUserId || member.id !== excludeUserId) {
+          sendToUser(member.id, message);
+        }
+      });
+    } catch (error) {
+      console.error('Error sending to room members:', error);
+    }
+  }
+
 
   wss.on('error', (error) => {
     console.error('WebSocket server error:', error);
   });
-  wss.on('connection', (ws) => {
+  wss.on('connection', (ws: any) => {
     console.log('WebSocket client connected');
 
     ws.on('message', (message) => {
@@ -928,7 +949,15 @@ export function registerRoutes(app: Express): Server {
         // Handle different message types
         switch (data.type) {
           case 'subscribe':
-            // Handle subscription to updates
+            // Store userId to WebSocket mapping
+            if (data.userId) {
+              ws.userId = data.userId;
+              if (!userConnections.has(data.userId)) {
+                userConnections.set(data.userId, new Set());
+              }
+              userConnections.get(data.userId)!.add(ws);
+              console.log(`User ${data.userId} subscribed, total connections: ${userConnections.get(data.userId)!.size}`);
+            }
             break;
           case 'aux_update':
             // Broadcast AUX status updates
@@ -945,12 +974,15 @@ export function registerRoutes(app: Express): Server {
           case 'call_answer':
           case 'ice_candidate':
           case 'call_end':
-            // Broadcast call signaling messages to all clients
-            wss.clients.forEach((client) => {
-              if (client !== ws && client.readyState === ws.OPEN) {
-                client.send(JSON.stringify(data));
-              }
-            });
+          case 'call_decline':
+            // Route call signaling messages only to the intended recipient
+            if (data.to) {
+              sendToUser(data.to, data);
+            } else if (data.receiverId) {
+              sendToUser(data.receiverId, data);
+            } else {
+              console.warn('Call message missing recipient information:', data.type);
+            }
             break;
         }
       } catch (error) {
@@ -960,6 +992,17 @@ export function registerRoutes(app: Express): Server {
 
     ws.on('close', () => {
       console.log('WebSocket client disconnected');
+      // Clean up user connections
+      if (ws.userId) {
+        const connections = userConnections.get(ws.userId);
+        if (connections) {
+          connections.delete(ws);
+          if (connections.size === 0) {
+            userConnections.delete(ws.userId);
+          }
+          console.log(`User ${ws.userId} disconnected, remaining connections: ${connections.size}`);
+        }
+      }
     });
 
   });
@@ -1074,25 +1117,18 @@ export function registerRoutes(app: Express): Server {
             { roomId: req.body.roomId, messageId: message.id }
           );
           
-          // Broadcast notification
-          wss.clients.forEach((client) => {
-            if (client.readyState === client.OPEN) {
-              client.send(JSON.stringify({
-                type: 'new_notification',
-                data: notification
-              }));
-            }
+          // Send notification to specific user
+          sendToUser(member.id, {
+            type: 'new_notification',
+            data: notification
           });
         }
       }
       
-      wss.clients.forEach((client) => {
-        if (client.readyState === client.OPEN) {
-          client.send(JSON.stringify({
-            type: 'new_message',
-            data: message
-          }));
-        }
+      // Send message to room members only
+      sendToRoomMembers(message.roomId, {
+        type: 'new_message',
+        data: message
       });
       
       res.status(201).json(message);
@@ -1119,14 +1155,14 @@ export function registerRoutes(app: Express): Server {
         return res.status(404).json({ message: "الرسالة غير موجودة" });
       }
       
-      wss.clients.forEach((client) => {
-        if (client.readyState === client.OPEN) {
-          client.send(JSON.stringify({
-            type: 'message_updated',
-            data: message
-          }));
-        }
-      });
+      // Send update to room members
+      const updatedMsgRoom = await storage.getChatRoom(message.roomId);
+      if (updatedMsgRoom) {
+        sendToRoomMembers(message.roomId, {
+          type: 'message_updated',
+          data: message
+        });
+      }
       
       res.json(message);
     } catch (error) {
@@ -1165,14 +1201,14 @@ export function registerRoutes(app: Express): Server {
         req.body.emoji
       );
       
-      wss.clients.forEach((client) => {
-        if (client.readyState === client.OPEN) {
-          client.send(JSON.stringify({
-            type: 'reaction_added',
-            data: reaction
-          }));
-        }
-      });
+      // Send reaction to room members
+      const reactionMsg = await storage.getChatMessage(req.params.messageId);
+      if (reactionMsg) {
+        sendToRoomMembers(reactionMsg.roomId, {
+          type: 'reaction_added',
+          data: reaction
+        });
+      }
       
       res.status(201).json(reaction);
     } catch (error) {
@@ -1331,14 +1367,10 @@ export function registerRoutes(app: Express): Server {
             { roomId: req.body.roomId, messageId: message.id }
           );
           
-          // Broadcast notification
-          wss.clients.forEach((client) => {
-            if (client.readyState === client.OPEN) {
-              client.send(JSON.stringify({
-                type: 'new_notification',
-                data: notification
-              }));
-            }
+          // Send notification to specific user
+          sendToUser(member.id, {
+            type: 'new_notification',
+            data: notification
           });
         }
       }
