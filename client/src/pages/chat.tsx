@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useSidebar } from "@/contexts/sidebar-context";
-import { cn } from "@/lib/utils";
+import { cn, getMediaUrl } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { useSearch } from "wouter";
 import Navigation from "@/components/navigation";
@@ -579,9 +579,9 @@ export default function Chat() {
   };
 
   const getRoomAvatar = (room: ChatRoom) => {
-    if (room.type === 'group') return room.image || null;
+    if (room.type === 'group') return getMediaUrl(room.image);
     const otherMember = room.members.find(m => m.id !== user?.id);
-    return otherMember?.profilePicture || null;
+    return getMediaUrl(otherMember?.profilePicture);
   };
 
   const getReplyMessage = (replyId?: string) => {
@@ -926,13 +926,9 @@ export default function Chat() {
                             >
                               <Avatar className="ring-2 ring-border">
                                 <AvatarImage 
-                                  src={message.sender.profilePicture || undefined} 
+                                  src={getMediaUrl(message.sender.profilePicture)} 
                                   alt={message.sender.fullName} 
                                   className="object-cover"
-                                  onError={(e) => {
-                                    console.error('Avatar image failed to load:', message.sender.profilePicture);
-                                    e.currentTarget.style.display = 'none';
-                                  }}
                                 />
                                 <AvatarFallback className={cn(
                                   isOwnMessage && "bg-gradient-to-br from-primary to-accent text-white"
@@ -983,14 +979,14 @@ export default function Chat() {
                                       >
                                         {att.type === "image" ? (
                                           <img
-                                            src={att.url}
+                                            src={getMediaUrl(att.url)}
                                             alt={att.name}
                                             className="rounded-lg max-w-xs hover:scale-105 transition-transform cursor-pointer"
                                           />
                                         ) : att.type === "audio" ? (
                                           <div className="flex items-center gap-2 p-2 rounded-lg bg-background/10">
                                             <Mic className="w-4 h-4" />
-                                            <audio controls src={att.url} className="flex-1" />
+                                            <audio controls src={getMediaUrl(att.url)} className="flex-1" />
                                           </div>
                                         ) : (
                                           <div className="flex items-center gap-2 p-2 rounded-lg bg-background/10 hover:bg-background/20 transition-colors cursor-pointer">
@@ -1122,7 +1118,7 @@ export default function Chat() {
                         >
                           {att.type === "image" ? (
                             <img
-                              src={att.url}
+                              src={getMediaUrl(att.url)}
                               alt={att.name}
                               className="h-20 w-20 object-cover rounded-lg border-2 border-border"
                             />
@@ -1438,14 +1434,14 @@ export default function Chat() {
                                           >
                                             {att.type === "image" ? (
                                               <img
-                                                src={att.url}
+                                                src={getMediaUrl(att.url)}
                                                 alt={att.name}
                                                 className="rounded-lg max-w-xs hover:scale-105 transition-transform cursor-pointer"
                                               />
                                             ) : att.type === "audio" ? (
                                               <div className="flex items-center gap-2 p-2 rounded-lg bg-background/10">
                                                 <Mic className="w-4 h-4" />
-                                                <audio controls src={att.url} className="flex-1" />
+                                                <audio controls src={getMediaUrl(att.url)} className="flex-1" />
                                               </div>
                                             ) : (
                                               <div className="flex items-center gap-2 p-2 rounded-lg bg-background/10 hover:bg-background/20 transition-colors cursor-pointer">
@@ -1577,7 +1573,7 @@ export default function Chat() {
                             >
                               {att.type === "image" ? (
                                 <img
-                                  src={att.url}
+                                  src={getMediaUrl(att.url)}
                                   alt={att.name}
                                   className="h-20 w-20 object-cover rounded-lg border-2 border-border"
                                 />

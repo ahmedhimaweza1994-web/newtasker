@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSidebar } from "@/contexts/sidebar-context";
-import { cn } from "@/lib/utils";
+import { cn, getMediaUrl } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import Navigation from "@/components/navigation";
 import Sidebar from "@/components/sidebar";
@@ -302,7 +302,7 @@ export default function AdminDashboard() {
                             <td className="py-3 px-4">
                               <div className="flex items-center gap-3">
                                 <Avatar className="w-10 h-10">
-                                  <AvatarImage src={employee.user.profilePicture || undefined} />
+                                  <AvatarImage src={getMediaUrl(employee.user.profilePicture)} />
                                   <AvatarFallback>
                                     {employee.user.fullName.split(' ').map(n => n[0]).join('').slice(0, 2)}
                                   </AvatarFallback>
@@ -366,7 +366,7 @@ export default function AdminDashboard() {
                             <div className="flex items-start justify-between mb-3">
                               <div className="flex items-center gap-3">
                                 <Avatar className="w-12 h-12">
-                                  <AvatarImage src={employee.user.profilePicture || undefined} />
+                                  <AvatarImage src={getMediaUrl(employee.user.profilePicture)} />
                                   <AvatarFallback>
                                     {employee.user.fullName.split(' ').map(n => n[0]).join('').slice(0, 2)}
                                   </AvatarFallback>
@@ -443,7 +443,7 @@ export default function AdminDashboard() {
               {/* Employee Header */}
               <div className="flex items-center gap-4">
                 <Avatar className="w-16 h-16 md:w-20 md:h-20">
-                  <AvatarImage src={selectedEmployee.user.profilePicture || undefined} />
+                  <AvatarImage src={getMediaUrl(selectedEmployee.user.profilePicture)} />
                   <AvatarFallback className="text-lg md:text-xl">
                     {selectedEmployee.user.fullName.split(' ').map(n => n[0]).join('').slice(0, 2)}
                   </AvatarFallback>

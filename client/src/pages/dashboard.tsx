@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSidebar } from "@/contexts/sidebar-context";
-import { cn } from "@/lib/utils";
+import { cn, getMediaUrl } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import Navigation from "@/components/navigation";
 import Sidebar from "@/components/sidebar";
@@ -284,7 +284,7 @@ export default function Dashboard() {
               <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                 <div className="flex items-center gap-4">
                   <Avatar className="w-16 h-16 md:w-20 md:h-20 border-4 border-white/20 shadow-2xl">
-                    <AvatarImage src={user?.profilePicture} alt={user?.fullName} />
+                    <AvatarImage src={getMediaUrl(user?.profilePicture)} alt={user?.fullName} />
                     <AvatarFallback className="text-2xl font-bold bg-white/10 backdrop-blur text-white">
                       {user?.fullName?.split(" ")[0]?.charAt(0) || "م"}
                     </AvatarFallback>

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useSidebar } from "@/contexts/sidebar-context";
-import { cn } from "@/lib/utils";
+import { cn, getMediaUrl } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import Navigation from "@/components/navigation";
 import Sidebar from "@/components/sidebar";
@@ -803,7 +803,7 @@ export default function HRManagement() {
                         >
                           <div className="flex items-start gap-4">
                             <Avatar className="hidden sm:block">
-                              <AvatarImage src={request.user?.profilePicture} />
+                              <AvatarImage src={getMediaUrl(request.user?.profilePicture)} />
                               <AvatarFallback>
                                 {request.user?.fullName?.split(' ').map((n: string) => n[0]).join('').slice(0, 2) || 'U'}
                               </AvatarFallback>
@@ -880,7 +880,7 @@ export default function HRManagement() {
                         >
                           <div className="flex items-start gap-4">
                             <Avatar className="hidden sm:block">
-                              <AvatarImage src={request.user?.profilePicture} />
+                              <AvatarImage src={getMediaUrl(request.user?.profilePicture)} />
                               <AvatarFallback>
                                 {request.user?.fullName?.split(' ').map((n: string) => n[0]).join('').slice(0, 2) || 'U'}
                               </AvatarFallback>
@@ -1039,7 +1039,7 @@ export default function HRManagement() {
                             <CardContent className="p-4">
                               <div className="flex items-center gap-3 mb-3">
                                 <Avatar>
-                                  <AvatarImage src={employee.profilePicture} />
+                                  <AvatarImage src={getMediaUrl(employee.profilePicture)} />
                                   <AvatarFallback>
                                     {employee.fullName.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
                                   </AvatarFallback>

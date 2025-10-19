@@ -2,6 +2,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useSidebar } from "@/contexts/sidebar-context";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getMediaUrl } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
@@ -398,7 +399,7 @@ export default function Navigation() {
                   data-testid="nav-user-menu"
                 >
                   <Avatar className="h-10 w-10">
-                    <AvatarImage src={user?.profilePicture || undefined} alt={user?.fullName} />
+                    <AvatarImage src={getMediaUrl(user?.profilePicture)} alt={user?.fullName} />
                     <AvatarFallback>
                       {user?.fullName?.split(' ').map(n => n[0]).join('').slice(0, 2) || 'ND'}
                     </AvatarFallback>

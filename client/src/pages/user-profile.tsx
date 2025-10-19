@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useParams } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useSidebar } from "@/contexts/sidebar-context";
-import { cn } from "@/lib/utils";
+import { cn, getMediaUrl } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import Navigation from "@/components/navigation";
 import Sidebar from "@/components/sidebar";
@@ -265,7 +265,7 @@ export default function UserProfile() {
           >
             {coverImagePreview || profile.coverImage ? (
               <img 
-                src={coverImagePreview || profile.coverImage} 
+                src={coverImagePreview || getMediaUrl(profile.coverImage)} 
                 alt="Cover" 
                 className="w-full h-full max-w-full object-cover"
               />
@@ -317,7 +317,7 @@ export default function UserProfile() {
                   transition={{ type: "spring", stiffness: 300 }}
                 >
                   <Avatar className="w-28 h-28 sm:w-32 sm:h-32 md:w-36 md:h-36 border-4 border-background shadow-2xl ring-4 ring-primary/20">
-                    <AvatarImage src={profileImagePreview || profile.profilePicture} alt={profile.fullName} className="max-w-full object-cover" />
+                    <AvatarImage src={profileImagePreview || getMediaUrl(profile.profilePicture)} alt={profile.fullName} className="max-w-full object-cover" />
                     <AvatarFallback className="text-3xl font-bold bg-gradient-to-br from-primary to-secondary text-white">
                       {profile.fullName?.split(" ")[0]?.charAt(0) || "م"}
                     </AvatarFallback>

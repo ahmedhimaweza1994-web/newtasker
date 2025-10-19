@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getMediaUrl } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, Star, Medal, Crown } from "lucide-react";
 import { User } from "@shared/schema";
@@ -112,7 +113,7 @@ export default function Leaderboard({ limit, showTitle = true }: LeaderboardProp
 
               {/* Avatar */}
               <Avatar className={`${index === 0 ? 'w-12 h-12 ring-2 ring-yellow-500' : 'w-10 h-10'}`}>
-                <AvatarImage src={user.profilePicture || undefined} alt={user.fullName} />
+                <AvatarImage src={getMediaUrl(user.profilePicture)} alt={user.fullName} />
                 <AvatarFallback className={index === 0 ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300' : ''}>
                   {user.fullName?.split(" ")[0]?.charAt(0) || "م"}
                 </AvatarFallback>

@@ -1,6 +1,7 @@
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getMediaUrl } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
@@ -202,7 +203,7 @@ export default function NavHeader({ onMenuToggle, showMenuToggle = false }: NavH
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full" data-testid="nav-user-menu">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={user?.profilePicture || undefined} alt={user?.fullName} />
+                  <AvatarImage src={getMediaUrl(user?.profilePicture)} alt={user?.fullName} />
                   <AvatarFallback className="text-xs">
                     {user?.fullName?.split(' ').map(n => n[0]).join('').slice(0, 2) || 'ND'}
                   </AvatarFallback>

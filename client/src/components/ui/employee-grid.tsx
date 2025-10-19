@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./car
 import { Button } from "./button";
 import { Badge } from "./badge";
 import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
+import { getMediaUrl } from "@/lib/utils";
 import { 
   Table,
   TableBody,
@@ -206,7 +207,7 @@ export default function EmployeeGrid({
                     <div className="flex items-center gap-3">
                       <div className="relative">
                         <Avatar className="w-10 h-10">
-                          <AvatarImage src={employee.avatar} alt={employee.fullName} />
+                          <AvatarImage src={getMediaUrl(employee.avatar)} alt={employee.fullName} />
                           <AvatarFallback className="bg-primary text-primary-foreground">
                             {employee.fullName.charAt(0)}
                           </AvatarFallback>
