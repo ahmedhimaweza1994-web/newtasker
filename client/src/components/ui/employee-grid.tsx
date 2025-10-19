@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useWebSocket } from "@/lib/websocket";
+import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./card";
 import { Button } from "./button";
 import { Badge } from "./badge";
@@ -42,16 +43,18 @@ export default function EmployeeGrid({
   departmentFilter, 
   statusFilter 
 }: EmployeeGridProps) {
+  const { user } = useAuth();
   const [liveEmployees, setLiveEmployees] = useState<Employee[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  const { subscribe } = useWebSocket("employee-update");
+  const { lastMessage } = useWebSocket({ userId: user?.id });
 
   // Subscribe to real-time employee updates
   useEffect(() => {
-    const unsubscribe = subscribe((data) => {
+    if (lastMessage && lastMessage.type === 'employee-update' && lastMessage.data) {
       setLiveEmployees(prevEmployees => {
+        const data = lastMessage.data;
         const existingIndex = prevEmployees.findIndex(emp => emp.id === data.id);
         if (existingIndex >= 0) {
           const updated = [...prevEmployees];
@@ -61,10 +64,8 @@ export default function EmployeeGrid({
           return [...prevEmployees, data];
         }
       });
-    });
-
-    return unsubscribe;
-  }, [subscribe]);
+    }
+  }, [lastMessage]);
 
   // Mock data for demonstration
   const mockEmployees: Employee[] = [

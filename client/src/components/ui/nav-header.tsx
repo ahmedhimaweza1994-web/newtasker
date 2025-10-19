@@ -30,7 +30,7 @@ export default function NavHeader({ onMenuToggle, showMenuToggle = false }: NavH
   const { user, logoutMutation } = useAuth();
   const [, setLocation] = useLocation();
   const [isDark, setIsDark] = useState(false);
-  const { lastMessage } = useWebSocket();
+  const { lastMessage } = useWebSocket({ userId: user?.id });
 
   const { data: notifications = [] } = useQuery<Notification[]>({
     queryKey: ["/api/notifications"],

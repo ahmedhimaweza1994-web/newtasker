@@ -37,7 +37,7 @@ export default function Navigation() {
   const [isDark, setIsDark] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showSearchResults, setShowSearchResults] = useState(false);
-  const { lastMessage } = useWebSocket();
+  const { lastMessage } = useWebSocket({ userId: user?.id });
   const { toast } = useToast();
   const { handleNotification, ensureBrowserNotificationPermission, permission } = useEnhancedNotifications();
 

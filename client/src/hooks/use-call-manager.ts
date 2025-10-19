@@ -24,9 +24,9 @@ interface CallState {
 }
 
 export function useCallManager() {
-  const { sendMessage, lastMessage } = useWebSocket();
-  const { playRingtone, stopRingtone, playCallEnd, playCallConnect } = useCallSounds();
   const { user } = useAuth();
+  const { sendMessage, lastMessage } = useWebSocket({ userId: user?.id });
+  const { playRingtone, stopRingtone, playCallEnd, playCallConnect } = useCallSounds();
   
   const [callState, setCallState] = useState<CallState>({
     callLogId: null,

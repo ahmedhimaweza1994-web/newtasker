@@ -5,45 +5,49 @@ export interface WebSocketMessage {
   data: any;
 }
 
-export function useWebSocket() {
+interface UseWebSocketProps {
+  userId?: string;
+}
+
+export function useWebSocket(props?: UseWebSocketProps) {
+  const { userId } = props || {};
   const ws = useRef<WebSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [lastMessage, setLastMessage] = useState<WebSocketMessage | null>(null);
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
+    if (!userId) {
+      return;
+    }
+
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const wsUrl = `${protocol}//${window.location.host}/ws`;
     
     const connect = () => {
+      if (ws.current?.readyState === WebSocket.OPEN || ws.current?.readyState === WebSocket.CONNECTING) {
+        return;
+      }
+
       ws.current = new WebSocket(wsUrl);
       
       ws.current.onopen = () => {
         setIsConnected(true);
         console.log('WebSocket connected');
         
-        // Send initial subscribe message to ensure userId is registered
-        fetch('/api/user')
-          .then(res => {
-            if (!res.ok) {
-              throw new Error('Not authenticated');
-            }
-            return res.json();
-          })
-          .then(user => {
-            if (user && user.id && ws.current?.readyState === WebSocket.OPEN) {
-              ws.current.send(JSON.stringify({ type: 'subscribe', userId: user.id }));
-            }
-          })
-          .catch(error => {
-            console.log('WebSocket subscribe skipped:', error.message);
-          });
+        if (userId && ws.current?.readyState === WebSocket.OPEN) {
+          ws.current.send(JSON.stringify({ type: 'subscribe', userId }));
+          console.log(`WebSocket subscribed for user: ${userId}`);
+        }
       };
       
       ws.current.onclose = () => {
         setIsConnected(false);
         console.log('WebSocket disconnected');
-        // Attempt to reconnect after 3 seconds
-        setTimeout(connect, 3000);
+        
+        if (userId) {
+          reconnectTimeoutRef.current = setTimeout(connect, 3000);
+        }
       };
       
       ws.current.onerror = (error) => {
@@ -63,11 +67,14 @@ export function useWebSocket() {
     connect();
 
     return () => {
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+      }
       if (ws.current && ws.current.readyState === WebSocket.OPEN) {
         ws.current.close();
       }
     };
-  }, []);
+  }, [userId]);
 
   const sendMessage = (message: WebSocketMessage) => {
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {

@@ -112,7 +112,7 @@ export default function Chat() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const { isConnected, lastMessage, sendMessage } = useWebSocket();
+  const { isConnected, lastMessage, sendMessage } = useWebSocket({ userId: user?.id });
   const { handleMessageNotification } = useEnhancedNotifications();
   
   const { callState, startCall, endCall, toggleMute, toggleVideo, localVideoRef, remoteVideoRef } = useCallManager();

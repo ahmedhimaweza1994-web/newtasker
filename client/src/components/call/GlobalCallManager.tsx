@@ -8,7 +8,7 @@ import { apiRequest } from '@/lib/queryClient';
 
 export function GlobalCallManager() {
   const { user } = useAuth();
-  const { lastMessage, sendMessage } = useWebSocket();
+  const { lastMessage, sendMessage } = useWebSocket({ userId: user?.id });
   const { playRingtone, stopRingtone, playCallEnd, playCallConnect } = useCallSounds();
 
   const [incomingCall, setIncomingCall] = useState<{
