@@ -47,7 +47,7 @@ import {
   advanceStatusEnum
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, or, isNull, count, sql, gte, lte } from "drizzle-orm";
+import { eq, desc, and, or, isNull, count, sql, gte, lte, alias } from "drizzle-orm";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { pool } from "./db";
@@ -1061,17 +1061,8 @@ export class MemStorage implements IStorage {
   }
 
   async getUserCallLogs(userId: string): Promise<any[]> {
-    const caller = db.select({
-      id: users.id,
-      fullName: users.fullName,
-      profilePicture: users.profilePicture,
-    }).from(users).as('caller');
-    
-    const receiver = db.select({
-      id: users.id,
-      fullName: users.fullName,
-      profilePicture: users.profilePicture,
-    }).from(users).as('receiver');
+    const callerAlias = alias(users, 'caller');
+    const receiverAlias = alias(users, 'receiver');
 
     const logs = await db
       .select({
@@ -1085,42 +1076,44 @@ export class MemStorage implements IStorage {
         endedAt: callLogs.endedAt,
         duration: callLogs.duration,
         createdAt: callLogs.createdAt,
-        callerData: {
-          id: sql`${caller}.id`,
-          fullName: sql`${caller}.full_name`,
-          profilePicture: sql`${caller}.profile_picture`,
-        },
-        receiverData: {
-          id: sql`${receiver}.id`,
-          fullName: sql`${receiver}.full_name`,
-          profilePicture: sql`${receiver}.profile_picture`,
-        },
+        callerFullName: callerAlias.fullName,
+        callerProfilePicture: callerAlias.profilePicture,
+        receiverFullName: receiverAlias.fullName,
+        receiverProfilePicture: receiverAlias.profilePicture,
       })
       .from(callLogs)
-      .leftJoin(sql`(SELECT id, full_name, profile_picture FROM users) AS caller`, eq(callLogs.callerId, sql`caller.id`))
-      .leftJoin(sql`(SELECT id, full_name, profile_picture FROM users) AS receiver`, eq(callLogs.receiverId, sql`receiver.id`))
+      .leftJoin(callerAlias, eq(callLogs.callerId, callerAlias.id))
+      .leftJoin(receiverAlias, eq(callLogs.receiverId, receiverAlias.id))
       .where(or(eq(callLogs.callerId, userId), eq(callLogs.receiverId, userId)))
       .orderBy(desc(callLogs.startedAt));
 
     return logs.map(log => ({
-      ...log,
-      caller: log.callerData,
-      receiver: log.receiverData,
+      id: log.id,
+      roomId: log.roomId,
+      callerId: log.callerId,
+      receiverId: log.receiverId,
+      callType: log.callType,
+      status: log.status,
+      startedAt: log.startedAt,
+      endedAt: log.endedAt,
+      duration: log.duration,
+      createdAt: log.createdAt,
+      caller: {
+        id: log.callerId,
+        fullName: log.callerFullName,
+        profilePicture: log.callerProfilePicture,
+      },
+      receiver: {
+        id: log.receiverId,
+        fullName: log.receiverFullName,
+        profilePicture: log.receiverProfilePicture,
+      },
     }));
   }
 
   async getRoomCallLogs(roomId: string): Promise<any[]> {
-    const caller = db.select({
-      id: users.id,
-      fullName: users.fullName,
-      profilePicture: users.profilePicture,
-    }).from(users).as('caller');
-    
-    const receiver = db.select({
-      id: users.id,
-      fullName: users.fullName,
-      profilePicture: users.profilePicture,
-    }).from(users).as('receiver');
+    const callerAlias = alias(users, 'caller');
+    const receiverAlias = alias(users, 'receiver');
 
     const logs = await db
       .select({
@@ -1134,27 +1127,38 @@ export class MemStorage implements IStorage {
         endedAt: callLogs.endedAt,
         duration: callLogs.duration,
         createdAt: callLogs.createdAt,
-        callerData: {
-          id: sql`${caller}.id`,
-          fullName: sql`${caller}.full_name`,
-          profilePicture: sql`${caller}.profile_picture`,
-        },
-        receiverData: {
-          id: sql`${receiver}.id`,
-          fullName: sql`${receiver}.full_name`,
-          profilePicture: sql`${receiver}.profile_picture`,
-        },
+        callerFullName: callerAlias.fullName,
+        callerProfilePicture: callerAlias.profilePicture,
+        receiverFullName: receiverAlias.fullName,
+        receiverProfilePicture: receiverAlias.profilePicture,
       })
       .from(callLogs)
-      .leftJoin(sql`(SELECT id, full_name, profile_picture FROM users) AS caller`, eq(callLogs.callerId, sql`caller.id`))
-      .leftJoin(sql`(SELECT id, full_name, profile_picture FROM users) AS receiver`, eq(callLogs.receiverId, sql`receiver.id`))
+      .leftJoin(callerAlias, eq(callLogs.callerId, callerAlias.id))
+      .leftJoin(receiverAlias, eq(callLogs.receiverId, receiverAlias.id))
       .where(eq(callLogs.roomId, roomId))
       .orderBy(desc(callLogs.startedAt));
 
     return logs.map(log => ({
-      ...log,
-      caller: log.callerData,
-      receiver: log.receiverData,
+      id: log.id,
+      roomId: log.roomId,
+      callerId: log.callerId,
+      receiverId: log.receiverId,
+      callType: log.callType,
+      status: log.status,
+      startedAt: log.startedAt,
+      endedAt: log.endedAt,
+      duration: log.duration,
+      createdAt: log.createdAt,
+      caller: {
+        id: log.callerId,
+        fullName: log.callerFullName,
+        profilePicture: log.callerProfilePicture,
+      },
+      receiver: {
+        id: log.receiverId,
+        fullName: log.receiverFullName,
+        profilePicture: log.receiverProfilePicture,
+      },
     }));
   }
 
