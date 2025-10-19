@@ -232,7 +232,27 @@ export class MemStorage implements IStorage {
 
   async getTask(id: string): Promise<Task | undefined> {
     const [task] = await db.select().from(tasks).where(eq(tasks.id, id));
-    return task || undefined;
+    if (!task) return undefined;
+    
+    // Get creator user
+    let createdByUser = undefined;
+    if (task.createdBy) {
+      const [creator] = await db.select(userPublicFields).from(users).where(eq(users.id, task.createdBy));
+      createdByUser = creator;
+    }
+    
+    // Get assigned user
+    let assignedToUser = undefined;
+    if (task.assignedTo) {
+      const [assignee] = await db.select(userPublicFields).from(users).where(eq(users.id, task.assignedTo));
+      assignedToUser = assignee;
+    }
+    
+    return {
+      ...task,
+      createdByUser,
+      assignedToUser,
+    } as any;
   }
 
   async getUserTasks(userId: string): Promise<Task[]> {

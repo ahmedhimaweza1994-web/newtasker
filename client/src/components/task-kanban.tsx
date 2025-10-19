@@ -883,9 +883,19 @@ function TaskDetailsDialog({
                   </Label>
                   <div className="flex items-center gap-2 mt-2">
                     <Avatar className="h-8 w-8">
-                      <AvatarFallback>{task.createdByUser?.fullName[0]}</AvatarFallback>
+                      <AvatarImage 
+                        src={task.createdByUser?.profilePicture || undefined} 
+                        alt={task.createdByUser?.fullName || "منشئ المهمة"} 
+                        className="object-cover"
+                      />
+                      <AvatarFallback>{task.createdByUser?.fullName?.[0] || "م"}</AvatarFallback>
                     </Avatar>
-                    <p className="font-medium" data-testid="text-task-creator">{task.createdByUser?.fullName}</p>
+                    <div>
+                      <p className="font-medium" data-testid="text-task-creator">{task.createdByUser?.fullName}</p>
+                      {task.createdByUser?.department && (
+                        <p className="text-xs text-muted-foreground">{task.createdByUser.department}</p>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <div>
@@ -896,9 +906,19 @@ function TaskDetailsDialog({
                   {task.assignedToUser ? (
                     <div className="flex items-center gap-2 mt-2">
                       <Avatar className="h-8 w-8">
-                        <AvatarFallback>{task.assignedToUser.fullName[0]}</AvatarFallback>
+                        <AvatarImage 
+                          src={task.assignedToUser.profilePicture || undefined} 
+                          alt={task.assignedToUser.fullName || "معين إليه"} 
+                          className="object-cover"
+                        />
+                        <AvatarFallback>{task.assignedToUser.fullName?.[0] || "م"}</AvatarFallback>
                       </Avatar>
-                      <p className="font-medium" data-testid="text-task-assignee">{task.assignedToUser.fullName}</p>
+                      <div>
+                        <p className="font-medium" data-testid="text-task-assignee">{task.assignedToUser.fullName}</p>
+                        {task.assignedToUser.department && (
+                          <p className="text-xs text-muted-foreground">{task.assignedToUser.department}</p>
+                        )}
+                      </div>
                     </div>
                   ) : (
                     <p className="text-muted-foreground mt-2" data-testid="text-no-assignee">غير معين</p>
