@@ -47,8 +47,12 @@ export function GlobalCallManager() {
   useEffect(() => {
     if (!lastMessage || !user) return;
 
+    const timestamp = new Date().toISOString();
+
     if (lastMessage.type === 'call_offer') {
       if (lastMessage.from && lastMessage.from.id !== user.id) {
+        const callId = lastMessage.callLogId;
+        console.log(`[CALL ${callId}] [${timestamp}] [RECEIVER] Received call_offer from ${lastMessage.from.fullName}`);
         setIncomingCall({
           from: lastMessage.from,
           roomId: lastMessage.roomId,
@@ -57,28 +61,37 @@ export function GlobalCallManager() {
           offer: lastMessage.offer,
         });
         playRingtone();
+        console.log(`[CALL ${callId}] [${timestamp}] [RECEIVER] Incoming call dialog shown - Ringtone started`);
       }
     }
 
     if (lastMessage.type === 'call_answer') {
+      const callId = lastMessage.callLogId || 'unknown';
+      console.log(`[CALL ${callId}] [${timestamp}] [RECEIVER] Received call_answer`);
       if (peerConnectionRef.current && lastMessage.answer) {
         peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(lastMessage.answer))
           .then(() => {
+            console.log(`[CALL ${callId}] [${timestamp}] [RECEIVER] Remote description set - Updating to connected`);
             setActiveCall(prev => prev ? { ...prev, callStatus: 'connected' } : null);
             playCallConnect();
           })
-          .catch(error => console.error('Error setting remote description:', error));
+          .catch(error => console.error(`[CALL ${callId}] [${timestamp}] [RECEIVER] Error setting remote description:`, error));
       }
     }
 
     if (lastMessage.type === 'ice_candidate') {
+      const callId = lastMessage.callLogId || 'unknown';
       if (peerConnectionRef.current && lastMessage.candidate) {
+        console.log(`[CALL ${callId}] [${timestamp}] [RECEIVER] Adding ICE candidate`);
         peerConnectionRef.current.addIceCandidate(new RTCIceCandidate(lastMessage.candidate))
-          .catch(error => console.error('Error adding ICE candidate:', error));
+          .then(() => console.log(`[CALL ${callId}] [${timestamp}] [RECEIVER] ICE candidate added successfully`))
+          .catch(error => console.error(`[CALL ${callId}] [${timestamp}] [RECEIVER] Error adding ICE candidate:`, error));
       }
     }
 
     if (lastMessage.type === 'call_end' || lastMessage.type === 'call_decline') {
+      const callId = lastMessage.callLogId || 'unknown';
+      console.log(`[CALL ${callId}] [${timestamp}] [RECEIVER] Received ${lastMessage.type}`);
       if (peerConnectionRef.current) {
         peerConnectionRef.current.close();
         peerConnectionRef.current = null;
@@ -87,11 +100,16 @@ export function GlobalCallManager() {
       setActiveCall(null);
       stopRingtone();
       playCallEnd();
+      console.log(`[CALL ${callId}] [${timestamp}] [RECEIVER] Call terminated - State reset`);
     }
   }, [lastMessage, user, playRingtone, stopRingtone, playCallEnd, playCallConnect]);
 
   const handleAcceptCall = useCallback(async () => {
     if (!incomingCall || !user) return;
+    
+    const callId = incomingCall.callLogId;
+    const timestamp = new Date().toISOString();
+    console.log(`[CALL ${callId}] [${timestamp}] [RECEIVER] Accepting call from ${incomingCall.from.fullName}`);
     
     stopRingtone();
 
@@ -100,17 +118,32 @@ export function GlobalCallManager() {
         ? { audio: true, video: true }
         : { audio: true };
 
+      console.log(`[CALL ${callId}] [${timestamp}] [RECEIVER] Requesting media permissions:`, constraints);
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      console.log(`[CALL ${callId}] [${timestamp}] [RECEIVER] Media stream acquired - Tracks: ${stream.getTracks().length}`);
 
       const pc = new RTCPeerConnection({
         iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
       });
       peerConnectionRef.current = pc;
+      console.log(`[CALL ${callId}] [${timestamp}] [RECEIVER] RTCPeerConnection created`);
 
-      stream.getTracks().forEach(track => pc.addTrack(track, stream));
+      pc.onconnectionstatechange = () => {
+        console.log(`[CALL ${callId}] [${new Date().toISOString()}] [RECEIVER] Connection state: ${pc.connectionState}`);
+      };
+
+      pc.oniceconnectionstatechange = () => {
+        console.log(`[CALL ${callId}] [${new Date().toISOString()}] [RECEIVER] ICE connection state: ${pc.iceConnectionState}`);
+      };
+
+      stream.getTracks().forEach(track => {
+        console.log(`[CALL ${callId}] [${timestamp}] [RECEIVER] Adding track: ${track.kind}`);
+        pc.addTrack(track, stream);
+      });
 
       pc.onicecandidate = (event) => {
         if (event.candidate) {
+          console.log(`[CALL ${callId}] [${new Date().toISOString()}] [RECEIVER] Sending ICE candidate`);
           sendMessage({
             type: 'ice_candidate',
             roomId: incomingCall.roomId,
@@ -119,16 +152,23 @@ export function GlobalCallManager() {
             to: incomingCall.from.id,
             receiverId: incomingCall.from.id
           });
+        } else {
+          console.log(`[CALL ${callId}] [${new Date().toISOString()}] [RECEIVER] ICE candidate gathering complete`);
         }
       };
 
       pc.ontrack = (event) => {
+        console.log(`[CALL ${callId}] [${new Date().toISOString()}] [RECEIVER] Remote track received`);
         setActiveCall(prev => prev ? { ...prev, remoteStream: event.streams[0] } : null);
       };
 
+      console.log(`[CALL ${callId}] [${timestamp}] [RECEIVER] Setting remote description from offer`);
       await pc.setRemoteDescription(new RTCSessionDescription(incomingCall.offer));
+      
+      console.log(`[CALL ${callId}] [${timestamp}] [RECEIVER] Creating answer`);
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
+      console.log(`[CALL ${callId}] [${timestamp}] [RECEIVER] Local description set`);
 
       setActiveCall({
         roomId: incomingCall.roomId,
@@ -143,7 +183,9 @@ export function GlobalCallManager() {
         localStream: stream,
         remoteStream: null,
       });
+      console.log(`[CALL ${callId}] [${timestamp}] [RECEIVER] Active call state set - Status: connecting`);
 
+      console.log(`[CALL ${callId}] [${timestamp}] [RECEIVER] Sending call_answer to ${incomingCall.from.id}`);
       sendMessage({
         type: 'call_answer',
         roomId: incomingCall.roomId,
@@ -162,13 +204,14 @@ export function GlobalCallManager() {
 
       await apiRequest('PATCH', `/api/calls/${incomingCall.callLogId}/status`, {
         status: 'connected',
-      }).catch(console.error);
+      }).catch(error => console.error(`[CALL ${callId}] [${timestamp}] [RECEIVER] Error updating call status:`, error));
       
+      console.log(`[CALL ${callId}] [${timestamp}] [RECEIVER] Call accepted and connected successfully`);
       setActiveCall(prev => prev ? { ...prev, callStatus: 'connected' } : null);
 
       setIncomingCall(null);
     } catch (error) {
-      console.error('Error accepting call:', error);
+      console.error(`[CALL ${callId}] [${timestamp}] [RECEIVER] Error accepting call:`, error);
       handleDeclineCall();
     }
   }, [incomingCall, user, sendMessage, stopRingtone, playCallConnect]);
@@ -176,8 +219,13 @@ export function GlobalCallManager() {
   const handleDeclineCall = useCallback(async () => {
     if (!incomingCall) return;
 
+    const callId = incomingCall.callLogId;
+    const timestamp = new Date().toISOString();
+    console.log(`[CALL ${callId}] [${timestamp}] [RECEIVER] Declining call from ${incomingCall.from.fullName}`);
+
     stopRingtone();
 
+    console.log(`[CALL ${callId}] [${timestamp}] [RECEIVER] Sending call_decline to ${incomingCall.from.id}`);
     sendMessage({
       type: 'call_decline',
       roomId: incomingCall.roomId,
@@ -188,8 +236,9 @@ export function GlobalCallManager() {
 
     await apiRequest('PATCH', `/api/calls/${incomingCall.callLogId}/status`, {
       status: 'declined',
-    }).catch(console.error);
+    }).catch(error => console.error(`[CALL ${callId}] [${timestamp}] [RECEIVER] Error updating call status:`, error));
 
+    console.log(`[CALL ${callId}] [${timestamp}] [RECEIVER] Call declined successfully`);
     setIncomingCall(null);
   }, [incomingCall, sendMessage, stopRingtone]);
 

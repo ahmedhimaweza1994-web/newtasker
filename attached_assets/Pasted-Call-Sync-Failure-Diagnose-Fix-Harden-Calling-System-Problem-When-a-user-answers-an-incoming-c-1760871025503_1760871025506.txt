@@ -1,0 +1,62 @@
+Call Sync Failure: Diagnose, Fix & Harden Calling System
+
+Problem:
+When a user answers an incoming call, the callee’s side shows the call as connected and the call timer starts — but the caller’s side remains in the “calling / جاري الاتصال” state (no timer, no connected state). If the callee later declines, the caller still sees ringing. In short: caller and callee are not synchronized—they are not seeing the same call state.
+
+What to do (deliverables):
+
+Diagnose root cause
+
+Inspect signaling & event flow (socket/WebSocket messages or whatever real-time layer you use) for all call lifecycle events: incoming, ringing, answered, rejected, ended, failed.
+
+Check client code that emits and consumes these events (call initiation, accept/decline handlers, and call-state updates).
+
+Check server-side handlers that forward/broadcast call events to recipients.
+
+Verify WebRTC signaling exchange (offer/answer/ICE candidates) and that accept/answer events trigger the correct downstream updates.
+
+Review any middleware, interceptors, or request wrappers that could alter payloads or methods.
+
+Fix synchronization
+
+Ensure an answered event from the callee is reliably delivered to the caller and triggers the caller UI to switch to connected/ongoing state and start the timer.
+
+Ensure a rejected/ended event triggers the caller UI to stop ringing and show the correct end/missed state.
+
+Add acknowledgement/receipt logic where needed so the sender knows the event was delivered (and fallback if not).
+
+Add robust error handling & retries
+
+Add timeouts, retries, and clear failure states if events are lost.
+
+Log meaningful client & server events to trace failures.
+
+Verify signaling & media
+
+Confirm offer/answer and ICE candidate exchange occurs and that media streams are established when the call is answered.
+
+Confirm STUN/TURN configuration if calls across NAT/remote networks are failing.
+
+Test & Validate
+
+End-to-end tests with two real users: call → accept → both sides show connected and timers start; decline → both sides show ended/missed.
+
+Test across pages/tabs and different network conditions.
+
+Provide sample logs/screenshots/video showing successful and failed flows before/after fix.
+
+Hardening & Improvements (optional but recommended)
+
+Add server & client logging for every call event with timestamps and correlating call IDs.
+
+Ensure the call UI updates are atomic and not dependent on race-prone state updates.
+
+Add cleanup for stale call states when clients disconnect.
+
+Acceptance criteria
+
+When callee accepts, caller immediately switches to connected state and call timer runs.
+
+When callee declines, caller immediately stops ringing and sees a missed/ended state.
+
+Call lifecycle events are consistent and synchronized for both parties in all tested scenarios.
