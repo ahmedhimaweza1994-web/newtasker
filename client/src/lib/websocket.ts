@@ -20,6 +20,13 @@ export function useWebSocket() {
       ws.current.onopen = () => {
         setIsConnected(true);
         console.log('WebSocket connected');
+        
+        // Send initial subscribe message to ensure userId is registered
+        fetch('/api/user').then(res => res.json()).then(user => {
+          if (user && user.id && ws.current?.readyState === WebSocket.OPEN) {
+            ws.current.send(JSON.stringify({ type: 'subscribe', userId: user.id }));
+          }
+        }).catch(console.error);
       };
       
       ws.current.onclose = () => {

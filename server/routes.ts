@@ -5,7 +5,9 @@ import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { createGoogleMeetEvent, isGoogleCalendarConnected } from "./google-calendar-integration";
 import multer from 'multer';
+import { z } from 'zod';
 import path from 'path';
+import { startCallSchema, updateCallStatusSchema } from '@shared/call-schemas';
 
 const multerStorage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -973,18 +975,36 @@ export function registerRoutes(app: Express): Server {
 
   wss.on('error', (error) => {
     console.error('WebSocket server error:', error);
-  });
-  wss.on('connection', (ws) => {
-    console.log('WebSocket client connected');
+  const wsClients = new Map<any, { userId?: string }>();
 
-    ws.on('message', (message) => {
+  wss.on('connection', (ws, req) => {
+    console.log('WebSocket client connected');
+    
+    // Extract userId from authenticated session ONLY
+    // Never trust client-provided userId for security
+    let userId: string | undefined;
+    
+    // The session is attached to req by express-session middleware
+    const session = (req as any).session;
+    if (session?.passport?.user) {
+      userId = session.passport.user;
+      console.log(`WebSocket authenticated user: ${userId}`);
+    } else {
+      console.warn('WebSocket connection without authenticated session');
+    }
+    
+    wsClients.set(ws, { userId });
+
+    ws.on('message', async (message) => {
       try {
         const data = JSON.parse(message.toString());
         
         // Handle different message types
         switch (data.type) {
           case 'subscribe':
-            // Handle subscription to updates
+            // Ignore client-provided userId for security - we only use session-derived userId
+            // This prevents impersonation attacks
+            console.log('Subscribe message received but userId is session-derived only');
             break;
           case 'aux_update':
             // Broadcast AUX status updates
@@ -1001,12 +1021,46 @@ export function registerRoutes(app: Express): Server {
           case 'call_answer':
           case 'ice_candidate':
           case 'call_end':
-            // Broadcast call signaling messages to all clients
-            wss.clients.forEach((client) => {
-              if (client !== ws && client.readyState === ws.OPEN) {
-                client.send(JSON.stringify(data));
+          case 'call_decline':
+          case 'call_busy':
+          case 'call_timeout':
+          case 'call_ringing':
+          case 'call_connected':
+            // Broadcast call signaling messages ONLY to participants in the room
+            if (!data.roomId) {
+              console.error('Call message missing roomId');
+              break;
+            }
+
+            // Security: Verify sender is authenticated
+            const senderData = wsClients.get(ws);
+            if (!senderData?.userId) {
+              console.error('Unauthenticated user attempted to send call message');
+              break;
+            }
+
+            try {
+              const roomMembers = await storage.getChatRoomMembers(data.roomId);
+              const memberIds = new Set(roomMembers.map(m => m.id));
+
+              // Security: Verify sender is a member of the room
+              if (!memberIds.has(senderData.userId)) {
+                console.error(`User ${senderData.userId} attempted to send call message to room ${data.roomId} without membership`);
+                break;
               }
-            });
+
+              wss.clients.forEach((client) => {
+                if (client !== ws && client.readyState === ws.OPEN) {
+                  const clientData = wsClients.get(client);
+                  if (clientData?.userId && memberIds.has(clientData.userId)) {
+                    client.send(JSON.stringify(data));
+                    console.log(`Sent ${data.type} to user ${clientData.userId} in room ${data.roomId}`);
+                  }
+                }
+              });
+            } catch (error) {
+              console.error('Error filtering call message recipients:', error);
+            }
             break;
         }
       } catch (error) {
@@ -1016,9 +1070,13 @@ export function registerRoutes(app: Express): Server {
 
     ws.on('close', () => {
       console.log('WebSocket client disconnected');
+      wsClients.delete(ws);
     });
 
   });
+
+  });
+
 
   // Chat Rooms Routes
   app.post("/api/chat/rooms", requireAuth, async (req, res) => {
@@ -1616,6 +1674,67 @@ export function registerRoutes(app: Express): Server {
       console.error('Broadcast error:', error);
     }
   }, 5000); // Broadcast every 5 seconds
+
+  // Call Logs API
+  app.post("/api/calls/start", requireAuth, async (req, res) => {
+    try {
+      // Using imported startCallSchema
+      const validated = startCallSchema.parse(req.body);
+      
+      const callLog = await storage.createCallLog({
+        roomId: validated.roomId,
+        callerId: req.user!.id,
+        receiverId: validated.receiverId,
+        callType: validated.callType,
+        status: 'initiated',
+      });
+      res.status(201).json(callLog);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "بيانات غير صحيحة", errors: error.errors });
+      }
+      console.error("Error creating call log:", error);
+      res.status(500).json({ message: "حدث خطأ في بدء المكالمة" });
+    }
+  });
+
+  app.patch("/api/calls/:id/status", requireAuth, async (req, res) => {
+    try {
+      // Using imported updateCallStatusSchema
+      const validated = updateCallStatusSchema.parse(req.body);
+      
+      const updates: Partial<any> = { status: validated.status };
+      
+      if (validated.status === 'connected') {
+        updates.startedAt = new Date();
+      } else if (['ended', 'missed', 'rejected', 'failed'].includes(validated.status)) {
+        updates.endedAt = new Date();
+        if (validated.duration !== undefined) {
+          updates.duration = validated.duration;
+        }
+      }
+      
+      const callLog = await storage.updateCallLog(req.params.id, updates);
+      res.json(callLog);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "بيانات غير صحيحة", errors: error.errors });
+      }
+      console.error("Error updating call log:", error);
+      res.status(500).json({ message: "حدث خطأ في تحديث حالة المكالمة" });
+    }
+  });
+
+  app.get("/api/calls/history", requireAuth, async (req, res) => {
+    try {
+      const callLogs = await storage.getUserCallLogs(req.user!.id);
+      res.json(callLogs);
+    } catch (error) {
+      console.error("Error fetching call logs:", error);
+      res.status(500).json({ message: "حدث خطأ في جلب سجل المكالمات" });
+    }
+  });
+
 
   return httpServer;
 }
