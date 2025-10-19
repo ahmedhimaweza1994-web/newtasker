@@ -1,0 +1,143 @@
+Fix & Enhance Calling, Notifications, and Chat Integration
+
+This app already includes calling, messaging, and notification systems — however, several critical issues remain that must be addressed to make it function like modern chat platforms (WhatsApp, Messenger, etc.).
+Below is a comprehensive list of current problems and detailed tasks for each.
+
+📞 1. Calling Functionality (Partially Working)
+
+The previous issue related to
+TypeError: Failed to execute 'fetch' on 'Window': '/api/calls/start' is not a valid HTTP method
+has been resolved ✅.
+
+However, new problems remain:
+
+❌ Current Problems:
+
+When a user initiates a call, the recipient does not receive any notification or popup.
+
+There is no visible incoming call popup across the app — the recipient doesn’t see an alert to accept or reject.
+
+Once a call is accepted, the existing call management popup/UI (which already exists in the project) should appear and allow:
+
+Accept / Reject
+
+Ongoing call management (mute, end call, camera toggle, etc.)
+
+Currently, that UI is not triggered properly.
+
+✅ Tasks:
+
+Make sure incoming call notifications appear instantly and globally — no matter which page the user is on.
+
+Integrate the existing call popup system so that:
+
+When a call comes in → recipient sees the "Incoming Call" modal.
+
+Once accepted → both users are redirected or shown the active call interface.
+
+Ensure the caller and callee both see proper connection states: ringing, accepted, ended.
+
+Add reliable real-time communication using WebSockets (or the system already used for chat events) to deliver call events (incoming, accepted, rejected, ended).
+
+Verify calls work end-to-end across multiple pages and sessions.
+
+🧭 2. Call Log Integration (UI Enhancement)
+
+There’s already a dedicated Call History page, but we now need to integrate call logs within the chat view — similar to WhatsApp.
+
+✅ Tasks:
+
+Display call events (voice/video) inline inside the chat conversation.
+
+Example: “Voice Call – Missed / Duration 05:12”
+
+Each call log inside the chat should:
+
+Show whether it was incoming or outgoing.
+
+Include call type (voice/video) and duration if completed.
+
+Keep the existing Call History page for full logs, but ensure the chat page includes per-user history seamlessly.
+
+🔔 3. Notification System (Still Not Working Correctly)
+
+Despite previous attempts, the notification system continues to malfunction.
+
+❌ Current Problems:
+
+Clicking a notification does not open the relevant page or chat.
+
+Notifications are not synchronized across the full app (header, sidebar, notification dropdown).
+
+When a user opens a notification, the unread count does not update or disappear.
+
+Notification badges do not reflect changes after a message or call notification is seen.
+
+✅ Tasks:
+
+Fix the navigation so that clicking a notification opens the correct chat or related page.
+
+Make notification states update in real-time across the app:
+
+Header badge
+
+Sidebar icon
+
+Notification center
+
+Once a notification is opened → mark it as “read” instantly and update all UI counts accordingly.
+
+Ensure unread counts persist accurately between page reloads.
+
+🧍 4. Chat Avatars (Still Buggy)
+
+In chat messages, the avatar still shows only the first letter of the user’s name instead of their profile image.
+The image only appears temporarily when the dev tools inspector is open, then disappears again.
+
+✅ Tasks:
+
+Remove the current fallback-letter rendering logic entirely.
+
+Rebuild avatar rendering so that:
+
+The user’s profile image is always displayed.
+
+Default placeholder only shows if the user truly has no image.
+
+Fix reactivity/rendering issues that make avatars vanish when dev tools are closed.
+
+Test thoroughly in different chat threads and refresh states.
+
+⚠️ 5. Accessibility Warning: DialogContent
+
+An accessibility-related warning appears:
+
+DialogContent requires a DialogTitle for screen reader accessibility.
+If you want to hide the DialogTitle, wrap it with the VisuallyHidden component.
+More info: https://radix-ui.com/primitives/docs/components/dialog
+
+✅ Tasks:
+
+Go through all dialogs (especially call and notification popups).
+
+Ensure every <DialogContent> includes a <DialogTitle>.
+
+If a title should remain hidden visually, wrap it using Radix’s <VisuallyHidden> component.
+
+Confirm all dialogs pass accessibility validation without warnings.
+
+🎯 Overall Goal
+
+Make the chat platform behave like a professional-grade messaging app:
+
+Fully functional real-time calls (ringing, accepting, ongoing, ending)
+
+Reliable notifications that sync across all pages
+
+Chat-integrated call logs
+
+Stable avatar rendering
+
+No accessibility warnings or console errors
+
+Everything should work smoothly and feel consistent across the entire user experience — exactly like WhatsApp or Messenger.
