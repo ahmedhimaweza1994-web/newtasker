@@ -47,7 +47,8 @@ import {
   advanceStatusEnum
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, or, isNull, count, sql, gte, lte, alias } from "drizzle-orm";
+import { eq, desc, and, or, isNull, count, sql, gte, lte } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { pool } from "./db";
