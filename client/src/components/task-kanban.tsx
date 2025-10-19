@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -958,7 +958,14 @@ function TaskDetailsDialog({
                       <div key={comment.id} className="p-3 bg-muted/50 rounded-lg" data-testid={`comment-${comment.id || index}`}>
                         <div className="flex items-center gap-2 mb-2">
                           <Avatar className="h-6 w-6">
-                            <AvatarFallback className="text-xs">{comment.user?.fullName[0]}</AvatarFallback>
+                            <AvatarImage 
+                              src={comment.user?.profilePicture || undefined} 
+                              alt={comment.user?.fullName || "مستخدم"} 
+                              className="object-cover"
+                            />
+                            <AvatarFallback className="text-xs">
+                              {comment.user?.fullName?.[0] || "م"}
+                            </AvatarFallback>
                           </Avatar>
                           <p className="text-sm font-medium">{comment.user?.fullName || "مستخدم"}</p>
                           <p className="text-xs text-muted-foreground">

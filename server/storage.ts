@@ -102,7 +102,7 @@ export interface IStorage {
  
   // Task Notes
   createTaskNote(taskId: string, userId: string, content: string): Promise<TaskNote>;
-  getTaskNotes(taskId: string): Promise<TaskNote[]>;
+  getTaskNotes(taskId: string): Promise<(TaskNote & { user: Omit<User, 'password'> })[]>;
  
   // AUX Sessions
   createAuxSession(session: InsertAuxSession): Promise<AuxSession>;
@@ -356,12 +356,21 @@ export class MemStorage implements IStorage {
     return note;
   }
 
-  async getTaskNotes(taskId: string): Promise<TaskNote[]> {
-    return await db
-      .select()
+  async getTaskNotes(taskId: string): Promise<(TaskNote & { user: Omit<User, 'password'> })[]> {
+    const notes = await db
+      .select({
+        note: taskNotes,
+        user: userPublicFields,
+      })
       .from(taskNotes)
+      .innerJoin(users, eq(taskNotes.userId, users.id))
       .where(eq(taskNotes.taskId, taskId))
       .orderBy(desc(taskNotes.createdAt));
+    
+    return notes.map(({ note, user }) => ({
+      ...note,
+      user,
+    }));
   }
 
   // AUX Sessions
