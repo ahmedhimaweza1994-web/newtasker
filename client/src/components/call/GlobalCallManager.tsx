@@ -71,9 +71,8 @@ export function GlobalCallManager() {
       if (peerConnectionRef.current && lastMessage.answer) {
         peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(lastMessage.answer))
           .then(() => {
-            console.log(`[CALL ${callId}] [${timestamp}] [RECEIVER] Remote description set - Updating to connected`);
-            setActiveCall(prev => prev ? { ...prev, callStatus: 'connected' } : null);
-            playCallConnect();
+            console.log(`[CALL ${callId}] [${timestamp}] [RECEIVER] Remote description set - Waiting for media tracks`);
+            setActiveCall(prev => prev ? { ...prev, callStatus: 'connecting' } : null);
           })
           .catch(error => console.error(`[CALL ${callId}] [${timestamp}] [RECEIVER] Error setting remote description:`, error));
       }
@@ -130,6 +129,10 @@ export function GlobalCallManager() {
 
       pc.onconnectionstatechange = () => {
         console.log(`[CALL ${callId}] [${new Date().toISOString()}] [RECEIVER] Connection state: ${pc.connectionState}`);
+        if (pc.connectionState === 'failed' || pc.connectionState === 'closed') {
+          console.error(`[CALL ${callId}] [${new Date().toISOString()}] [RECEIVER] Connection ${pc.connectionState} - Ending call`);
+          handleEndCall();
+        }
       };
 
       pc.oniceconnectionstatechange = () => {
@@ -159,7 +162,31 @@ export function GlobalCallManager() {
 
       pc.ontrack = (event) => {
         console.log(`[CALL ${callId}] [${new Date().toISOString()}] [RECEIVER] Remote track received`);
-        setActiveCall(prev => prev ? { ...prev, remoteStream: event.streams[0] } : null);
+        setActiveCall(prev => {
+          if (!prev) return null;
+          
+          // Only transition to connected on first track
+          if (prev.callStatus !== 'connected') {
+            console.log(`[CALL ${callId}] [${new Date().toISOString()}] [RECEIVER] First track received - Transitioning to connected`);
+            playCallConnect();
+            
+            // Update database status to connected (only once)
+            apiRequest('PATCH', `/api/calls/${callId}/status`, {
+              status: 'connected',
+            }).catch(error => console.error(`[CALL ${callId}] [${new Date().toISOString()}] [RECEIVER] Error updating call status to connected:`, error));
+            
+            console.log(`[CALL ${callId}] [${new Date().toISOString()}] [RECEIVER] Call connected - Duration timer will start`);
+            
+            return { 
+              ...prev, 
+              remoteStream: event.streams[0],
+              callStatus: 'connected'
+            };
+          }
+          
+          // Subsequent tracks - just update stream
+          return { ...prev, remoteStream: event.streams[0] };
+        });
       };
 
       console.log(`[CALL ${callId}] [${timestamp}] [RECEIVER] Setting remote description from offer`);
@@ -200,14 +227,11 @@ export function GlobalCallManager() {
         receiverId: incomingCall.from.id,
       });
 
-      playCallConnect();
-
       await apiRequest('PATCH', `/api/calls/${incomingCall.callLogId}/status`, {
-        status: 'connected',
+        status: 'connecting',
       }).catch(error => console.error(`[CALL ${callId}] [${timestamp}] [RECEIVER] Error updating call status:`, error));
       
-      console.log(`[CALL ${callId}] [${timestamp}] [RECEIVER] Call accepted and connected successfully`);
-      setActiveCall(prev => prev ? { ...prev, callStatus: 'connected' } : null);
+      console.log(`[CALL ${callId}] [${timestamp}] [RECEIVER] Call answer sent - Waiting for WebRTC connection`);
 
       setIncomingCall(null);
     } catch (error) {

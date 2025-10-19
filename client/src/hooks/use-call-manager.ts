@@ -224,8 +224,8 @@ export function useCallManager() {
 
       pc.onconnectionstatechange = () => {
         console.log(`[CALL ${callId}] [${new Date().toISOString()}] Connection state: ${pc.connectionState}`);
-        if (pc.connectionState === 'failed' || pc.connectionState === 'disconnected') {
-          console.error(`[CALL ${callId}] Connection failed or disconnected`);
+        if (pc.connectionState === 'failed' || pc.connectionState === 'closed') {
+          console.error(`[CALL ${callId}] Connection ${pc.connectionState} - Ending call`);
           endCall(true, 'connection_failed');
         }
       };
