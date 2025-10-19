@@ -81,7 +81,7 @@ export function registerRoutes(app: Express): Server {
   app.post("/api/tasks", requireAuth, async (req, res) => {
     try {
       const taskData = {
-        ...updateData,
+        ...req.body,
         createdBy: req.user!.id,
         companyName: req.body.companyName || null,
         assignedTo: req.body.assignedTo || null,
