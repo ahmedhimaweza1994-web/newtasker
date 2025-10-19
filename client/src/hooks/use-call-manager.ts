@@ -53,10 +53,8 @@ export function useCallManager() {
     callType: CallType = 'audio'
   ) => {
     try {
-      const callLog = await apiRequest(`/api/calls/start`, {
-        method: 'POST',
-        body: { roomId, receiverId, callType },
-      });
+      const response = await apiRequest('POST', `/api/calls/start`, { roomId, receiverId, callType });
+      const callLog = await response.json();
 
       setCallState({
         callLogId: callLog.id,
@@ -168,12 +166,9 @@ export function useCallManager() {
       });
 
       if (callState.callLogId) {
-        apiRequest(`/api/calls/${callState.callLogId}/status`, {
-          method: 'PATCH',
-          body: {
-            status: 'ended',
-            duration: callState.duration
-          }
+        apiRequest('PATCH', `/api/calls/${callState.callLogId}/status`, {
+          status: 'ended',
+          duration: callState.duration
         }).catch(console.error);
       }
     }

@@ -39,9 +39,11 @@ export function useBrowserNotifications() {
           const messageId = notification.metadata?.messageId || '';
           setLocation(`/chat?roomId=${notification.metadata.roomId}${messageId ? `&messageId=${messageId}` : ''}`);
         } else if (notification.category === 'task' && notification.metadata?.taskId) {
-          setLocation(`/tasks`);
+          setLocation(`/tasks?taskId=${notification.metadata.taskId}`);
         } else if (notification.category === 'call' && notification.metadata?.roomId) {
-          setLocation(`/chat?roomId=${notification.metadata.roomId}`);
+          setLocation(`/call-history`);
+        } else if (notification.category === 'leave_request') {
+          setLocation(`/hr`);
         } else {
           setLocation('/dashboard');
         }

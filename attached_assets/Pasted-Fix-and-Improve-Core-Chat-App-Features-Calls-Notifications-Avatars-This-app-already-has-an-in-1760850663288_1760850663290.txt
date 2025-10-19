@@ -1,0 +1,73 @@
+Fix and Improve Core Chat App Features (Calls, Notifications, Avatars)
+
+This app already has an integrated calling system, but several issues need to be fixed and improved. Below is a full breakdown of the problems and tasks required to make everything function smoothly and professionally.
+
+🧩 1. Calling Functionality (WebRTC Integration Issue)
+
+The call features (voice & video) are implemented but not working properly.
+When attempting to start a call, the following errors occur:
+
+Unchecked runtime.lastError: The message port closed before a response was received.
+use-call-manager.ts:139 Error starting call:
+TypeError: Failed to execute 'fetch' on 'Window': '/api/calls/start' is not a valid HTTP method.
+
+✅ Tasks:
+
+Investigate why '/api/calls/start' is being used as an invalid HTTP method — it likely needs a valid POST or GET method.
+
+Fix the call initialization logic in use-call-manager.ts and chat.tsx so that:
+
+Voice and video calls can start successfully.
+
+WebRTC connections establish properly between users.
+
+Ensure all call buttons in the chat interface function correctly.
+
+Confirm the call initiation UI works seamlessly from chat.
+
+Run end-to-end tests by placing real calls between two users to verify stable connections.
+
+🔔 2. Notification System (Sync and Behavior Issues)
+
+The current notification system has multiple issues:
+
+Clicking a notification does not navigate to the correct page or corresponding content.
+
+Notifications are not synchronized across the entire app — header, sidebar, and main notification center don’t update in real time.
+
+When a notification is opened/read, the notification count badge should decrease or disappear, but it does not update properly.
+
+✅ Tasks:
+
+Fix notification click handling to ensure it opens the correct linked page.
+
+Make notifications update globally — when one is read, reflect that in the header, sidebar, and anywhere else showing notification counts.
+
+Ensure smooth badge animation/removal once notifications are marked as seen.
+
+Test across the full app for consistency and live updates.
+
+🧍‍♂️ 3. Chat Avatar Display Bug
+
+In the chat interface, the user avatar but in the chat m,asseges not the menue of users  currently shows the first letter of the user’s name instead of the profile picture.
+However, when inspecting the element in dev tools, the correct image appears temporarily — indicating a rendering or hydration issue.
+
+✅ Tasks:
+
+Completely rebuild the avatar display logic.
+
+Ensure the profile picture is always visible in chat messages, replacing the initial letter.
+
+Fix any caching, reactivity, or conditional-render issues causing the avatar to disappear when dev tools are closed.
+
+Test with different users and chat threads to confirm the issue is fully resolved.
+
+🧭 4. Navigation Integration
+
+Add navigation from the main menu to the Call History page.
+
+Ensure users can access call logs or missed calls easily from within the app.
+
+🎯 Goal
+
+Make the app’s calling, notification, and chat avatar systems behave at the level of major platforms like WhatsApp or Messenger — fully reliable, visually consistent, and synced across all areas of the interface.

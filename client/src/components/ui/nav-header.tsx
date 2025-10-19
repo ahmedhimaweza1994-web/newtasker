@@ -19,20 +19,11 @@ import { useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useWebSocket } from "@/lib/websocket";
+import type { Notification } from "@shared/schema";
 
 interface NavHeaderProps {
   onMenuToggle?: () => void;
   showMenuToggle?: boolean;
-}
-
-interface Notification {
-  id: string;
-  title: string;
-  message: string;
-  type: string;
-  isRead: boolean;
-  metadata?: any;
-  createdAt: string;
 }
 
 export default function NavHeader({ onMenuToggle, showMenuToggle = false }: NavHeaderProps) {
@@ -91,9 +82,17 @@ export default function NavHeader({ onMenuToggle, showMenuToggle = false }: NavH
   const handleNotificationClick = (notification: Notification) => {
     markAsReadMutation.mutate(notification.id);
     
-    if (notification.metadata?.roomId) {
+    if (notification.category === 'message' && notification.metadata?.roomId) {
       const messageId = notification.metadata?.messageId || '';
       setLocation(`/chat?roomId=${notification.metadata.roomId}${messageId ? `&messageId=${messageId}` : ''}`);
+    } else if (notification.category === 'task' && notification.metadata?.taskId) {
+      setLocation(`/tasks?taskId=${notification.metadata.taskId}`);
+    } else if (notification.category === 'call' && notification.metadata?.roomId) {
+      setLocation(`/call-history`);
+    } else if (notification.category === 'leave_request') {
+      setLocation(`/hr`);
+    } else {
+      setLocation('/dashboard');
     }
   };
 
