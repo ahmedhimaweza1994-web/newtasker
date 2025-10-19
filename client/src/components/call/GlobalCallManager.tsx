@@ -226,10 +226,6 @@ export function GlobalCallManager() {
         to: incomingCall.from.id,
         receiverId: incomingCall.from.id,
       });
-
-      await apiRequest('PATCH', `/api/calls/${incomingCall.callLogId}/status`, {
-        status: 'connecting',
-      }).catch(error => console.error(`[CALL ${callId}] [${timestamp}] [RECEIVER] Error updating call status:`, error));
       
       console.log(`[CALL ${callId}] [${timestamp}] [RECEIVER] Call answer sent - Waiting for WebRTC connection`);
 
