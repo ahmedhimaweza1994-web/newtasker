@@ -22,11 +22,21 @@ export function useWebSocket() {
         console.log('WebSocket connected');
         
         // Send initial subscribe message to ensure userId is registered
-        fetch('/api/user').then(res => res.json()).then(user => {
-          if (user && user.id && ws.current?.readyState === WebSocket.OPEN) {
-            ws.current.send(JSON.stringify({ type: 'subscribe', userId: user.id }));
-          }
-        }).catch(console.error);
+        fetch('/api/user')
+          .then(res => {
+            if (!res.ok) {
+              throw new Error('Not authenticated');
+            }
+            return res.json();
+          })
+          .then(user => {
+            if (user && user.id && ws.current?.readyState === WebSocket.OPEN) {
+              ws.current.send(JSON.stringify({ type: 'subscribe', userId: user.id }));
+            }
+          })
+          .catch(error => {
+            console.log('WebSocket subscribe skipped:', error.message);
+          });
       };
       
       ws.current.onclose = () => {

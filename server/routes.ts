@@ -150,12 +150,20 @@ export function registerRoutes(app: Express): Server {
 
           // Notify the task creator
           if (existingTask.createdBy) {
-            await storage.createNotification(
-              existingTask.createdBy,
-              "مهمة جاهزة للمراجعة",
-              `المهمة "${existingTask.title}" جاهزة للمراجعة`,
-              "info"
-            );
+            await storage.createNotification({
+              userId: existingTask.createdBy,
+              title: "مهمة جاهزة للمراجعة",
+              message: `المهمة "${existingTask.title}" جاهزة للمراجعة`,
+              type: "info",
+              category: "task",
+              metadata: {
+                resourceId: req.params.id,
+                taskId: req.params.id,
+                userId: req.user!.id,
+                userName: req.user!.fullName,
+                userAvatar: req.user!.profilePicture || undefined
+              }
+            });
           }
 
           res.json(task);
@@ -231,12 +239,20 @@ export function registerRoutes(app: Express): Server {
       const updatedTask = await storage.updateTask(req.params.id, { status: 'under_review' });
       
       if (task.createdBy && task.createdBy !== req.user!.id) {
-        await storage.createNotification(
-          task.createdBy,
-          "مهمة جاهزة للمراجعة",
-          `المهمة "${task.title}" جاهزة للمراجعة`,
-          "info"
-        );
+        await storage.createNotification({
+          userId: task.createdBy,
+          title: "مهمة جاهزة للمراجعة",
+          message: `المهمة "${task.title}" جاهزة للمراجعة`,
+          type: "info",
+          category: "task",
+          metadata: {
+            resourceId: req.params.id,
+            taskId: req.params.id,
+            userId: req.user!.id,
+            userName: req.user!.fullName,
+            userAvatar: req.user!.profilePicture || undefined
+          }
+        });
       }
       
       res.json(updatedTask);
@@ -253,12 +269,20 @@ export function registerRoutes(app: Express): Server {
       }
       
       if (task.assignedTo) {
-        await storage.createNotification(
-          task.assignedTo,
-          "تمت الموافقة على المهمة",
-          `تمت الموافقة على مهمتك "${task.title}" وتم إكمالها بنجاح`,
-          "success"
-        );
+        await storage.createNotification({
+          userId: task.assignedTo,
+          title: "تمت الموافقة على المهمة",
+          message: `تمت الموافقة على مهمتك "${task.title}" وتم إكمالها بنجاح`,
+          type: "success",
+          category: "task",
+          metadata: {
+            resourceId: req.params.id,
+            taskId: req.params.id,
+            userId: req.user!.id,
+            userName: req.user!.fullName,
+            userAvatar: req.user!.profilePicture || undefined
+          }
+        });
       }
       
       res.json(task);
@@ -286,12 +310,20 @@ export function registerRoutes(app: Express): Server {
       const task = await storage.rateTask(req.params.id, rating, req.user!.id);
       
       if (task.assignedTo) {
-        await storage.createNotification(
-          task.assignedTo,
-          "تم تقييم مهمتك",
-          `تم تقييم مهمتك "${task.title}" بـ ${rating} نقاط`,
-          "info"
-        );
+        await storage.createNotification({
+          userId: task.assignedTo,
+          title: "تم تقييم مهمتك",
+          message: `تم تقييم مهمتك "${task.title}" بـ ${rating} نقاط`,
+          type: "info",
+          category: "task",
+          metadata: {
+            resourceId: req.params.id,
+            taskId: req.params.id,
+            userId: req.user!.id,
+            userName: req.user!.fullName,
+            userAvatar: req.user!.profilePicture || undefined
+          }
+        });
       }
       
       res.json(task);
@@ -321,12 +353,17 @@ export function registerRoutes(app: Express): Server {
           const newTotalPoints = (assignedUser.totalPoints || 0) + rewardPoints;
           await storage.updateUser(task.assignedTo, { totalPoints: newTotalPoints });
 
-          await storage.createNotification(
-            task.assignedTo,
-            "نقاط مكافأة جديدة",
-            `تم منحك ${rewardPoints} نقطة مكافأة للمهمة "${task.title}"`,
-            "success"
-          );
+          await storage.createNotification({
+            userId: task.assignedTo,
+            title: "نقاط مكافأة جديدة",
+            message: `تم منحك ${rewardPoints} نقطة مكافأة للمهمة "${task.title}"`,
+            type: "success",
+            category: "reward",
+            metadata: {
+              points: rewardPoints,
+              taskId: req.params.id
+            }
+          });
         }
       }
 
@@ -628,12 +665,17 @@ export function registerRoutes(app: Express): Server {
       const adminUsers = admins.filter(u => u.role === 'admin' || u.role === 'sub-admin');
       
       for (const admin of adminUsers) {
-        const notification = await storage.createNotification(
-          admin.id,
-          "طلب إجازة جديد",
-          `${req.user!.fullName} قدم طلب إجازة جديد`,
-          "info"
-        );
+        const notification = await storage.createNotification({
+          userId: admin.id,
+          title: "طلب إجازة جديد",
+          message: `${req.user!.fullName} قدم طلب إجازة جديد`,
+          type: "info",
+          category: "system",
+          metadata: {
+            userId: req.user!.id,
+            userName: req.user!.fullName
+          }
+        });
         
         // Send notification via WebSocket to specific user
         sendToUser(notification.userId, {
@@ -682,12 +724,17 @@ export function registerRoutes(app: Express): Server {
       
       // Notify employee
       const statusText = leaveRequest.status === 'approved' ? 'تمت الموافقة على' : 'تم رفض';
-      const notification = await storage.createNotification(
-        leaveRequest.userId,
-        "تحديث طلب الإجازة",
-        `${statusText} طلب الإجازة الخاص بك`,
-        leaveRequest.status === 'approved' ? 'success' : 'error'
-      );
+      const notification = await storage.createNotification({
+        userId: leaveRequest.userId,
+        title: "تحديث طلب الإجازة",
+        message: `${statusText} طلب الإجازة الخاص بك`,
+        type: leaveRequest.status === 'approved' ? 'success' : 'error',
+        category: "system",
+        metadata: {
+          userId: req.user!.id,
+          userName: req.user!.fullName
+        }
+      });
       
       // Send notification via WebSocket to specific user
         sendToUser(notification.userId, {
@@ -750,12 +797,18 @@ export function registerRoutes(app: Express): Server {
       
       // Notify employee
       const statusText = advanceRequest.status === 'approved' ? 'تمت الموافقة على' : 'تم رفض';
-      await storage.createNotification(
-        advanceRequest.userId,
-        "تحديث طلب السلفة",
-        `${statusText} طلب السلفة الخاص بك`,
-        advanceRequest.status === 'approved' ? 'success' : 'error'
-      );
+      await storage.createNotification({
+        userId: advanceRequest.userId,
+        title: "تحديث طلب السلفة",
+        message: `${statusText} طلب السلفة الخاص بك`,
+        type: advanceRequest.status === 'approved' ? 'success' : 'error',
+        category: "system",
+        metadata: {
+          resourceId: req.params.id,
+          userId: req.user!.id,
+          userName: req.user!.fullName
+        }
+      });
       
       res.json(advanceRequest);
     } catch (error) {
@@ -1194,13 +1247,21 @@ export function registerRoutes(app: Express): Server {
       
       for (const member of roomMembers) {
         if (member.id !== req.user!.id) {
-          const notification = await storage.createNotification(
-            member.id,
-            room?.name || 'رسالة جديدة',
-            `${req.user!.fullName}: ${req.body.content || 'أرسل رسالة'}`,
-            'info',
-            { roomId: req.body.roomId, messageId: message.id }
-          );
+          const notification = await storage.createNotification({
+            userId: member.id,
+            title: room?.name || 'رسالة جديدة',
+            message: `${req.user!.fullName}: ${req.body.content || 'أرسل رسالة'}`,
+            type: 'info',
+            category: 'message',
+            metadata: {
+              resourceId: req.body.roomId,
+              roomId: req.body.roomId,
+              messageId: message.id,
+              userId: req.user!.id,
+              userName: req.user!.fullName,
+              userAvatar: req.user!.profilePicture || undefined
+            }
+          });
           
           // Send notification to specific user
           sendToUser(member.id, {
@@ -1444,13 +1505,21 @@ export function registerRoutes(app: Express): Server {
       
       for (const member of roomMembers) {
         if (member.id !== req.user!.id) {
-          const notification = await storage.createNotification(
-            member.id,
-            room?.name || 'رسالة جديدة',
-            `${req.user!.fullName}: ${req.body.content || 'أرسل رسالة'}`,
-            'info',
-            { roomId: req.body.roomId, messageId: message.id }
-          );
+          const notification = await storage.createNotification({
+            userId: member.id,
+            title: room?.name || 'رسالة جديدة',
+            message: `${req.user!.fullName}: ${req.body.content || 'أرسل رسالة'}`,
+            type: 'info',
+            category: 'message',
+            metadata: {
+              resourceId: req.body.roomId,
+              roomId: req.body.roomId,
+              messageId: message.id,
+              userId: req.user!.id,
+              userName: req.user!.fullName,
+              userAvatar: req.user!.profilePicture || undefined
+            }
+          });
           
           // Send notification to specific user
           sendToUser(member.id, {
@@ -1461,12 +1530,17 @@ export function registerRoutes(app: Express): Server {
       }
       
       for (const participantId of participantIds) {
-        const notification = await storage.createNotification(
-          participantId,
-          "اجتماع جديد",
-          `${req.user!.fullName} قام بجدولة اجتماع: ${title}`,
-          "info"
-        );
+        const notification = await storage.createNotification({
+          userId: participantId,
+          title: "اجتماع جديد",
+          message: `${req.user!.fullName} قام بجدولة اجتماع: ${title}`,
+          type: "info",
+          category: "system",
+          metadata: {
+            userId: req.user!.id,
+            userName: req.user!.fullName
+          }
+        });
         
         wss.clients.forEach((client) => {
           if (client.readyState === client.OPEN) {
