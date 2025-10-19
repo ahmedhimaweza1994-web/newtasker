@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useWebSocket } from "@/lib/websocket";
 import { useCallSounds } from "./use-call-sounds";
 import { apiRequest } from "@/lib/queryClient";
@@ -47,6 +47,94 @@ export function useCallManager() {
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const callStartTimeRef = useRef<number | null>(null);
   const callDurationIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const endCall = useCallback((sendSignal: boolean = true) => {
+    if (peerConnectionRef.current) {
+      peerConnectionRef.current.close();
+      peerConnectionRef.current = null;
+    }
+
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach(track => track.stop());
+      localStreamRef.current = null;
+    }
+
+    stopRingtone();
+    playCallEnd();
+
+    if (callDurationIntervalRef.current) {
+      clearInterval(callDurationIntervalRef.current);
+      callDurationIntervalRef.current = null;
+    }
+
+    if (sendSignal && callState.roomId && callState.callLogId && callState.otherUser) {
+      sendMessage({
+        type: 'call_end',
+        roomId: callState.roomId,
+        callLogId: callState.callLogId,
+        to: callState.otherUser.id,
+        receiverId: callState.otherUser.id
+      });
+
+      if (callState.callLogId) {
+        apiRequest('PATCH', `/api/calls/${callState.callLogId}/status`, {
+          status: 'ended',
+          duration: callState.duration
+        }).catch(console.error);
+      }
+    }
+
+    setCallState({
+      callLogId: null,
+      roomId: null,
+      callType: 'audio',
+      isOutgoing: false,
+      otherUser: null,
+      status: 'idle',
+      duration: 0,
+      isMuted: false,
+      isVideoEnabled: false,
+    });
+    callStartTimeRef.current = null;
+  }, [callState, sendMessage, stopRingtone, playCallEnd]);
+
+  useEffect(() => {
+    if (!lastMessage || !user) return;
+
+    if (lastMessage.type === 'call_answer') {
+      if (peerConnectionRef.current && lastMessage.answer && callState.status === 'ringing') {
+        peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(lastMessage.answer))
+          .then(() => {
+            setCallState(prev => ({ ...prev, status: 'connecting' }));
+          })
+          .catch(error => {
+            console.error('Error setting remote description:', error);
+            endCall(true);
+          });
+      }
+    }
+
+    if (lastMessage.type === 'ice_candidate') {
+      if (peerConnectionRef.current && lastMessage.candidate && callState.status !== 'idle') {
+        peerConnectionRef.current.addIceCandidate(new RTCIceCandidate(lastMessage.candidate))
+          .catch(error => console.error('Error adding ICE candidate:', error));
+      }
+    }
+
+    if (lastMessage.type === 'call_decline') {
+      if (callState.status !== 'idle') {
+        stopRingtone();
+        playCallEnd();
+        endCall(false);
+      }
+    }
+
+    if (lastMessage.type === 'call_end') {
+      if (callState.status !== 'idle') {
+        endCall(false);
+      }
+    }
+  }, [lastMessage, user, callState.status, endCall, stopRingtone, playCallEnd]);
 
   const startCall = useCallback(async (
     roomId: string,
@@ -151,57 +239,7 @@ export function useCallManager() {
       console.error("Error starting call:", error);
       endCall(true);
     }
-  }, [sendMessage, playRingtone, stopRingtone, playCallConnect, user]);
-
-  const endCall = useCallback((sendSignal: boolean = true) => {
-    if (peerConnectionRef.current) {
-      peerConnectionRef.current.close();
-      peerConnectionRef.current = null;
-    }
-
-    if (localStreamRef.current) {
-      localStreamRef.current.getTracks().forEach(track => track.stop());
-      localStreamRef.current = null;
-    }
-
-    stopRingtone();
-    playCallEnd();
-
-    if (callDurationIntervalRef.current) {
-      clearInterval(callDurationIntervalRef.current);
-      callDurationIntervalRef.current = null;
-    }
-
-    if (sendSignal && callState.roomId && callState.callLogId && callState.otherUser) {
-      sendMessage({
-        type: 'call_end',
-        roomId: callState.roomId,
-        callLogId: callState.callLogId,
-        to: callState.otherUser.id,
-        receiverId: callState.otherUser.id
-      });
-
-      if (callState.callLogId) {
-        apiRequest('PATCH', `/api/calls/${callState.callLogId}/status`, {
-          status: 'ended',
-          duration: callState.duration
-        }).catch(console.error);
-      }
-    }
-
-    setCallState({
-      callLogId: null,
-      roomId: null,
-      callType: 'audio',
-      isOutgoing: false,
-      otherUser: null,
-      status: 'idle',
-      duration: 0,
-      isMuted: false,
-      isVideoEnabled: false,
-    });
-    callStartTimeRef.current = null;
-  }, [callState, sendMessage, stopRingtone, playCallEnd]);
+  }, [sendMessage, playRingtone, stopRingtone, playCallConnect, user, endCall]);
 
   const toggleMute = useCallback(() => {
     if (localStreamRef.current) {
