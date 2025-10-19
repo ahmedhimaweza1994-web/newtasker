@@ -109,10 +109,12 @@ export interface IStorage {
  
   // AUX Sessions
   createAuxSession(session: InsertAuxSession): Promise<AuxSession>;
-  endAuxSession(userId: string): Promise<AuxSession | undefined>;
-  getUserAuxSessions(userId: string): Promise<AuxSession[]>;
+  startAuxSession(data: { userId: string; status: string; notes?: string }): Promise<AuxSession>;
+  endAuxSession(sessionId: string, notes?: string): Promise<AuxSession | undefined>;
+  getUserAuxSessions(userId: string, startDate?: Date, endDate?: Date): Promise<AuxSession[]>;
   getAllAuxSessions(): Promise<AuxSession[]>;
   getActiveAuxSession(userId: string): Promise<AuxSession | undefined>;
+  getCurrentAuxSession(userId: string): Promise<AuxSession | null>;
   getAllActiveAuxSessions(): Promise<any[]>;
  
   // Leave Requests
@@ -186,6 +188,12 @@ export interface IStorage {
   getUserCallLogs(userId: string): Promise<any[]>;
   getRoomCallLogs(roomId: string): Promise<any[]>;
   updateCallLog(id: string, updates: Partial<CallLog>): Promise<CallLog | undefined>;
+
+  // Analytics & Rewards
+  getUserRewards(userId: string): Promise<any[]>;
+  getUserProductivityStats(userId: string, startDate: Date, endDate: Date): Promise<any>;
+  getSystemStats(): Promise<any>;
+  getDepartmentStats(): Promise<any[]>;
 
   sessionStore: session.Store;
 }
@@ -409,28 +417,58 @@ export class MemStorage implements IStorage {
     return newSession;
   }
 
-  async endAuxSession(userId: string): Promise<AuxSession | undefined> {
-    const activeSession = await this.getActiveAuxSession(userId);
-    if (!activeSession) return undefined;
-
-    const endTime = new Date();
-    const duration = Math.floor((endTime.getTime() - activeSession.startTime.getTime()) / 1000);
-
-    const [session] = await db
-      .update(auxSessions)
-      .set({ endTime, duration })
-      .where(eq(auxSessions.id, activeSession.id))
-      .returning();
-
-    return session || undefined;
+  async startAuxSession(data: { userId: string; status: string; notes?: string }): Promise<AuxSession> {
+    const activeSession = await this.getActiveAuxSession(data.userId);
+    if (activeSession) {
+      await this.endAuxSession(activeSession.id);
+    }
+    
+    return await this.createAuxSession({
+      userId: data.userId,
+      status: data.status as any,
+      notes: data.notes,
+    });
   }
 
-  async getUserAuxSessions(userId: string): Promise<AuxSession[]> {
+  async endAuxSession(sessionId: string, notes?: string): Promise<AuxSession | undefined> {
+    const [session] = await db
+      .select()
+      .from(auxSessions)
+      .where(eq(auxSessions.id, sessionId));
+    
+    if (!session) return undefined;
+
+    const endTime = new Date();
+    const duration = Math.floor((endTime.getTime() - session.startTime.getTime()) / 1000);
+
+    const [updatedSession] = await db
+      .update(auxSessions)
+      .set({ endTime, duration, notes: notes || session.notes })
+      .where(eq(auxSessions.id, sessionId))
+      .returning();
+
+    return updatedSession || undefined;
+  }
+
+  async getUserAuxSessions(userId: string, startDate?: Date, endDate?: Date): Promise<AuxSession[]> {
+    let conditions = [eq(auxSessions.userId, userId)];
+    
+    if (startDate) {
+      conditions.push(gte(auxSessions.startTime, startDate));
+    }
+    if (endDate) {
+      conditions.push(lte(auxSessions.startTime, endDate));
+    }
+
     return await db
       .select()
       .from(auxSessions)
-      .where(eq(auxSessions.userId, userId))
+      .where(and(...conditions))
       .orderBy(desc(auxSessions.startTime));
+  }
+
+  async getCurrentAuxSession(userId: string): Promise<AuxSession | null> {
+    return await this.getActiveAuxSession(userId) || null;
   }
 
   async getAllAuxSessions(): Promise<AuxSession[]> {
@@ -1170,6 +1208,110 @@ export class MemStorage implements IStorage {
       .where(eq(callLogs.id, id))
       .returning();
     return callLog || undefined;
+  }
+
+  // Analytics & Rewards
+  async getUserRewards(userId: string): Promise<any[]> {
+    const completedTasks = await db
+      .select()
+      .from(tasks)
+      .where(
+        and(
+          eq(tasks.assignedTo, userId),
+          eq(tasks.status, 'completed')
+        )
+      )
+      .orderBy(desc(tasks.completedAt));
+
+    return completedTasks.map(task => ({
+      id: task.id,
+      title: task.title,
+      points: task.rewardPoints || 0,
+      rating: task.performanceRating || 0,
+      completedAt: task.completedAt,
+    }));
+  }
+
+  async getUserProductivityStats(userId: string, startDate: Date, endDate: Date): Promise<any> {
+    const userTasks = await db
+      .select()
+      .from(tasks)
+      .where(
+        and(
+          eq(tasks.assignedTo, userId),
+          gte(tasks.createdAt, startDate),
+          lte(tasks.createdAt, endDate)
+        )
+      );
+
+    const completedTasks = userTasks.filter(t => t.status === 'completed');
+    const totalEstimatedHours = userTasks.reduce((sum, t) => sum + (t.estimatedHours || 0), 0);
+    const totalActualHours = completedTasks.reduce((sum, t) => sum + (t.actualHours || 0), 0);
+    const avgRating = completedTasks.length > 0
+      ? completedTasks.reduce((sum, t) => sum + (t.performanceRating || 0), 0) / completedTasks.length
+      : 0;
+
+    return {
+      totalTasks: userTasks.length,
+      completedTasks: completedTasks.length,
+      pendingTasks: userTasks.filter(t => t.status === 'pending').length,
+      inProgressTasks: userTasks.filter(t => t.status === 'in_progress').length,
+      totalEstimatedHours,
+      totalActualHours,
+      efficiency: totalEstimatedHours > 0 ? (totalEstimatedHours / (totalActualHours || 1)) * 100 : 0,
+      averageRating: avgRating,
+    };
+  }
+
+  async getSystemStats(): Promise<any> {
+    const allUsers = await db.select().from(users);
+    const allTasks = await db.select().from(tasks);
+    const activeUsers = allUsers.filter(u => u.isActive);
+    const completedTasks = allTasks.filter(t => t.status === 'completed');
+
+    return {
+      totalUsers: allUsers.length,
+      activeUsers: activeUsers.length,
+      totalTasks: allTasks.length,
+      completedTasks: completedTasks.length,
+      pendingTasks: allTasks.filter(t => t.status === 'pending').length,
+      inProgressTasks: allTasks.filter(t => t.status === 'in_progress').length,
+    };
+  }
+
+  async getDepartmentStats(): Promise<any[]> {
+    const allUsers = await db.select().from(users);
+    const allTasks = await db.select().from(tasks);
+
+    const departments = new Map<string, any>();
+    
+    allUsers.forEach(user => {
+      if (!departments.has(user.department)) {
+        departments.set(user.department, {
+          department: user.department,
+          employees: 0,
+          tasks: 0,
+          completedTasks: 0,
+        });
+      }
+      const dept = departments.get(user.department)!;
+      dept.employees += 1;
+    });
+
+    allTasks.forEach(task => {
+      const user = allUsers.find(u => u.id === task.assignedTo);
+      if (user) {
+        const dept = departments.get(user.department);
+        if (dept) {
+          dept.tasks += 1;
+          if (task.status === 'completed') {
+            dept.completedTasks += 1;
+          }
+        }
+      }
+    });
+
+    return Array.from(departments.values());
   }
 }
 

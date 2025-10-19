@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useWebSocket } from '@/lib/websocket';
 import { useAuth } from '@/hooks/use-auth';
 import { IncomingCallDialog } from './IncomingCallDialog';
@@ -10,6 +10,7 @@ export function GlobalCallManager() {
   const { user } = useAuth();
   const { lastMessage, sendMessage } = useWebSocket({ userId: user?.id });
   const { playRingtone, stopRingtone, playCallEnd, playCallConnect } = useCallSounds();
+  const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
 
   const [incomingCall, setIncomingCall] = useState<{
     from: {
@@ -59,19 +60,40 @@ export function GlobalCallManager() {
       }
     }
 
+    if (lastMessage.type === 'call_answer') {
+      if (peerConnectionRef.current && lastMessage.answer) {
+        peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(lastMessage.answer))
+          .then(() => {
+            setActiveCall(prev => prev ? { ...prev, callStatus: 'connected' } : null);
+            playCallConnect();
+          })
+          .catch(error => console.error('Error setting remote description:', error));
+      }
+    }
+
+    if (lastMessage.type === 'ice_candidate') {
+      if (peerConnectionRef.current && lastMessage.candidate) {
+        peerConnectionRef.current.addIceCandidate(new RTCIceCandidate(lastMessage.candidate))
+          .catch(error => console.error('Error adding ICE candidate:', error));
+      }
+    }
+
     if (lastMessage.type === 'call_end' || lastMessage.type === 'call_decline') {
+      if (peerConnectionRef.current) {
+        peerConnectionRef.current.close();
+        peerConnectionRef.current = null;
+      }
       setIncomingCall(null);
       setActiveCall(null);
       stopRingtone();
       playCallEnd();
     }
-  }, [lastMessage, user, playRingtone, stopRingtone, playCallEnd]);
+  }, [lastMessage, user, playRingtone, stopRingtone, playCallEnd, playCallConnect]);
 
   const handleAcceptCall = useCallback(async () => {
-    if (!incomingCall) return;
+    if (!incomingCall || !user) return;
     
     stopRingtone();
-    playCallConnect();
 
     try {
       const constraints = incomingCall.callType === 'video'
@@ -79,6 +101,34 @@ export function GlobalCallManager() {
         : { audio: true };
 
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
+
+      const pc = new RTCPeerConnection({
+        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+      });
+      peerConnectionRef.current = pc;
+
+      stream.getTracks().forEach(track => pc.addTrack(track, stream));
+
+      pc.onicecandidate = (event) => {
+        if (event.candidate) {
+          sendMessage({
+            type: 'ice_candidate',
+            roomId: incomingCall.roomId,
+            callLogId: incomingCall.callLogId,
+            candidate: event.candidate,
+            to: incomingCall.from.id,
+            receiverId: incomingCall.from.id
+          });
+        }
+      };
+
+      pc.ontrack = (event) => {
+        setActiveCall(prev => prev ? { ...prev, remoteStream: event.streams[0] } : null);
+      };
+
+      await pc.setRemoteDescription(new RTCSessionDescription(incomingCall.offer));
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
 
       setActiveCall({
         roomId: incomingCall.roomId,
@@ -98,9 +148,17 @@ export function GlobalCallManager() {
         type: 'call_answer',
         roomId: incomingCall.roomId,
         callLogId: incomingCall.callLogId,
+        answer: answer,
+        from: {
+          id: user.id,
+          fullName: user.fullName,
+          profilePicture: user.profilePicture
+        },
         to: incomingCall.from.id,
         receiverId: incomingCall.from.id,
       });
+
+      playCallConnect();
 
       await apiRequest('PATCH', `/api/calls/${incomingCall.callLogId}/status`, {
         status: 'connected',
@@ -113,7 +171,7 @@ export function GlobalCallManager() {
       console.error('Error accepting call:', error);
       handleDeclineCall();
     }
-  }, [incomingCall, sendMessage, stopRingtone, playCallConnect]);
+  }, [incomingCall, user, sendMessage, stopRingtone, playCallConnect]);
 
   const handleDeclineCall = useCallback(async () => {
     if (!incomingCall) return;
@@ -140,6 +198,11 @@ export function GlobalCallManager() {
 
     if (activeCall.localStream) {
       activeCall.localStream.getTracks().forEach(track => track.stop());
+    }
+
+    if (peerConnectionRef.current) {
+      peerConnectionRef.current.close();
+      peerConnectionRef.current = null;
     }
 
     sendMessage({
