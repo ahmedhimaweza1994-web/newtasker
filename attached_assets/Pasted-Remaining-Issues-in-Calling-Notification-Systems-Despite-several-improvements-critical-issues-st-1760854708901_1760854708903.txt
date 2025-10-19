@@ -1,0 +1,88 @@
+Remaining Issues in Calling & Notification Systems
+
+Despite several improvements, critical issues still persist in the calling and notification systems.
+These must be fully fixed to make the app behave like a proper modern messaging platform.
+
+📞 1. Calling System – Still Not Functioning Correctly
+
+Although the previous technical errors are resolved, the core functionality is still broken.
+
+❌ Current Problems:
+
+When a user initiates a call, the recipient never receives any call signal or popup.
+
+There is no incoming call notification, ringtone, or accept/decline dialog — nothing shows up for the other user.
+
+This indicates a possible WebRTC connection issue, missing event broadcast, or socket communication problem preventing the call signal from reaching the other user.
+
+✅ Tasks:
+
+Diagnose and fix why call events (incoming, ringing, accepted) are not delivered between users.
+
+Ensure the call triggers a visible popup + ringtone for the recipient — no matter which page they are on.
+
+Once the recipient accepts, open the existing call management popup with full features (mute, end, video toggle, etc.).
+
+Verify that calls work end-to-end across multiple users and sessions.
+
+Test both voice and video calls for reliability and synchronization.
+
+🔔 2. Notification System – Still Has Major Issues
+
+The notification logic is still malfunctioning and must be fully corrected.
+
+❌ Current Problems:
+
+Clicking any notification (message, task, call, etc.) does nothing — it does not open the relevant page.
+
+Unread counters (badges) are not updated after viewing or opening notifications.
+
+Example: after reading a message, the counter in the header/side panel still shows as unread.
+
+Self-notification bug:
+
+When a user sends a message, they also receive a notification for their own action, which should not happen.
+
+Users should only get notifications triggered by others, not by themselves.
+
+✅ Tasks:
+
+Fix navigation so clicking any notification automatically redirects to:
+
+Message → specific chat
+
+Task → related task page
+
+Call → call screen or relevant chat
+
+Ensure unread counters update instantly and globally across:
+
+Header
+
+Sidebar
+
+Notification dropdown/list
+
+When a notification is viewed, mark it as read immediately and remove the count.
+
+Prevent self-notifications — only trigger alerts for incoming messages or actions from other users.
+
+Confirm the notification system works consistently across all pages, reloads, and browser tabs.
+
+🎯 Final Goal
+
+The objective is to make both the Calling and Notification systems:
+
+Fully real-time, synchronized, and cross-page functional.
+
+Behave exactly like WhatsApp, Messenger, or Telegram, with:
+
+Reliable call signaling and answering system.
+
+Properly interactive, sound-enabled, and context-aware notifications.
+
+Accurate unread counters that sync instantly.
+
+No self-notifications or false triggers.
+
+Everything must work seamlessly and consistently across the entire application.

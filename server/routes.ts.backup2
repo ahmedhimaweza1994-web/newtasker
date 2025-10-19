@@ -5,7 +5,9 @@ import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { createGoogleMeetEvent, isGoogleCalendarConnected } from "./google-calendar-integration";
 import multer from 'multer';
+import { z } from 'zod';
 import path from 'path';
+import { startCallSchema, updateCallStatusSchema } from '@shared/call-schemas';
 
 const multerStorage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -150,12 +152,20 @@ export function registerRoutes(app: Express): Server {
 
           // Notify the task creator
           if (existingTask.createdBy) {
-            await storage.createNotification(
-              existingTask.createdBy,
-              "مهمة جاهزة للمراجعة",
-              `المهمة "${existingTask.title}" جاهزة للمراجعة`,
-              "info"
-            );
+            await storage.createNotification({
+              userId: existingTask.createdBy,
+              title: "مهمة جاهزة للمراجعة",
+              message: `المهمة "${existingTask.title}" جاهزة للمراجعة`,
+              type: "info",
+              category: "task",
+              metadata: {
+                resourceId: req.params.id,
+                taskId: req.params.id,
+                userId: req.user!.id,
+                userName: req.user!.fullName,
+                userAvatar: req.user!.profilePicture || undefined
+              }
+            });
           }
 
           res.json(task);
@@ -231,12 +241,20 @@ export function registerRoutes(app: Express): Server {
       const updatedTask = await storage.updateTask(req.params.id, { status: 'under_review' });
       
       if (task.createdBy && task.createdBy !== req.user!.id) {
-        await storage.createNotification(
-          task.createdBy,
-          "مهمة جاهزة للمراجعة",
-          `المهمة "${task.title}" جاهزة للمراجعة`,
-          "info"
-        );
+        await storage.createNotification({
+          userId: task.createdBy,
+          title: "مهمة جاهزة للمراجعة",
+          message: `المهمة "${task.title}" جاهزة للمراجعة`,
+          type: "info",
+          category: "task",
+          metadata: {
+            resourceId: req.params.id,
+            taskId: req.params.id,
+            userId: req.user!.id,
+            userName: req.user!.fullName,
+            userAvatar: req.user!.profilePicture || undefined
+          }
+        });
       }
       
       res.json(updatedTask);
@@ -253,12 +271,20 @@ export function registerRoutes(app: Express): Server {
       }
       
       if (task.assignedTo) {
-        await storage.createNotification(
-          task.assignedTo,
-          "تمت الموافقة على المهمة",
-          `تمت الموافقة على مهمتك "${task.title}" وتم إكمالها بنجاح`,
-          "success"
-        );
+        await storage.createNotification({
+          userId: task.assignedTo,
+          title: "تمت الموافقة على المهمة",
+          message: `تمت الموافقة على مهمتك "${task.title}" وتم إكمالها بنجاح`,
+          type: "success",
+          category: "task",
+          metadata: {
+            resourceId: req.params.id,
+            taskId: req.params.id,
+            userId: req.user!.id,
+            userName: req.user!.fullName,
+            userAvatar: req.user!.profilePicture || undefined
+          }
+        });
       }
       
       res.json(task);
@@ -286,12 +312,20 @@ export function registerRoutes(app: Express): Server {
       const task = await storage.rateTask(req.params.id, rating, req.user!.id);
       
       if (task.assignedTo) {
-        await storage.createNotification(
-          task.assignedTo,
-          "تم تقييم مهمتك",
-          `تم تقييم مهمتك "${task.title}" بـ ${rating} نقاط`,
-          "info"
-        );
+        await storage.createNotification({
+          userId: task.assignedTo,
+          title: "تم تقييم مهمتك",
+          message: `تم تقييم مهمتك "${task.title}" بـ ${rating} نقاط`,
+          type: "info",
+          category: "task",
+          metadata: {
+            resourceId: req.params.id,
+            taskId: req.params.id,
+            userId: req.user!.id,
+            userName: req.user!.fullName,
+            userAvatar: req.user!.profilePicture || undefined
+          }
+        });
       }
       
       res.json(task);
@@ -321,12 +355,18 @@ export function registerRoutes(app: Express): Server {
           const newTotalPoints = (assignedUser.totalPoints || 0) + rewardPoints;
           await storage.updateUser(task.assignedTo, { totalPoints: newTotalPoints });
 
-          await storage.createNotification(
-            task.assignedTo,
-            "نقاط مكافأة جديدة",
-            `تم منحك ${rewardPoints} نقطة مكافأة للمهمة "${task.title}"`,
-            "success"
-          );
+          await storage.createNotification({
+            userId: task.assignedTo,
+            title: "نقاط مكافأة جديدة",
+            message: `تم منحك ${rewardPoints} نقطة مكافأة للمهمة "${task.title}"`,
+            type: "success",
+            category: "reward",
+            metadata: {
+              resourceId: req.params.id,
+              points: rewardPoints,
+              taskId: req.params.id
+            }
+          });
         }
       }
 
@@ -628,12 +668,18 @@ export function registerRoutes(app: Express): Server {
       const adminUsers = admins.filter(u => u.role === 'admin' || u.role === 'sub-admin');
       
       for (const admin of adminUsers) {
-        const notification = await storage.createNotification(
-          admin.id,
-          "طلب إجازة جديد",
-          `${req.user!.fullName} قدم طلب إجازة جديد`,
-          "info"
-        );
+        const notification = await storage.createNotification({
+          userId: admin.id,
+          title: "طلب إجازة جديد",
+          message: `${req.user!.fullName} قدم طلب إجازة جديد`,
+          type: "info",
+          category: "system",
+          metadata: {
+            resourceId: leaveRequest.id,
+            userId: req.user!.id,
+            userName: req.user!.fullName
+          }
+        });
         
         // Broadcast notification via WebSocket
         wss.clients.forEach((client) => {
@@ -686,12 +732,18 @@ export function registerRoutes(app: Express): Server {
       
       // Notify employee
       const statusText = leaveRequest.status === 'approved' ? 'تمت الموافقة على' : 'تم رفض';
-      const notification = await storage.createNotification(
-        leaveRequest.userId,
-        "تحديث طلب الإجازة",
-        `${statusText} طلب الإجازة الخاص بك`,
-        leaveRequest.status === 'approved' ? 'success' : 'error'
-      );
+      const notification = await storage.createNotification({
+        userId: leaveRequest.userId,
+        title: "تحديث طلب الإجازة",
+        message: `${statusText} طلب الإجازة الخاص بك`,
+        type: leaveRequest.status === 'approved' ? 'success' : 'error',
+        category: "system",
+        metadata: {
+          resourceId: req.params.id,
+          userId: req.user!.id,
+          userName: req.user!.fullName
+        }
+      });
       
       // Broadcast notification via WebSocket
       wss.clients.forEach((client) => {
@@ -758,12 +810,18 @@ export function registerRoutes(app: Express): Server {
       
       // Notify employee
       const statusText = advanceRequest.status === 'approved' ? 'تمت الموافقة على' : 'تم رفض';
-      await storage.createNotification(
-        advanceRequest.userId,
-        "تحديث طلب السلفة",
-        `${statusText} طلب السلفة الخاص بك`,
-        advanceRequest.status === 'approved' ? 'success' : 'error'
-      );
+      await storage.createNotification({
+        userId: advanceRequest.userId,
+        title: "تحديث طلب السلفة",
+        message: `${statusText} طلب السلفة الخاص بك`,
+        type: advanceRequest.status === 'approved' ? 'success' : 'error',
+        category: "system",
+        metadata: {
+          resourceId: req.params.id,
+          userId: req.user!.id,
+          userName: req.user!.fullName
+        }
+      });
       
       res.json(advanceRequest);
     } catch (error) {
@@ -783,7 +841,7 @@ export function registerRoutes(app: Express): Server {
 
   app.put("/api/notifications/:id/read", requireAuth, async (req, res) => {
     try {
-      await storage.markNotificationAsRead(req.params.id);
+      await storage.markNotificationRead(req.params.id);
       res.json({ message: "تم تحديث الإشعار" });
     } catch (error) {
       res.status(500).json({ message: "حدث خطأ في تحديث الإشعار" });
@@ -918,17 +976,50 @@ export function registerRoutes(app: Express): Server {
   wss.on('error', (error) => {
     console.error('WebSocket server error:', error);
   });
-  wss.on('connection', (ws) => {
-    console.log('WebSocket client connected');
+  
+  const wsClients = new Map<any, { userId?: string }>();
+  
+  // Helper function to broadcast notification to specific user
+  const broadcastNotificationToUser = (userId: string, notification: any) => {
+    wss.clients.forEach((client) => {
+      const clientData = wsClients.get(client);
+      if (client.readyState === WebSocket.OPEN && clientData?.userId === userId) {
+        client.send(JSON.stringify({
+          type: 'new_notification',
+          data: notification
+        }));
+      }
+    });
+  };
 
-    ws.on('message', (message) => {
+  wss.on('connection', (ws, req) => {
+    console.log('WebSocket client connected');
+    
+    // Extract userId from authenticated session ONLY
+    // Never trust client-provided userId for security
+    let userId: string | undefined;
+    
+    // The session is attached to req by express-session middleware
+    const session = (req as any).session;
+    if (session?.passport?.user) {
+      userId = session.passport.user;
+      console.log(`WebSocket authenticated user: ${userId}`);
+    } else {
+      console.warn('WebSocket connection without authenticated session');
+    }
+    
+    wsClients.set(ws, { userId });
+
+    ws.on('message', async (message) => {
       try {
         const data = JSON.parse(message.toString());
         
         // Handle different message types
         switch (data.type) {
           case 'subscribe':
-            // Handle subscription to updates
+            // Ignore client-provided userId for security - we only use session-derived userId
+            // This prevents impersonation attacks
+            console.log('Subscribe message received but userId is session-derived only');
             break;
           case 'aux_update':
             // Broadcast AUX status updates
@@ -945,12 +1036,46 @@ export function registerRoutes(app: Express): Server {
           case 'call_answer':
           case 'ice_candidate':
           case 'call_end':
-            // Broadcast call signaling messages to all clients
-            wss.clients.forEach((client) => {
-              if (client !== ws && client.readyState === ws.OPEN) {
-                client.send(JSON.stringify(data));
+          case 'call_decline':
+          case 'call_busy':
+          case 'call_timeout':
+          case 'call_ringing':
+          case 'call_connected':
+            // Broadcast call signaling messages ONLY to participants in the room
+            if (!data.roomId) {
+              console.error('Call message missing roomId');
+              break;
+            }
+
+            // Security: Verify sender is authenticated
+            const senderData = wsClients.get(ws);
+            if (!senderData?.userId) {
+              console.error('Unauthenticated user attempted to send call message');
+              break;
+            }
+
+            try {
+              const roomMembers = await storage.getChatRoomMembers(data.roomId);
+              const memberIds = new Set(roomMembers.map(m => m.id));
+
+              // Security: Verify sender is a member of the room
+              if (!memberIds.has(senderData.userId)) {
+                console.error(`User ${senderData.userId} attempted to send call message to room ${data.roomId} without membership`);
+                break;
               }
-            });
+
+              wss.clients.forEach((client) => {
+                if (client !== ws && client.readyState === ws.OPEN) {
+                  const clientData = wsClients.get(client);
+                  if (clientData?.userId && memberIds.has(clientData.userId)) {
+                    client.send(JSON.stringify(data));
+                    console.log(`Sent ${data.type} to user ${clientData.userId} in room ${data.roomId}`);
+                  }
+                }
+              });
+            } catch (error) {
+              console.error('Error filtering call message recipients:', error);
+            }
             break;
         }
       } catch (error) {
@@ -960,9 +1085,13 @@ export function registerRoutes(app: Express): Server {
 
     ws.on('close', () => {
       console.log('WebSocket client disconnected');
+      wsClients.delete(ws);
     });
 
   });
+
+  });
+
 
   // Chat Rooms Routes
   app.post("/api/chat/rooms", requireAuth, async (req, res) => {
@@ -1066,13 +1195,21 @@ export function registerRoutes(app: Express): Server {
       
       for (const member of roomMembers) {
         if (member.id !== req.user!.id) {
-          const notification = await storage.createNotification(
-            member.id,
-            room?.name || 'رسالة جديدة',
-            `${req.user!.fullName}: ${req.body.content || 'أرسل رسالة'}`,
-            'info',
-            { roomId: req.body.roomId, messageId: message.id }
-          );
+          const notification = await storage.createNotification({
+            userId: member.id,
+            title: room?.name || 'رسالة جديدة',
+            message: `${req.user!.fullName}: ${req.body.content || 'أرسل رسالة'}`,
+            type: 'info',
+            category: 'message',
+            metadata: {
+              resourceId: req.body.roomId,
+              roomId: req.body.roomId,
+              messageId: message.id,
+              userId: req.user!.id,
+              userName: req.user!.fullName,
+              userAvatar: req.user!.profilePicture || undefined
+            }
+          });
           
           // Broadcast notification
           wss.clients.forEach((client) => {
@@ -1323,13 +1460,21 @@ export function registerRoutes(app: Express): Server {
       
       for (const member of roomMembers) {
         if (member.id !== req.user!.id) {
-          const notification = await storage.createNotification(
-            member.id,
-            room?.name || 'رسالة جديدة',
-            `${req.user!.fullName}: ${req.body.content || 'أرسل رسالة'}`,
-            'info',
-            { roomId: req.body.roomId, messageId: message.id }
-          );
+          const notification = await storage.createNotification({
+            userId: member.id,
+            title: room?.name || 'رسالة جديدة',
+            message: `${req.user!.fullName}: ${req.body.content || 'أرسل رسالة'}`,
+            type: 'info',
+            category: 'message',
+            metadata: {
+              resourceId: req.body.roomId,
+              roomId: req.body.roomId,
+              messageId: message.id,
+              userId: req.user!.id,
+              userName: req.user!.fullName,
+              userAvatar: req.user!.profilePicture || undefined
+            }
+          });
           
           // Broadcast notification
           wss.clients.forEach((client) => {
@@ -1344,12 +1489,18 @@ export function registerRoutes(app: Express): Server {
       }
       
       for (const participantId of participantIds) {
-        const notification = await storage.createNotification(
-          participantId,
-          "اجتماع جديد",
-          `${req.user!.fullName} قام بجدولة اجتماع: ${title}`,
-          "info"
-        );
+        const notification = await storage.createNotification({
+          userId: participantId,
+          title: "اجتماع جديد",
+          message: `${req.user!.fullName} قام بجدولة اجتماع: ${title}`,
+          type: "info",
+          category: "system",
+          metadata: {
+            resourceId: meeting.id,
+            userId: req.user!.id,
+            userName: req.user!.fullName
+          }
+        });
         
         wss.clients.forEach((client) => {
           if (client.readyState === client.OPEN) {
@@ -1411,7 +1562,18 @@ export function registerRoutes(app: Express): Server {
           messageType: "meeting_link",
           attachments: [{ name: title, url: meetingLink, type: "meeting" }],
         });
-        await storage.createNotification(participantId, "اجتماع جديد", `${req.user!.fullName} قام بجدولة اجتماع: ${title}`, "info");
+        await storage.createNotification({
+          userId: participantId,
+          title: "اجتماع جديد",
+          message: `${req.user!.fullName} قام بجدولة اجتماع: ${title}`,
+          type: "info",
+          category: "system",
+          metadata: {
+            resourceId: meeting.id,
+            userId: req.user!.id,
+            userName: req.user!.fullName
+          }
+        });
       }
       
       res.status(201).json({ ...meeting, meetingLink });
@@ -1449,12 +1611,18 @@ export function registerRoutes(app: Express): Server {
             }],
           });
           
-          await storage.createNotification(
-            participantId,
-            "اجتماع جديد",
-            `تم جدولة اجتماع: ${meeting.title}`,
-            "info"
-          );
+          await storage.createNotification({
+            userId: participantId,
+            title: "اجتماع جديد",
+            message: `تم جدولة اجتماع: ${meeting.title}`,
+            type: "info",
+            category: "system",
+            metadata: {
+              resourceId: meeting.id,
+              userId: req.user!.id,
+              userName: req.user!.fullName
+            }
+          });
         }
       }
       
@@ -1521,6 +1689,77 @@ export function registerRoutes(app: Express): Server {
       console.error('Broadcast error:', error);
     }
   }, 5000); // Broadcast every 5 seconds
+
+  // Call Logs API
+  app.post("/api/calls/start", requireAuth, async (req, res) => {
+    try {
+      // Using imported startCallSchema
+      const validated = startCallSchema.parse(req.body);
+      
+      const callLog = await storage.createCallLog({
+        roomId: validated.roomId,
+        callerId: req.user!.id,
+        receiverId: validated.receiverId,
+        callType: validated.callType,
+        status: 'initiated',
+      });
+      res.status(201).json(callLog);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "بيانات غير صحيحة", errors: error.errors });
+      }
+      console.error("Error creating call log:", error);
+      res.status(500).json({ message: "حدث خطأ في بدء المكالمة" });
+    }
+  });
+
+  app.patch("/api/calls/:id/status", requireAuth, async (req, res) => {
+    try {
+      // Using imported updateCallStatusSchema
+      const validated = updateCallStatusSchema.parse(req.body);
+      
+      const updates: Partial<any> = { status: validated.status };
+      
+      if (validated.status === 'connected') {
+        updates.startedAt = new Date();
+      } else if (['ended', 'missed', 'rejected', 'failed'].includes(validated.status)) {
+        updates.endedAt = new Date();
+        if (validated.duration !== undefined) {
+          updates.duration = validated.duration;
+        }
+      }
+      
+      const callLog = await storage.updateCallLog(req.params.id, updates);
+      res.json(callLog);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "بيانات غير صحيحة", errors: error.errors });
+      }
+      console.error("Error updating call log:", error);
+      res.status(500).json({ message: "حدث خطأ في تحديث حالة المكالمة" });
+    }
+  });
+
+  app.get("/api/calls/history", requireAuth, async (req, res) => {
+    try {
+      const callLogs = await storage.getUserCallLogs(req.user!.id);
+      res.json(callLogs);
+    } catch (error) {
+      console.error("Error fetching call logs:", error);
+      res.status(500).json({ message: "حدث خطأ في جلب سجل المكالمات" });
+    }
+  });
+
+  app.get("/api/calls/room/:roomId", requireAuth, async (req, res) => {
+    try {
+      const callLogs = await storage.getRoomCallLogs(req.params.roomId);
+      res.json(callLogs);
+    } catch (error) {
+      console.error("Error fetching room call logs:", error);
+      res.status(500).json({ message: "حدث خطأ في جلب سجل مكالمات الغرفة" });
+    }
+  });
+
 
   return httpServer;
 }
