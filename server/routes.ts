@@ -1007,6 +1007,91 @@ export function registerRoutes(app: Express): Server {
 
   });
 
+
+  // Call routes
+  app.post("/api/calls/start", requireAuth, async (req, res) => {
+    try {
+      const { roomId, receiverId, callType } = req.body;
+      
+      const callLog = await storage.createCallLog({
+        roomId,
+        callerId: req.user!.id,
+        receiverId,
+        callType: callType || 'audio',
+        status: 'initiated',
+      });
+
+      // Create notification for the receiver
+      const notification = await storage.createNotification({
+        userId: receiverId,
+        title: `${callType === 'video' ? 'مكالمة فيديو' : 'مكالمة صوتية'} واردة`,
+        message: `${req.user!.fullName} يتصل بك`,
+        type: "info",
+        category: "call",
+        metadata: {
+          resourceId: callLog.id,
+          callId: callLog.id,
+          callType: callType || 'audio',
+          userId: req.user!.id,
+          userName: req.user!.fullName,
+          userAvatar: req.user!.profilePicture || undefined
+        }
+      });
+
+      // Send notification via WebSocket to the receiver
+      sendToUser(receiverId, {
+        type: 'new_notification',
+        data: notification
+      });
+
+      res.json(callLog);
+    } catch (error) {
+      console.error("Error starting call:", error);
+      res.status(500).json({ message: "حدث خطأ في بدء المكالمة" });
+    }
+  });
+
+  app.patch("/api/calls/:id/status", requireAuth, async (req, res) => {
+    try {
+      const { status, duration } = req.body;
+      const updates: any = { status };
+      
+      if (status === 'ended' && duration !== undefined) {
+        updates.duration = duration;
+        updates.endedAt = new Date();
+      }
+
+      const callLog = await storage.updateCallLog(req.params.id, updates);
+      if (!callLog) {
+        return res.status(404).json({ message: "سجل المكالمة غير موجود" });
+      }
+
+      res.json(callLog);
+    } catch (error) {
+      console.error("Error updating call status:", error);
+      res.status(500).json({ message: "حدث خطأ في تحديث حالة المكالمة" });
+    }
+  });
+
+  app.get("/api/calls/history", requireAuth, async (req, res) => {
+    try {
+      const callLogs = await storage.getUserCallLogs(req.user!.id);
+      res.json(callLogs);
+    } catch (error) {
+      console.error("Error fetching call history:", error);
+      res.status(500).json({ message: "حدث خطأ في جلب سجل المكالمات" });
+    }
+  });
+
+  app.get("/api/calls/room/:roomId", requireAuth, async (req, res) => {
+    try {
+      const callLogs = await storage.getRoomCallLogs(req.params.roomId);
+      res.json(callLogs);
+    } catch (error) {
+      console.error("Error fetching room call logs:", error);
+      res.status(500).json({ message: "حدث خطأ في جلب سجل مكالمات الغرفة" });
+    }
+  });
   // Chat Rooms Routes
   app.post("/api/chat/rooms", requireAuth, async (req, res) => {
     try {
