@@ -5,6 +5,7 @@ import { AuthProvider } from "@/hooks/use-auth";
 import { SidebarProvider } from "@/contexts/sidebar-context";
 import { ProtectedRoute } from "@/lib/protected-route";
 import { Toaster } from "@/components/ui/toaster";
+import { GlobalCallManager } from "@/components/call/GlobalCallManager";
 import AuthPage from "@/pages/auth-page";
 import Dashboard from "@/pages/dashboard";
 import AdminDashboard from "@/pages/admin-dashboard";
@@ -49,6 +50,7 @@ function App() {
           <div className="min-h-screen bg-background rtl-grid">
             <Router />
             <Toaster />
+            <GlobalCallManager />
           </div>
         </SidebarProvider>
       </AuthProvider>

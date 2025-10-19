@@ -1,9 +1,10 @@
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Phone, PhoneOff, Video } from "lucide-react";
 import { getMediaUrl } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 interface IncomingCallDialogProps {
   isOpen: boolean;
@@ -30,6 +31,9 @@ export function IncomingCallDialog({
         className="sm:max-w-[400px] p-0 overflow-hidden bg-gradient-to-br from-purple-900 via-blue-900 to-teal-900 dark:from-purple-950 dark:via-blue-950 dark:to-teal-950 border-none"
         data-testid="dialog-incoming-call"
       >
+        <VisuallyHidden>
+          <DialogTitle>{callType === 'video' ? 'اتصال فيديو وارد' : 'اتصال صوتي وارد'}</DialogTitle>
+        </VisuallyHidden>
         <div className="p-8 text-white">
           <div className="flex flex-col items-center">
             <motion.div
