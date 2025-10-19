@@ -172,6 +172,7 @@ export const chatRoomMembers = pgTable("chat_room_members", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   roomId: uuid("room_id").notNull().references(() => chatRooms.id, { onDelete: "cascade" }),
   userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  lastReadMessageId: uuid("last_read_message_id"),
   joinedAt: timestamp("joined_at").notNull().defaultNow(),
 });
 

@@ -28,7 +28,7 @@ import { useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import type { Task, LeaveRequest, User } from "@shared/schema";
+import type { Task, LeaveRequest, User, Notification } from "@shared/schema";
 import {
   Dialog,
   DialogContent,
@@ -89,8 +89,14 @@ export default function Sidebar() {
     enabled: !!user && showMeetingDialog,
   });
 
+  const { data: notifications = [] } = useQuery<Notification[]>({
+    queryKey: ["/api/notifications"],
+    enabled: !!user,
+  });
+
   const totalTasks = [...userTasks, ...assignedTasks].filter(t => t.status !== 'completed').length;
   const pendingLeaves = leaveRequests.length;
+  const unreadMessages = notifications.filter(n => !n.isRead && n.category === 'message').length;
 
   const navigation = [
     {
@@ -109,7 +115,7 @@ export default function Sidebar() {
       name: "الدردشة",
       href: "/chat",
       icon: MessageSquare,
-      badge: null,
+      badge: unreadMessages > 0 ? unreadMessages.toString() : null,
     },
     {
       name: "طلباتي",

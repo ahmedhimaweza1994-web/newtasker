@@ -51,6 +51,7 @@ import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
 import { MotionPageShell, MotionSection } from "@/components/ui/motion-wrappers";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useEnhancedNotifications } from "@/hooks/use-enhanced-notifications";
 
 interface User {
   id: string;
@@ -119,6 +120,7 @@ export default function Chat() {
   const remoteAudioRef = useRef<HTMLAudioElement | null>(null);
   const activeCallRoomIdRef = useRef<string | null>(null);
   const { isConnected, lastMessage, sendMessage } = useWebSocket();
+  const { handleMessageNotification } = useEnhancedNotifications();
 
   const { data: rooms = [] } = useQuery<ChatRoom[]>({
     queryKey: ["/api/chat/rooms"],
@@ -496,21 +498,18 @@ export default function Chat() {
   }, [urlMessageId, messages]);
 
   useEffect(() => {
-    if (lastMessage?.type === 'new_message' && lastMessage.data && selectedRoom) {
+    if (lastMessage?.type === 'new_message' && lastMessage.data) {
       const message = lastMessage.data;
-      if (message.senderId !== user?.id && message.roomId === selectedRoom.id) {
-        if ('Notification' in window && Notification.permission === 'granted') {
-          const senderName = message.sender?.fullName || 'مستخدم';
-          const roomName = selectedRoom.type === 'group' ? selectedRoom.name : senderName;
-          new Notification(roomName || 'رسالة جديدة', {
-            body: message.content || 'أرسل رسالة',
-            icon: '/favicon.ico',
-            tag: `message-${message.id}`,
-          });
-        }
+      if (message.senderId !== user?.id) {
+        queryClient.invalidateQueries({ queryKey: ["/api/chat/rooms"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/chat/messages", message.roomId] });
+        
+        const senderName = message.sender?.fullName || 'مستخدم';
+        const messageContent = message.content || 'أرسل رسالة';
+        handleMessageNotification(message.roomId, messageContent, senderName);
       }
     }
-  }, [lastMessage, user?.id, selectedRoom]);
+  }, [lastMessage, user?.id, handleMessageNotification]);
 
   useEffect(() => {
     if (!lastMessage) return;

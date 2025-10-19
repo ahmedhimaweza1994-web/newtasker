@@ -25,7 +25,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useWebSocket } from "@/lib/websocket";
 import { useToast } from "@/hooks/use-toast";
-import { useBrowserNotifications } from "@/hooks/use-browser-notifications";
+import { useEnhancedNotifications } from "@/hooks/use-enhanced-notifications";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Notification, Task, User as UserType } from "@shared/schema";
 import { formatArabicDate } from "@/lib/arabic-date";
@@ -39,7 +39,7 @@ export default function Navigation() {
   const [showSearchResults, setShowSearchResults] = useState(false);
   const { lastMessage } = useWebSocket();
   const { toast } = useToast();
-  const { permission, requestPermission, showNotification, isSupported } = useBrowserNotifications();
+  const { handleNotification, ensureBrowserNotificationPermission, permission } = useEnhancedNotifications();
 
   const { data: notifications = [] } = useQuery<Notification[]>({
     queryKey: ["/api/notifications"],
@@ -104,23 +104,20 @@ export default function Navigation() {
           });
           queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
           
-          // Show browser notification
-          if (isSupported && permission === 'granted') {
-            showNotification(notification);
-          }
+          handleNotification(notification);
         }
       } else if (lastMessage.type === 'new_message' && lastMessage.data) {
         queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
       }
     }
-  }, [lastMessage, user, toast, permission, isSupported, showNotification]);
+  }, [lastMessage, user, toast, handleNotification]);
 
   // Request browser notification permission on first load
   useEffect(() => {
-    if (isSupported && permission === 'default' && user) {
-      requestPermission();
+    if (permission === 'default' && user) {
+      ensureBrowserNotificationPermission();
     }
-  }, [isSupported, permission, user, requestPermission]);
+  }, [permission, user, ensureBrowserNotificationPermission]);
 
   useEffect(() => {
     const darkMode = localStorage.getItem('darkMode') === 'true';

@@ -28,19 +28,22 @@ export function useBrowserNotifications() {
         icon: '/favicon.ico',
         badge: '/favicon.ico',
         tag: notification.id,
-        requireInteraction: false,
+        requireInteraction: notification.category === 'call',
       });
 
       browserNotification.onclick = () => {
         window.focus();
         browserNotification.close();
         
-        // Navigate to chat if it's a chat notification
-        if (notification.metadata && typeof notification.metadata === 'object' && 'roomId' in notification.metadata) {
+        if (notification.category === 'message' && notification.metadata?.roomId) {
+          const messageId = notification.metadata?.messageId || '';
+          setLocation(`/chat?roomId=${notification.metadata.roomId}${messageId ? `&messageId=${messageId}` : ''}`);
+        } else if (notification.category === 'task' && notification.metadata?.taskId) {
+          setLocation(`/tasks`);
+        } else if (notification.category === 'call' && notification.metadata?.roomId) {
           setLocation(`/chat?roomId=${notification.metadata.roomId}`);
         } else {
-          // Otherwise go to notifications
-          setLocation('/notifications');
+          setLocation('/dashboard');
         }
       };
     }
