@@ -81,10 +81,12 @@ export function registerRoutes(app: Express): Server {
   app.post("/api/tasks", requireAuth, async (req, res) => {
     try {
       const taskData = {
-        ...req.body,
+        ...updateData,
         createdBy: req.user!.id,
         companyName: req.body.companyName || null,
         assignedTo: req.body.assignedTo || null,
+        // Convert ISO string dates to Date objects for Drizzle
+        dueDate: req.body.dueDate ? new Date(req.body.dueDate) : undefined,
       };
       const task = await storage.createTask(taskData);
       
@@ -112,6 +114,12 @@ export function registerRoutes(app: Express): Server {
       if (!existingTask) {
         return res.status(404).json({ message: "المهمة غير موجودة" });
       }
+      // Prepare update data with date conversions
+      const updateData = {
+        ...req.body,
+        dueDate: req.body.dueDate ? new Date(req.body.dueDate) : undefined,
+      };
+
 
       // Check if trying to update status to 'completed'
       if (req.body.status === 'completed') {
@@ -121,14 +129,14 @@ export function registerRoutes(app: Express): Server {
         if (isCreator || isAdminOrSubAdmin) {
           // Allow direct completion and set completedAt
           const task = await storage.updateTask(req.params.id, {
-            ...req.body,
+            ...updateData,
             completedAt: new Date()
           });
           res.json(task);
         } else {
           // Change status to 'under_review' instead
           const task = await storage.updateTask(req.params.id, {
-            ...req.body,
+            ...updateData,
             status: 'under_review'
           });
 
@@ -146,7 +154,7 @@ export function registerRoutes(app: Express): Server {
         }
       } else {
         // Normal update for other status changes
-        const task = await storage.updateTask(req.params.id, req.body);
+        const task = await storage.updateTask(req.params.id, updateData);
         res.json(task);
       }
     } catch (error) {
