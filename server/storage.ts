@@ -28,6 +28,8 @@ import {
   type InsertSalaryAdvanceRequest,
   type TaskNote,
   type Notification,
+  type InsertNotification,
+  insertNotificationSchema,
   type Shift,
   type ChatRoom,
   type InsertChatRoom,
@@ -134,7 +136,7 @@ export interface IStorage {
   getActiveShift(userId: string): Promise<Shift | undefined>;
  
   // Notifications
-  createNotification(userId: string, title: string, message: string, type: string, metadata?: any): Promise<Notification>;
+  createNotification(notificationData: InsertNotification): Promise<Notification>;
   getUserNotifications(userId: string): Promise<Notification[]>;
   markNotificationAsRead(id: string): Promise<Notification | undefined>;
   markAllNotificationsAsRead(userId: string): Promise<void>;
@@ -611,16 +613,13 @@ export class MemStorage implements IStorage {
   }
 
   // Notifications
-  async createNotification(
-    userId: string,
-    title: string,
-    message: string,
-    type: string,
-    metadata?: any
-  ): Promise<Notification> {
+  async createNotification(notificationData: InsertNotification): Promise<Notification> {
+    // Validate with the discriminated union schema
+    const validatedData = insertNotificationSchema.parse(notificationData);
+    
     const [notification] = await db
       .insert(notifications)
-      .values({ userId, title, message, type, metadata })
+      .values(validatedData)
       .returning();
     return notification;
   }

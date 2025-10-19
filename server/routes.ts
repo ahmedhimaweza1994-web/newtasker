@@ -92,12 +92,20 @@ export function registerRoutes(app: Express): Server {
       
       // Send notification if assigned to someone
       if (task.assignedTo && task.assignedTo !== req.user!.id) {
-        await storage.createNotification(
-          task.assignedTo,
-          "مهمة جديدة معينة لك",
-          `تم تعيين مهمة "${task.title}" لك`,
-          "info"
-        );
+        await storage.createNotification({
+          userId: task.assignedTo,
+          title: "مهمة جديدة معينة لك",
+          message: `تم تعيين مهمة "${task.title}" لك`,
+          type: "info",
+          category: "task",
+          metadata: {
+            resourceId: task.id,
+            taskId: task.id,
+            userId: req.user!.id,
+            userName: req.user!.fullName,
+            userAvatar: req.user!.profilePicture || undefined
+          }
+        });
       }
       
       res.status(201).json(task);
