@@ -16,6 +16,10 @@ export const chatRoomTypeEnum = pgEnum('chat_room_type', ['private', 'group']);
 export const messageTypeEnum = pgEnum('message_type', ['text', 'image', 'file', 'meeting_link']);
 export const callTypeEnum = pgEnum('call_type', ['audio', 'video']);
 export const callStatusEnum = pgEnum('call_status', ['initiated', 'ringing', 'connected', 'ended', 'missed', 'rejected', 'busy', 'failed']);
+export const notificationCategoryEnum = pgEnum('notification_category', ['task', 'message', 'call', 'system', 'reward']);
+
+// Notification types
+export type NotificationCategory = 'task' | 'message' | 'call' | 'system' | 'reward';
 
 // Users table
 export const users = pgTable("users", {
@@ -146,8 +150,9 @@ export const notifications = pgTable("notifications", {
   title: text("title").notNull(),
   message: text("message").notNull(),
   type: text("type").notNull(), // 'info', 'warning', 'error', 'success'
+  category: notificationCategoryEnum("category").notNull().default('system'), // new: notification category
   isRead: boolean("is_read").notNull().default(false),
-  metadata: jsonb("metadata"),
+  metadata: jsonb("metadata").$type<NotificationMetadata>(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -389,6 +394,96 @@ export const insertChatRoomSchema = createInsertSchema(chatRooms).omit({
   updatedAt: true,
 });
 
+// Metadata schemas per category with discriminated union
+const taskNotificationMetadataSchema = z.object({
+  resourceId: z.string(),
+  taskId: z.string(),
+  userId: z.string().optional(),
+  userName: z.string().optional(),
+  userAvatar: z.string().optional(),
+});
+
+const messageNotificationMetadataSchema = z.object({
+  resourceId: z.string(),
+  roomId: z.string(),
+  messageId: z.string().optional(),
+  userId: z.string().optional(),
+  userName: z.string().optional(),
+  userAvatar: z.string().optional(),
+});
+
+const callNotificationMetadataSchema = z.object({
+  resourceId: z.string(),
+  callId: z.string(),
+  callType: z.enum(['audio', 'video']).optional(),
+  userId: z.string().optional(),
+  userName: z.string().optional(),
+  userAvatar: z.string().optional(),
+});
+
+const systemNotificationMetadataSchema = z.object({
+  resourceId: z.string().optional(),
+  userId: z.string().optional(),
+  userName: z.string().optional(),
+});
+
+const rewardNotificationMetadataSchema = z.object({
+  resourceId: z.string().optional(),
+  points: z.number().optional(),
+  taskId: z.string().optional(),
+});
+
+// Discriminated union for all notification types
+export const insertNotificationSchema = z.discriminatedUnion('category', [
+  z.object({
+    userId: z.string(),
+    title: z.string(),
+    message: z.string(),
+    type: z.string(),
+    category: z.literal('task'),
+    metadata: taskNotificationMetadataSchema,
+  }),
+  z.object({
+    userId: z.string(),
+    title: z.string(),
+    message: z.string(),
+    type: z.string(),
+    category: z.literal('message'),
+    metadata: messageNotificationMetadataSchema,
+  }),
+  z.object({
+    userId: z.string(),
+    title: z.string(),
+    message: z.string(),
+    type: z.string(),
+    category: z.literal('call'),
+    metadata: callNotificationMetadataSchema,
+  }),
+  z.object({
+    userId: z.string(),
+    title: z.string(),
+    message: z.string(),
+    type: z.string(),
+    category: z.literal('system'),
+    metadata: systemNotificationMetadataSchema.optional(),
+  }),
+  z.object({
+    userId: z.string(),
+    title: z.string(),
+    message: z.string(),
+    type: z.string(),
+    category: z.literal('reward'),
+    metadata: rewardNotificationMetadataSchema.optional(),
+  }),
+]);
+
+// Export metadata types for use in code
+export type TaskNotificationMetadata = z.infer<typeof taskNotificationMetadataSchema>;
+export type MessageNotificationMetadata = z.infer<typeof messageNotificationMetadataSchema>;
+export type CallNotificationMetadata = z.infer<typeof callNotificationMetadataSchema>;
+export type SystemNotificationMetadata = z.infer<typeof systemNotificationMetadataSchema>;
+export type RewardNotificationMetadata = z.infer<typeof rewardNotificationMetadataSchema>;
+
 export const insertChatMessageSchema = createInsertSchema(chatMessages).omit({
   id: true,
   createdAt: true,
@@ -426,6 +521,7 @@ export type InsertSalaryAdvanceRequest = z.infer<typeof insertSalaryAdvanceReque
 export type TaskNote = typeof taskNotes.$inferSelect;
 export type TaskCollaborator = typeof taskCollaborators.$inferSelect;
 export type Notification = typeof notifications.$inferSelect;
+export type InsertNotification = z.infer<typeof insertNotificationSchema>;
 export type Shift = typeof shifts.$inferSelect;
 export type ChatRoom = typeof chatRooms.$inferSelect;
 export type InsertChatRoom = z.infer<typeof insertChatRoomSchema>;
