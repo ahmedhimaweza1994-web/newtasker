@@ -663,7 +663,7 @@ export default function Chat() {
                     {room.name === 'الغرفة العامة' && (
                       <Badge variant="secondary" className="text-xs">عامة</Badge>
                     )}
-                    {unreadCounts[room.id] > 0 && (
+                    {unreadCounts[room.id] > 0 && selectedRoom?.id !== room.id && (
                       <Badge 
                         variant="destructive" 
                         className="ml-auto bg-gradient-to-r from-red-500 to-pink-500 text-white"
