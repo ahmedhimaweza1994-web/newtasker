@@ -881,49 +881,53 @@ function TaskDetailsDialog({
                 <div>
                   <Label className="text-muted-foreground flex items-center gap-1">
                     <User className="w-4 h-4" />
-                    منشئ المهمة
-                  </Label>
-                  <div className="flex items-center gap-2 mt-2">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage 
-                        src={task.createdByUser?.profilePicture || undefined} 
-                        alt={task.createdByUser?.fullName || "منشئ المهمة"} 
-                        className="object-cover"
-                      />
-                      <AvatarFallback>{task.createdByUser?.fullName?.[0] || "م"}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-medium" data-testid="text-task-creator">{task.createdByUser?.fullName}</p>
-                      {task.createdByUser?.department && (
-                        <p className="text-xs text-muted-foreground">{task.createdByUser.department}</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground flex items-center gap-1">
-                    <Users className="w-4 h-4" />
-                    المراجع
+                    الموظف المعين
                   </Label>
                   {task.assignedToUser ? (
                     <div className="flex items-center gap-2 mt-2">
                       <Avatar className="h-8 w-8">
                         <AvatarImage 
                           src={task.assignedToUser.profilePicture || undefined} 
-                          alt={task.assignedToUser.fullName || "المراجع"} 
+                          alt={task.assignedToUser.fullName || "الموظف المعين"} 
                           className="object-cover"
                         />
                         <AvatarFallback>{task.assignedToUser.fullName?.[0] || "م"}</AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="font-medium" data-testid="text-task-assignee">{task.assignedToUser.fullName}</p>
+                        <p className="font-medium" data-testid="text-task-assigned">{task.assignedToUser.fullName}</p>
                         {task.assignedToUser.department && (
                           <p className="text-xs text-muted-foreground">{task.assignedToUser.department}</p>
                         )}
                       </div>
                     </div>
                   ) : (
-                    <p className="text-muted-foreground mt-2" data-testid="text-no-assignee">غير محدد</p>
+                    <p className="text-muted-foreground mt-2" data-testid="text-no-assigned">غير محدد</p>
+                  )}
+                </div>
+                <div>
+                  <Label className="text-muted-foreground flex items-center gap-1">
+                    <Users className="w-4 h-4" />
+                    المراجع
+                  </Label>
+                  {(task as any).ratedByUser ? (
+                    <div className="flex items-center gap-2 mt-2">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage 
+                          src={(task as any).ratedByUser.profilePicture || undefined} 
+                          alt={(task as any).ratedByUser.fullName || "المراجع"} 
+                          className="object-cover"
+                        />
+                        <AvatarFallback>{(task as any).ratedByUser.fullName?.[0] || "م"}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-medium" data-testid="text-task-reviewer">{(task as any).ratedByUser.fullName}</p>
+                        {(task as any).ratedByUser.department && (
+                          <p className="text-xs text-muted-foreground">{(task as any).ratedByUser.department}</p>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground mt-2" data-testid="text-no-reviewer">غير محدد</p>
                   )}
                 </div>
               </div>

@@ -279,10 +279,18 @@ export class MemStorage implements IStorage {
       assignedToUser = assignee;
     }
     
+    // Get reviewer user (ratedBy)
+    let ratedByUser = undefined;
+    if (task.ratedBy) {
+      const [reviewer] = await db.select(userPublicFields).from(users).where(eq(users.id, task.ratedBy));
+      ratedByUser = reviewer;
+    }
+    
     return {
       ...task,
       createdByUser,
       assignedToUser,
+      ratedByUser,
     } as any;
   }
 
@@ -313,6 +321,16 @@ export class MemStorage implements IStorage {
             role: true,
           },
         },
+        ratedBy: {
+          columns: {
+            id: true,
+            fullName: true,
+            email: true,
+            profilePicture: true,
+            department: true,
+            role: true,
+          },
+        },
       },
       orderBy: [desc(tasks.createdAt)],
     });
@@ -321,6 +339,7 @@ export class MemStorage implements IStorage {
       ...task,
       createdByUser: task.createdBy,
       assignedToUser: task.assignedTo,
+      ratedByUser: task.ratedBy,
     })) as any;
   }
 
@@ -348,6 +367,16 @@ export class MemStorage implements IStorage {
             role: true,
           },
         },
+        ratedBy: {
+          columns: {
+            id: true,
+            fullName: true,
+            email: true,
+            profilePicture: true,
+            department: true,
+            role: true,
+          },
+        },
       },
       orderBy: [desc(tasks.createdAt)],
     });
@@ -356,6 +385,7 @@ export class MemStorage implements IStorage {
       ...task,
       createdByUser: task.createdBy,
       assignedToUser: task.assignedTo,
+      ratedByUser: task.ratedBy,
     })) as any;
   }
 
@@ -396,6 +426,16 @@ export class MemStorage implements IStorage {
             role: true,
           },
         },
+        ratedBy: {
+          columns: {
+            id: true,
+            fullName: true,
+            email: true,
+            profilePicture: true,
+            department: true,
+            role: true,
+          },
+        },
       },
       orderBy: [desc(tasks.createdAt)],
     });
@@ -404,6 +444,7 @@ export class MemStorage implements IStorage {
       ...task,
       createdByUser: task.createdBy,
       assignedToUser: task.assignedTo,
+      ratedByUser: task.ratedBy,
     })) as any;
   }
 

@@ -25,6 +25,7 @@ import { useWebSocket } from "@/lib/websocket";
 import { useCallManager } from "@/hooks/use-call-manager";
 import { CallWindow } from "@/components/call/CallWindow";
 import { IncomingCallDialog } from "@/components/call/IncomingCallDialog";
+import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
 import {
   Dialog,
   DialogContent,
@@ -118,6 +119,7 @@ export default function Chat() {
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
   const [incomingCallFrom, setIncomingCallFrom] = useState<User | null>(null);
   const [incomingCallType, setIncomingCallType] = useState<'audio' | 'video'>('audio');
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -363,6 +365,11 @@ export default function Chat() {
     setMentionSearch("");
   };
 
+  const handleEmojiClick = (emojiData: EmojiClickData) => {
+    setMessageText((prev) => prev + emojiData.emoji);
+    setShowEmojiPicker(false);
+  };
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -434,6 +441,7 @@ export default function Chat() {
             lastMarkedMessageIdRef.current.set(selectedRoom.id, messageIdToMark);
             pendingMarkReadRef.current.delete(selectedRoom.id);
             queryClient.invalidateQueries({ queryKey: ["/api/chat/unread-counts"] });
+            queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
           }
         }).catch((error) => {
           console.error("Error marking messages as read:", error);
@@ -1083,6 +1091,27 @@ export default function Chat() {
                         className="hidden"
                         accept="image/*,application/pdf"
                       />
+                      <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
+                        <PopoverTrigger asChild>
+                          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              data-testid="button-emoji"
+                              className="hover:bg-primary/10"
+                            >
+                              <Smile className="w-4 h-4" />
+                            </Button>
+                          </motion.div>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0 border-0 shadow-lg" align="start" side="top">
+                          <EmojiPicker 
+                            onEmojiClick={handleEmojiClick}
+                            autoFocusSearch={false}
+                            theme="auto"
+                          />
+                        </PopoverContent>
+                      </Popover>
                       <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                         <Button
                           variant="outline"

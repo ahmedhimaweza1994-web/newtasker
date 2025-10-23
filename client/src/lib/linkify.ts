@@ -11,7 +11,7 @@ export function linkifyText(text: string): string {
   // Then linkify URLs
   const urlRegex = /(https?:\/\/[^\s]+)/g;
   return escapedText.replace(urlRegex, (url) => {
-    return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-primary underline hover:text-primary/80 transition-colors">${url}</a>`;
+    return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-white underline hover:text-white/80 transition-colors">${url}</a>`;
   });
 }
 
