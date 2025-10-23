@@ -29,7 +29,7 @@ export function useAutoMarkRead(notifications: Notification[] = []) {
       }
     },
     onSuccess: () => {
-      queryClient.refetchQueries({ queryKey: ["/api/notifications"] });
+      queryClient.resetQueries({ queryKey: ["/api/notifications"] });
     },
   });
 
