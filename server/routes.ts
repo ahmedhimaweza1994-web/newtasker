@@ -1292,6 +1292,23 @@ export function registerRoutes(app: Express): Server {
       res.status(500).json({ message: "حدث خطأ في جلب غرفة الدردشة" });
     }
   });
+
+  app.get("/api/chat/unread-counts", requireAuth, async (req, res) => {
+    try {
+      const rooms = await storage.getUserChatRooms(req.user!.id);
+      const unreadCounts: Record<string, number> = {};
+      
+      for (const room of rooms) {
+        const count = await storage.getUnreadMessageCount(room.id, req.user!.id);
+        unreadCounts[room.id] = count;
+      }
+      
+      res.json(unreadCounts);
+    } catch (error) {
+      console.error("Error getting unread counts:", error);
+      res.status(500).json({ message: "حدث خطأ في جلب عدد الرسائل غير المقروءة" });
+    }
+  });
   app.put("/api/chat/rooms/:id/image", requireAuth, async (req, res) => {
     try {
       const room = await storage.updateChatRoomImage(req.params.id, req.body.image);
@@ -1401,6 +1418,17 @@ export function registerRoutes(app: Express): Server {
       res.json({ message: "تم حذف الرسالة بنجاح" });
     } catch (error) {
       res.status(500).json({ message: "حدث خطأ في حذف الرسالة" });
+    }
+  });
+
+  app.put("/api/chat/rooms/:roomId/mark-read", requireAuth, async (req, res) => {
+    try {
+      const { messageId } = req.body;
+      await storage.updateLastReadMessage(req.params.roomId, req.user!.id, messageId);
+      res.json({ message: "تم تحديث حالة القراءة" });
+    } catch (error) {
+      console.error("Error marking messages as read:", error);
+      res.status(500).json({ message: "حدث خطأ في تحديث حالة القراءة" });
     }
   });
 

@@ -112,6 +112,8 @@ export default function Chat() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const lastMarkedMessageIdRef = useRef<Map<string, string>>(new Map());
+  const pendingMarkReadRef = useRef<Map<string, string>>(new Map());
   const { isConnected, lastMessage, sendMessage } = useWebSocket({ userId: user?.id });
   const { handleMessageNotification } = useEnhancedNotifications();
   
@@ -130,6 +132,11 @@ export default function Chat() {
 
   const { data: users = [] } = useQuery<User[]>({
     queryKey: ["/api/users"],
+  });
+
+  const { data: unreadCounts = {} } = useQuery<Record<string, number>>({
+    queryKey: ["/api/chat/unread-counts"],
+    refetchInterval: 3000,
   });
 
   const sendMessageMutation = useMutation({
@@ -392,13 +399,42 @@ export default function Chat() {
       if (message.senderId !== user?.id) {
         queryClient.invalidateQueries({ queryKey: ["/api/chat/rooms"] });
         queryClient.invalidateQueries({ queryKey: ["/api/chat/messages", message.roomId] });
+        queryClient.invalidateQueries({ queryKey: ["/api/chat/unread-counts"] });
         
-        const senderName = message.sender?.fullName || 'مستخدم';
+        const senderName = message.sender?.fullName || '';
         const messageContent = message.content || 'أرسل رسالة';
         handleMessageNotification(message.roomId, messageContent, senderName);
       }
     }
   }, [lastMessage, user?.id, handleMessageNotification]);
+
+  useEffect(() => {
+    if (selectedRoom && messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      const lastMarkedId = lastMarkedMessageIdRef.current.get(selectedRoom.id);
+      const pendingId = pendingMarkReadRef.current.get(selectedRoom.id);
+      
+      if (lastMarkedId !== lastMessage.id && pendingId !== lastMessage.id) {
+        const messageIdToMark = lastMessage.id;
+        pendingMarkReadRef.current.set(selectedRoom.id, messageIdToMark);
+        
+        apiRequest("PUT", `/api/chat/rooms/${selectedRoom.id}/mark-read`, {
+          messageId: messageIdToMark
+        }).then(() => {
+          if (pendingMarkReadRef.current.get(selectedRoom.id) === messageIdToMark) {
+            lastMarkedMessageIdRef.current.set(selectedRoom.id, messageIdToMark);
+            pendingMarkReadRef.current.delete(selectedRoom.id);
+            queryClient.invalidateQueries({ queryKey: ["/api/chat/unread-counts"] });
+          }
+        }).catch((error) => {
+          console.error("Error marking messages as read:", error);
+          if (pendingMarkReadRef.current.get(selectedRoom.id) === messageIdToMark) {
+            pendingMarkReadRef.current.delete(selectedRoom.id);
+          }
+        });
+      }
+    }
+  }, [selectedRoom?.id, messages]);
 
   useEffect(() => {
     if (!lastMessage) return;
@@ -577,6 +613,15 @@ export default function Chat() {
                     <p className="font-medium truncate">{getRoomName(room)}</p>
                     {room.name === 'الغرفة العامة' && (
                       <Badge variant="secondary" className="text-xs">عامة</Badge>
+                    )}
+                    {unreadCounts[room.id] > 0 && (
+                      <Badge 
+                        variant="destructive" 
+                        className="ml-auto bg-gradient-to-r from-red-500 to-pink-500 text-white"
+                        data-testid={`badge-unread-${room.id}`}
+                      >
+                        {unreadCounts[room.id]}
+                      </Badge>
                     )}
                   </div>
                   {room.lastMessage && (
