@@ -1735,9 +1735,6 @@ export function registerRoutes(app: Express): Server {
 
   app.patch("/api/suggestions/:id", requireAuth, requireRole(['admin', 'sub-admin']), async (req, res) => {
     try {
-      const updates: any = {
-  app.patch("/api/suggestions/:id", requireAuth, requireRole(['admin', 'sub-admin']), async (req, res) => {
-    try {
       // Validate status if provided
       const validStatuses = ['pending', 'under_review', 'approved', 'rejected'];
       if (req.body.status && !validStatuses.includes(req.body.status)) {
@@ -1775,3 +1772,6 @@ export function registerRoutes(app: Express): Server {
       res.status(500).json({ message: "حدث خطأ في تحديث المقترح" });
     }
   });
+
+  return httpServer;
+}
