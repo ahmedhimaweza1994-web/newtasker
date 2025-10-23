@@ -145,6 +145,7 @@ export interface IStorage {
   createNotification(notificationData: InsertNotification): Promise<Notification>;
   getUserNotifications(userId: string): Promise<Notification[]>;
   markNotificationAsRead(id: string): Promise<Notification | undefined>;
+  markMultipleNotificationsAsRead(notificationIds: string[]): Promise<void>;
   markAllNotificationsAsRead(userId: string): Promise<void>;
   markNotificationsByResourceAsRead(userId: string, resourceId: string, category: string): Promise<void>;
   deleteNotification(id: string): Promise<boolean>;
@@ -864,6 +865,17 @@ export class MemStorage implements IStorage {
       .where(eq(notifications.id, id))
       .returning();
     return notification || undefined;
+  }
+
+  async markMultipleNotificationsAsRead(notificationIds: string[]): Promise<void> {
+    if (notificationIds.length === 0) return;
+    
+    for (const id of notificationIds) {
+      await db
+        .update(notifications)
+        .set({ isRead: true })
+        .where(eq(notifications.id, id));
+    }
   }
 
   async markAllNotificationsAsRead(userId: string): Promise<void> {

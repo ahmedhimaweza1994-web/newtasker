@@ -1465,6 +1465,21 @@ export function registerRoutes(app: Express): Server {
     try {
       const { messageId } = req.body;
       await storage.updateLastReadMessage(req.params.roomId, req.user!.id, messageId);
+      
+      // Mark all message notifications for this room as read
+      const userNotifications = await storage.getUserNotifications(req.user!.id);
+      const roomNotificationsToMark = userNotifications
+        .filter(n => 
+          !n.isRead && 
+          n.category === 'message' && 
+          n.metadata?.roomId === req.params.roomId
+        )
+        .map(n => n.id);
+      
+      if (roomNotificationsToMark.length > 0) {
+        await storage.markMultipleNotificationsAsRead(roomNotificationsToMark);
+      }
+      
       res.json({ message: "تم تحديث حالة القراءة" });
     } catch (error) {
       console.error("Error marking messages as read:", error);
