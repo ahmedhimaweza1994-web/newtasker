@@ -440,8 +440,8 @@ export default function Chat() {
           if (pendingMarkReadRef.current.get(selectedRoom.id) === messageIdToMark) {
             lastMarkedMessageIdRef.current.set(selectedRoom.id, messageIdToMark);
             pendingMarkReadRef.current.delete(selectedRoom.id);
-            queryClient.invalidateQueries({ queryKey: ["/api/chat/unread-counts"] });
-            queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
+            queryClient.refetchQueries({ queryKey: ["/api/chat/unread-counts"] });
+            queryClient.refetchQueries({ queryKey: ["/api/notifications"] });
           }
         }).catch((error) => {
           console.error("Error marking messages as read:", error);
@@ -471,8 +471,8 @@ export default function Chat() {
             if (pendingMarkReadRef.current.get(selectedRoom.id) === messageIdToMark) {
               lastMarkedMessageIdRef.current.set(selectedRoom.id, messageIdToMark);
               pendingMarkReadRef.current.delete(selectedRoom.id);
-              queryClient.invalidateQueries({ queryKey: ["/api/chat/unread-counts"] });
-              queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
+              queryClient.refetchQueries({ queryKey: ["/api/chat/unread-counts"] });
+              queryClient.refetchQueries({ queryKey: ["/api/notifications"] });
             }
           }).catch((error) => {
             console.error("Error marking messages as read on room open:", error);
