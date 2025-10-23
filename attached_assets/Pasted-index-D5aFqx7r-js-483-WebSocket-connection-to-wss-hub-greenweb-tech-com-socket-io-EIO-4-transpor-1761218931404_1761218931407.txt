@@ -1,0 +1,262 @@
+index-D5aFqx7r.js:483 WebSocket connection to 'wss://hub.greenweb-tech.com/socket.io/?EIO=4&transport=websocket' failed: 
+createSocket @ index-D5aFqx7r.js:483
+doOpen @ index-D5aFqx7r.js:483
+open @ index-D5aFqx7r.js:483
+_open @ index-D5aFqx7r.js:483
+qf @ index-D5aFqx7r.js:483
+TQ @ index-D5aFqx7r.js:483
+AQ @ index-D5aFqx7r.js:483
+open @ index-D5aFqx7r.js:483
+(anonymous) @ index-D5aFqx7r.js:483Understand this error
+index-D5aFqx7r.js:483 [WebSocket] Connection error: mQ: websocket error
+    at _Q.onError (index-D5aFqx7r.js:483:53921)
+    at ws.onerror (index-D5aFqx7r.js:483:60112)
+(anonymous) @ index-D5aFqx7r.js:483
+Si.emit @ index-D5aFqx7r.js:483
+onerror @ index-D5aFqx7r.js:483
+Si.emit @ index-D5aFqx7r.js:483
+s @ index-D5aFqx7r.js:483
+Si.emit @ index-D5aFqx7r.js:483
+_onError @ index-D5aFqx7r.js:483
+Si.emit @ index-D5aFqx7r.js:483
+onError @ index-D5aFqx7r.js:483
+ws.onerror @ index-D5aFqx7r.js:483Understand this error
+content.js:1552 Content script received message: {action: 'checkContentScriptInjected'}
+The script has an unsupported MIME type ('text/html').Understand this error
+index-D5aFqx7r.js:535 [Service Worker] Registration failed: SecurityError: Failed to register a ServiceWorker for scope ('https://hub.greenweb-tech.com/') with script ('https://hub.greenweb-tech.com/service-worker.js'): The script has an unsupported MIME type ('text/html').
+(anonymous) @ index-D5aFqx7r.js:535
+Promise.catch
+(anonymous) @ index-D5aFqx7r.js:535
+$b @ index-D5aFqx7r.js:40
+Wh @ index-D5aFqx7r.js:40
+Aq @ index-D5aFqx7r.js:40
+Wu @ index-D5aFqx7r.js:40
+C9 @ index-D5aFqx7r.js:40
+vu @ index-D5aFqx7r.js:38
+(anonymous) @ index-D5aFqx7r.js:40Understand this error
+44Fetch finished loading: GET "<URL>".
+ajaxRequestInterceptor.ps.js:1  GET https://hub.greenweb-tech.com/api/tasks/assigned 500 (Internal Server Error)
+n @ ajaxRequestInterceptor.ps.js:1
+fetch @ ajaxRequestInterceptor.ps.js:1
+await in fetch
+(anonymous) @ index-D5aFqx7r.js:48
+s @ index-D5aFqx7r.js:48
+g @ index-D5aFqx7r.js:48
+start @ index-D5aFqx7r.js:48
+fetch @ index-D5aFqx7r.js:48
+p1 @ index-D5aFqx7r.js:48
+onSubscribe @ index-D5aFqx7r.js:48
+subscribe @ index-D5aFqx7r.js:48
+(anonymous) @ index-D5aFqx7r.js:48
+vA @ index-D5aFqx7r.js:38
+$b @ index-D5aFqx7r.js:40
+Wh @ index-D5aFqx7r.js:40
+Aq @ index-D5aFqx7r.js:40
+Wu @ index-D5aFqx7r.js:40
+C9 @ index-D5aFqx7r.js:40
+vu @ index-D5aFqx7r.js:38
+(anonymous) @ index-D5aFqx7r.js:40Understand this error
+ajaxRequestInterceptor.ps.js:1  GET https://hub.greenweb-tech.com/api/analytics/productivity 500 (Internal Server Error)
+n @ ajaxRequestInterceptor.ps.js:1
+fetch @ ajaxRequestInterceptor.ps.js:1
+await in fetch
+(anonymous) @ index-D5aFqx7r.js:48
+s @ index-D5aFqx7r.js:48
+g @ index-D5aFqx7r.js:48
+start @ index-D5aFqx7r.js:48
+fetch @ index-D5aFqx7r.js:48
+p1 @ index-D5aFqx7r.js:48
+onSubscribe @ index-D5aFqx7r.js:48
+subscribe @ index-D5aFqx7r.js:48
+(anonymous) @ index-D5aFqx7r.js:48
+vA @ index-D5aFqx7r.js:38
+$b @ index-D5aFqx7r.js:40
+Wh @ index-D5aFqx7r.js:40
+Aq @ index-D5aFqx7r.js:40
+Wu @ index-D5aFqx7r.js:40
+C9 @ index-D5aFqx7r.js:40
+vu @ index-D5aFqx7r.js:38
+(anonymous) @ index-D5aFqx7r.js:40Understand this error
+ajaxRequestInterceptor.ps.js:1  GET https://hub.greenweb-tech.com/api/tasks/my 500 (Internal Server Error)
+n @ ajaxRequestInterceptor.ps.js:1
+fetch @ ajaxRequestInterceptor.ps.js:1
+await in fetch
+(anonymous) @ index-D5aFqx7r.js:48
+s @ index-D5aFqx7r.js:48
+g @ index-D5aFqx7r.js:48
+start @ index-D5aFqx7r.js:48
+fetch @ index-D5aFqx7r.js:48
+p1 @ index-D5aFqx7r.js:48
+onSubscribe @ index-D5aFqx7r.js:48
+subscribe @ index-D5aFqx7r.js:48
+(anonymous) @ index-D5aFqx7r.js:48
+vA @ index-D5aFqx7r.js:38
+$b @ index-D5aFqx7r.js:40
+Wh @ index-D5aFqx7r.js:40
+Aq @ index-D5aFqx7r.js:40
+Wu @ index-D5aFqx7r.js:40
+C9 @ index-D5aFqx7r.js:40
+vu @ index-D5aFqx7r.js:38
+(anonymous) @ index-D5aFqx7r.js:40Understand this error
+8Fetch failed loading: GET "<URL>".
+ajaxRequestInterceptor.ps.js:1  GET https://hub.greenweb-tech.com/api/user/rewards 500 (Internal Server Error)
+n @ ajaxRequestInterceptor.ps.js:1
+fetch @ ajaxRequestInterceptor.ps.js:1
+await in fetch
+(anonymous) @ index-D5aFqx7r.js:48
+s @ index-D5aFqx7r.js:48
+g @ index-D5aFqx7r.js:48
+start @ index-D5aFqx7r.js:48
+fetch @ index-D5aFqx7r.js:48
+p1 @ index-D5aFqx7r.js:48
+onSubscribe @ index-D5aFqx7r.js:48
+subscribe @ index-D5aFqx7r.js:48
+(anonymous) @ index-D5aFqx7r.js:48
+vA @ index-D5aFqx7r.js:38
+$b @ index-D5aFqx7r.js:40
+Wh @ index-D5aFqx7r.js:40
+Aq @ index-D5aFqx7r.js:40
+Wu @ index-D5aFqx7r.js:40
+C9 @ index-D5aFqx7r.js:40
+vu @ index-D5aFqx7r.js:38
+(anonymous) @ index-D5aFqx7r.js:40Understand this error
+ajaxRequestInterceptor.ps.js:1  GET https://hub.greenweb-tech.com/api/tasks/assigned 500 (Internal Server Error)
+n @ ajaxRequestInterceptor.ps.js:1
+fetch @ ajaxRequestInterceptor.ps.js:1
+await in fetch
+(anonymous) @ index-D5aFqx7r.js:48
+s @ index-D5aFqx7r.js:48
+g @ index-D5aFqx7r.js:48
+(anonymous) @ index-D5aFqx7r.js:48
+Promise.then
+(anonymous) @ index-D5aFqx7r.js:48
+Promise.catch
+g @ index-D5aFqx7r.js:48
+start @ index-D5aFqx7r.js:48
+fetch @ index-D5aFqx7r.js:48
+p1 @ index-D5aFqx7r.js:48
+onSubscribe @ index-D5aFqx7r.js:48
+subscribe @ index-D5aFqx7r.js:48
+(anonymous) @ index-D5aFqx7r.js:48
+vA @ index-D5aFqx7r.js:38
+$b @ index-D5aFqx7r.js:40
+Wh @ index-D5aFqx7r.js:40
+Aq @ index-D5aFqx7r.js:40
+Wu @ index-D5aFqx7r.js:40
+C9 @ index-D5aFqx7r.js:40
+vu @ index-D5aFqx7r.js:38
+(anonymous) @ index-D5aFqx7r.js:40Understand this error
+ajaxRequestInterceptor.ps.js:1  GET https://hub.greenweb-tech.com/api/analytics/productivity 500 (Internal Server Error)
+n @ ajaxRequestInterceptor.ps.js:1
+fetch @ ajaxRequestInterceptor.ps.js:1
+await in fetch
+(anonymous) @ index-D5aFqx7r.js:48
+s @ index-D5aFqx7r.js:48
+g @ index-D5aFqx7r.js:48
+(anonymous) @ index-D5aFqx7r.js:48
+Promise.then
+(anonymous) @ index-D5aFqx7r.js:48
+Promise.catch
+g @ index-D5aFqx7r.js:48
+start @ index-D5aFqx7r.js:48
+fetch @ index-D5aFqx7r.js:48
+p1 @ index-D5aFqx7r.js:48
+onSubscribe @ index-D5aFqx7r.js:48
+subscribe @ index-D5aFqx7r.js:48
+(anonymous) @ index-D5aFqx7r.js:48
+vA @ index-D5aFqx7r.js:38
+$b @ index-D5aFqx7r.js:40
+Wh @ index-D5aFqx7r.js:40
+Aq @ index-D5aFqx7r.js:40
+Wu @ index-D5aFqx7r.js:40
+C9 @ index-D5aFqx7r.js:40
+vu @ index-D5aFqx7r.js:38
+(anonymous) @ index-D5aFqx7r.js:40Understand this error
+ajaxRequestInterceptor.ps.js:1  GET https://hub.greenweb-tech.com/api/tasks/my 500 (Internal Server Error)
+n @ ajaxRequestInterceptor.ps.js:1
+fetch @ ajaxRequestInterceptor.ps.js:1
+await in fetch
+(anonymous) @ index-D5aFqx7r.js:48
+s @ index-D5aFqx7r.js:48
+g @ index-D5aFqx7r.js:48
+(anonymous) @ index-D5aFqx7r.js:48
+Promise.then
+(anonymous) @ index-D5aFqx7r.js:48
+Promise.catch
+g @ index-D5aFqx7r.js:48
+start @ index-D5aFqx7r.js:48
+fetch @ index-D5aFqx7r.js:48
+p1 @ index-D5aFqx7r.js:48
+onSubscribe @ index-D5aFqx7r.js:48
+subscribe @ index-D5aFqx7r.js:48
+(anonymous) @ index-D5aFqx7r.js:48
+vA @ index-D5aFqx7r.js:38
+$b @ index-D5aFqx7r.js:40
+Wh @ index-D5aFqx7r.js:40
+Aq @ index-D5aFqx7r.js:40
+Wu @ index-D5aFqx7r.js:40
+C9 @ index-D5aFqx7r.js:40
+vu @ index-D5aFqx7r.js:38
+(anonymous) @ index-D5aFqx7r.js:40Understand this error
+ajaxRequestInterceptor.ps.js:1  GET https://hub.greenweb-tech.com/api/user/rewards 500 (Internal Server Error)
+n @ ajaxRequestInterceptor.ps.js:1
+fetch @ ajaxRequestInterceptor.ps.js:1
+await in fetch
+(anonymous) @ index-D5aFqx7r.js:48
+s @ index-D5aFqx7r.js:48
+g @ index-D5aFqx7r.js:48
+(anonymous) @ index-D5aFqx7r.js:48
+Promise.then
+(anonymous) @ index-D5aFqx7r.js:48
+Promise.catch
+g @ index-D5aFqx7r.js:48
+start @ index-D5aFqx7r.js:48
+fetch @ index-D5aFqx7r.js:48
+p1 @ index-D5aFqx7r.js:48
+onSubscribe @ index-D5aFqx7r.js:48
+subscribe @ index-D5aFqx7r.js:48
+(anonymous) @ index-D5aFqx7r.js:48
+vA @ index-D5aFqx7r.js:38
+$b @ index-D5aFqx7r.js:40
+Wh @ index-D5aFqx7r.js:40
+Aq @ index-D5aFqx7r.js:40
+Wu @ index-D5aFqx7r.js:40
+C9 @ index-D5aFqx7r.js:40
+vu @ index-D5aFqx7r.js:38
+(anonymous) @ index-D5aFqx7r.js:40Understand this error
+index-D5aFqx7r.js:483 WebSocket connection to 'wss://hub.greenweb-tech.com/socket.io/?EIO=4&transport=websocket' failed: 
+createSocket @ index-D5aFqx7r.js:483
+doOpen @ index-D5aFqx7r.js:483
+open @ index-D5aFqx7r.js:483
+_open @ index-D5aFqx7r.js:483
+qf @ index-D5aFqx7r.js:483
+TQ @ index-D5aFqx7r.js:483
+AQ @ index-D5aFqx7r.js:483
+open @ index-D5aFqx7r.js:483
+(anonymous) @ index-D5aFqx7r.js:483Understand this error
+index-D5aFqx7r.js:483 [WebSocket] Connection error: mQ: websocket error
+    at _Q.onError (index-D5aFqx7r.js:483:53921)
+    at ws.onerror (index-D5aFqx7r.js:483:60112)
+(anonymous) @ index-D5aFqx7r.js:483
+Si.emit @ index-D5aFqx7r.js:483
+onerror @ index-D5aFqx7r.js:483
+Si.emit @ index-D5aFqx7r.js:483
+s @ index-D5aFqx7r.js:483
+Si.emit @ index-D5aFqx7r.js:483
+_onError @ index-D5aFqx7r.js:483
+Si.emit @ index-D5aFqx7r.js:483
+onError @ index-D5aFqx7r.js:483
+ws.onerror @ index-D5aFqx7r.js:483Understand this error
+index-D5aFqx7r.js:483 WebSocket connection to 'wss://hub.greenweb-tech.com/socket.io/?EIO=4&transport=websocket' failed: 
+createSocket @ index-D5aFqx7r.js:483
+doOpen @ index-D5aFqx7r.js:483
+open @ index-D5aFqx7r.js:483
+_open @ index-D5aFqx7r.js:483
+qf @ index-D5aFqx7r.js:483
+TQ @ index-D5aFqx7r.js:483
+AQ @ index-D5aFqx7r.js:483
+open @ index-D5aFqx7r.js:483
+(anonymous) @ index-D5aFqx7r.js:483Understand this error
+index-D5aFqx7r.js:483 [WebSocket] Connection error: mQ: websocket error
+    at _Q.onError (index-D5aFqx7r.js:483:53921)
+    at ws.onerror (index-D5aFqx7r.js:483:60112)
