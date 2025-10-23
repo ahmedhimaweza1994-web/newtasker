@@ -859,6 +859,23 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  app.put("/api/notifications/batch-read", requireAuth, async (req, res) => {
+    try {
+      const { notificationIds } = req.body;
+      if (!Array.isArray(notificationIds) || notificationIds.length === 0) {
+        return res.status(400).json({ message: "معرفات الإشعارات غير صالحة" });
+      }
+      
+      await Promise.all(
+        notificationIds.map(id => storage.markNotificationAsRead(id))
+      );
+      res.json({ message: "تم تحديث الإشعارات" });
+    } catch (error) {
+      console.error("Error batch marking notifications as read:", error);
+      res.status(500).json({ message: "حدث خطأ في تحديث الإشعارات" });
+    }
+  });
+
   app.put("/api/notifications/mark-by-resource", requireAuth, async (req, res) => {
     try {
       const { resourceId, category } = req.body;

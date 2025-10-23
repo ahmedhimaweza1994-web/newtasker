@@ -454,6 +454,38 @@ export default function Chat() {
   }, [selectedRoom?.id, messages]);
 
   useEffect(() => {
+    if (selectedRoom && messages.length > 0 && unreadCounts[selectedRoom.id] > 0) {
+      const lastMessage = messages[messages.length - 1];
+      const lastMarkedId = lastMarkedMessageIdRef.current.get(selectedRoom.id);
+      
+      if (lastMessage.senderId !== user?.id && lastMarkedId !== lastMessage.id) {
+        const messageIdToMark = lastMessage.id;
+        const pendingId = pendingMarkReadRef.current.get(selectedRoom.id);
+        
+        if (pendingId !== messageIdToMark) {
+          pendingMarkReadRef.current.set(selectedRoom.id, messageIdToMark);
+          
+          apiRequest("PUT", `/api/chat/rooms/${selectedRoom.id}/mark-read`, {
+            messageId: messageIdToMark
+          }).then(() => {
+            if (pendingMarkReadRef.current.get(selectedRoom.id) === messageIdToMark) {
+              lastMarkedMessageIdRef.current.set(selectedRoom.id, messageIdToMark);
+              pendingMarkReadRef.current.delete(selectedRoom.id);
+              queryClient.invalidateQueries({ queryKey: ["/api/chat/unread-counts"] });
+              queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
+            }
+          }).catch((error) => {
+            console.error("Error marking messages as read on room open:", error);
+            if (pendingMarkReadRef.current.get(selectedRoom.id) === messageIdToMark) {
+              pendingMarkReadRef.current.delete(selectedRoom.id);
+            }
+          });
+        }
+      }
+    }
+  }, [selectedRoom?.id, user?.id, unreadCounts, messages]);
+
+  useEffect(() => {
     if (!lastMessage) return;
 
     if (lastMessage.type === 'call_offer' && lastMessage.from) {
@@ -900,7 +932,7 @@ export default function Chat() {
                                     ))}
                                   </div>
                                 )}
-                                <p className="whitespace-pre-wrap break-words" dangerouslySetInnerHTML={renderMessageContent(message.content || '')} />
+                                <p className="whitespace-pre-wrap break-words" dangerouslySetInnerHTML={renderMessageContent(message.content || '', isOwnMessage)} />
                                 <p className={cn(
                                   "text-xs mt-1",
                                   isOwnMessage ? "text-white/70" : "text-muted-foreground"
@@ -1400,7 +1432,7 @@ export default function Chat() {
                                         ))}
                                       </div>
                                     )}
-                                    <p className="whitespace-pre-wrap break-words" dangerouslySetInnerHTML={renderMessageContent(message.content || '')} />
+                                    <p className="whitespace-pre-wrap break-words" dangerouslySetInnerHTML={renderMessageContent(message.content || '', isOwnMessage)} />
                                     <p className={cn(
                                       "text-xs mt-1",
                                       isOwnMessage ? "text-white/70" : "text-muted-foreground"

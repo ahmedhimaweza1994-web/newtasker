@@ -272,6 +272,13 @@ export class MemStorage implements IStorage {
       createdByUser = creator;
     }
     
+    // Get createdFor user
+    let createdForUser = undefined;
+    if (task.createdFor) {
+      const [createdFor] = await db.select(userPublicFields).from(users).where(eq(users.id, task.createdFor));
+      createdForUser = createdFor;
+    }
+    
     // Get assigned user
     let assignedToUser = undefined;
     if (task.assignedTo) {
@@ -289,6 +296,7 @@ export class MemStorage implements IStorage {
     return {
       ...task,
       createdByUser,
+      createdForUser,
       assignedToUser,
       ratedByUser,
     } as any;
@@ -311,6 +319,16 @@ export class MemStorage implements IStorage {
             role: true,
           },
         },
+        createdFor: {
+          columns: {
+            id: true,
+            fullName: true,
+            email: true,
+            profilePicture: true,
+            department: true,
+            role: true,
+          },
+        },
         assignedTo: {
           columns: {
             id: true,
@@ -338,6 +356,7 @@ export class MemStorage implements IStorage {
     return tasksData.map(task => ({
       ...task,
       createdByUser: task.createdBy,
+      createdForUser: task.createdFor,
       assignedToUser: task.assignedTo,
       ratedByUser: task.ratedBy,
     })) as any;
@@ -357,6 +376,16 @@ export class MemStorage implements IStorage {
             role: true,
           },
         },
+        createdFor: {
+          columns: {
+            id: true,
+            fullName: true,
+            email: true,
+            profilePicture: true,
+            department: true,
+            role: true,
+          },
+        },
         assignedTo: {
           columns: {
             id: true,
@@ -384,6 +413,7 @@ export class MemStorage implements IStorage {
     return tasksData.map(task => ({
       ...task,
       createdByUser: task.createdBy,
+      createdForUser: task.createdFor,
       assignedToUser: task.assignedTo,
       ratedByUser: task.ratedBy,
     })) as any;
@@ -416,6 +446,16 @@ export class MemStorage implements IStorage {
             role: true,
           },
         },
+        createdFor: {
+          columns: {
+            id: true,
+            fullName: true,
+            email: true,
+            profilePicture: true,
+            department: true,
+            role: true,
+          },
+        },
         assignedTo: {
           columns: {
             id: true,
@@ -443,6 +483,7 @@ export class MemStorage implements IStorage {
     return tasksData.map(task => ({
       ...task,
       createdByUser: task.createdBy,
+      createdForUser: task.createdFor,
       assignedToUser: task.assignedTo,
       ratedByUser: task.ratedBy,
     })) as any;

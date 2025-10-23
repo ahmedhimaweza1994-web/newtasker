@@ -395,11 +395,11 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
           )}
 
           <div className="flex items-center gap-3 pt-1 border-t border-border/50 flex-wrap">
-            {task.createdByUser && (
-              <div className="flex items-center gap-1" data-testid={`task-creator-${task.id}`}>
+            {(task as any).createdForUser && (
+              <div className="flex items-center gap-1" data-testid={`task-created-for-${task.id}`}>
                 <User className="w-3 h-3 text-muted-foreground" />
                 <span className="text-xs text-muted-foreground">
-                  <span className="font-medium">المنشئ:</span> {task.createdByUser.fullName}
+                  <span className="font-medium">مكلفة لـ:</span> {(task as any).createdForUser.fullName}
                 </span>
               </div>
             )}
@@ -881,22 +881,22 @@ function TaskDetailsDialog({
                 <div>
                   <Label className="text-muted-foreground flex items-center gap-1">
                     <User className="w-4 h-4" />
-                    الموظف المعين
+                    مكلفة لـ
                   </Label>
-                  {task.assignedToUser ? (
+                  {(task as any).createdForUser ? (
                     <div className="flex items-center gap-2 mt-2">
                       <Avatar className="h-8 w-8">
                         <AvatarImage 
-                          src={task.assignedToUser.profilePicture || undefined} 
-                          alt={task.assignedToUser.fullName || "الموظف المعين"} 
+                          src={(task as any).createdForUser.profilePicture || undefined} 
+                          alt={(task as any).createdForUser.fullName || "مكلفة لـ"} 
                           className="object-cover"
                         />
-                        <AvatarFallback>{task.assignedToUser.fullName?.[0] || "م"}</AvatarFallback>
+                        <AvatarFallback>{(task as any).createdForUser.fullName?.[0] || "م"}</AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="font-medium" data-testid="text-task-assigned">{task.assignedToUser.fullName}</p>
-                        {task.assignedToUser.department && (
-                          <p className="text-xs text-muted-foreground">{task.assignedToUser.department}</p>
+                        <p className="font-medium" data-testid="text-task-assigned">{(task as any).createdForUser.fullName}</p>
+                        {(task as any).createdForUser.department && (
+                          <p className="text-xs text-muted-foreground">{(task as any).createdForUser.department}</p>
                         )}
                       </div>
                     </div>

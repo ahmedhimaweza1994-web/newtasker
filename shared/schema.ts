@@ -270,6 +270,7 @@ export const suggestions = pgTable("suggestions", {
 export const usersRelations = relations(users, ({ many, one }) => ({
   auxSessions: many(auxSessions),
   createdTasks: many(tasks, { relationName: "createdTasks" }),
+  createdForTasks: many(tasks, { relationName: "createdForTasks" }),
   assignedTasks: many(tasks, { relationName: "assignedTasks" }),
   taskCollaborators: many(taskCollaborators),
   taskNotes: many(taskNotes),
@@ -296,6 +297,7 @@ export const auxSessionsRelations = relations(auxSessions, ({ one }) => ({
 
 export const tasksRelations = relations(tasks, ({ one, many }) => ({
   createdBy: one(users, { fields: [tasks.createdBy], references: [users.id], relationName: "createdTasks" }),
+  createdFor: one(users, { fields: [tasks.createdFor], references: [users.id], relationName: "createdForTasks" }),
   assignedTo: one(users, { fields: [tasks.assignedTo], references: [users.id], relationName: "assignedTasks" }),
   ratedBy: one(users, { fields: [tasks.ratedBy], references: [users.id] }),
   collaborators: many(taskCollaborators),

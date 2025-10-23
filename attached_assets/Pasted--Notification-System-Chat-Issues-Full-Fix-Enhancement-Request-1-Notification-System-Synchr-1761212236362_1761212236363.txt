@@ -1,0 +1,168 @@
+🧩 Notification System & Chat Issues — Full Fix & Enhancement Request
+
+1. Notification System Synchronization
+
+
+
+
+Problem:
+
+The notification system across the entire app is not synchronized.
+
+
+
+
+The header notification icon and dropdown menu don’t update automatically unless the user clicks directly on a notification.
+
+
+
+
+If a user opens a related message, task, or item manually (not via the notification), that notification remains unread in the header.
+
+
+
+
+Notifications for the same event (e.g., receiving a new message) repeat multiple times — appearing in the browser repeatedly and triggering the sound multiple times even after being viewed.
+
+
+
+
+Browser notifications are not working on mobile devices at all.
+
+
+
+
+Required Fix:
+
+
+
+
+Make the entire notification system fully synchronized across the app (header, dropdown, and browser).
+
+
+
+
+Ensure that when a user opens any related item (chat, task, etc.) manually, its notification is marked as read and removed from unread lists.
+
+
+
+
+Prevent repeated notifications and sounds — each notification should trigger only once per event.
+
+
+
+
+Fix browser notification support on mobile devices.
+
+
+
+
+2. Chat Features — Emojis, Stickers, and GIFs
+
+
+
+
+Feature Request:
+
+
+
+
+Add a full emoji picker, sticker support, and GIF sending to the chat interface.
+
+
+
+
+Ensure messages containing these media types render correctly across desktop and mobile chat views.
+
+
+
+
+3. Chat Link Colors
+
+
+
+
+Issue:
+
+Links sent inside chat messages currently appear in the primary color.
+
+Required Fix:
+
+Change link color in chat messages to white to match the chat color scheme.
+
+
+
+
+4. Task Card User Info
+
+
+
+
+Issue:
+
+On the task card, it currently shows:
+
+
+
+
+منشئ المهمة (Task Creator) and المراجع (Reviewer).
+
+But this is incorrect — it should display:
+
+
+
+
+The user assigned to the task and the reviewer’s name, not the creator’s name.
+
+
+
+
+Required Fix:
+
+Update the displayed user fields on the task card to show Assigned User + Reviewer correctly.
+
+
+
+
+5. Chat Unread Count
+
+
+
+
+Issue:
+
+The unread message count (shown on the chat avatar icon) stays at 1 even after the user opens and reads the chat.
+
+It only resets to 0 if the user sends a message back.
+
+
+
+
+Required Fix:
+
+
+
+
+Once the chat window is opened, all messages inside should be marked as read immediately.
+
+
+
+
+The unread counter should update to 0 both in:
+
+Make the entire notification system fully synchronized across the app (header, dropdow
+
+
+
+
+The chat avatar icon, and
+
+
+
+
+The notifications list in the header and its sections.
+
+
+
+
+Ch
