@@ -1469,11 +1469,14 @@ export function registerRoutes(app: Express): Server {
       // Mark all message notifications for this room as read
       const userNotifications = await storage.getUserNotifications(req.user!.id);
       const roomNotificationsToMark = userNotifications
-        .filter(n => 
-          !n.isRead && 
-          n.category === 'message' && 
-          n.metadata?.roomId === req.params.roomId
-        )
+        .filter(n => {
+          if (n.isRead || n.category !== 'message') {
+            return false;
+          }
+          // Type guard: now we know n.category === 'message', so metadata has roomId
+          const metadata = n.metadata as { roomId?: string; resourceId?: string; messageId?: string };
+          return metadata && metadata.roomId === req.params.roomId;
+        })
         .map(n => n.id);
       
       if (roomNotificationsToMark.length > 0) {

@@ -513,6 +513,14 @@ export type CallNotificationMetadata = z.infer<typeof callNotificationMetadataSc
 export type SystemNotificationMetadata = z.infer<typeof systemNotificationMetadataSchema>;
 export type RewardNotificationMetadata = z.infer<typeof rewardNotificationMetadataSchema>;
 
+// Union type for all notification metadata
+export type NotificationMetadata = 
+  | TaskNotificationMetadata 
+  | MessageNotificationMetadata 
+  | CallNotificationMetadata 
+  | SystemNotificationMetadata 
+  | RewardNotificationMetadata;
+
 export const insertChatMessageSchema = createInsertSchema(chatMessages).omit({
   id: true,
   createdAt: true,
