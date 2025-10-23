@@ -836,6 +836,39 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  app.put("/api/notifications/mark-by-resource", requireAuth, async (req, res) => {
+    try {
+      const { resourceId, category } = req.body;
+      await storage.markNotificationsByResourceAsRead(req.user!.id, resourceId, category);
+      res.json({ message: "تم تحديث الإشعارات" });
+    } catch (error) {
+      console.error("Error marking notifications as read:", error);
+      res.status(500).json({ message: "حدث خطأ في تحديث الإشعارات" });
+    }
+  });
+
+  app.put("/api/chat/rooms/:roomId/last-read", requireAuth, async (req, res) => {
+    try {
+      const { messageId } = req.body;
+      await storage.updateLastReadMessage(req.params.roomId, req.user!.id, messageId);
+      await storage.markNotificationsByResourceAsRead(req.user!.id, req.params.roomId, 'message');
+      res.json({ message: "تم تحديث آخر رسالة مقروءة" });
+    } catch (error) {
+      console.error("Error updating last read message:", error);
+      res.status(500).json({ message: "حدث خطأ في تحديث آخر رسالة مقروءة" });
+    }
+  });
+
+  app.get("/api/chat/rooms/:roomId/unread-count", requireAuth, async (req, res) => {
+    try {
+      const count = await storage.getUnreadMessageCount(req.params.roomId, req.user!.id);
+      res.json({ count });
+    } catch (error) {
+      console.error("Error getting unread count:", error);
+      res.status(500).json({ message: "حدث خطأ في جلب عدد الرسائل غير المقروءة" });
+    }
+  });
+
   // Analytics routes
   app.get("/api/analytics/productivity", requireAuth, async (req, res) => {
     try {

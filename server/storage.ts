@@ -146,6 +146,7 @@ export interface IStorage {
   getUserNotifications(userId: string): Promise<Notification[]>;
   markNotificationAsRead(id: string): Promise<Notification | undefined>;
   markAllNotificationsAsRead(userId: string): Promise<void>;
+  markNotificationsByResourceAsRead(userId: string, resourceId: string, category: string): Promise<void>;
   deleteNotification(id: string): Promise<boolean>;
  
   // Chat Rooms
@@ -157,6 +158,8 @@ export interface IStorage {
   getChatRoom(roomId: string): Promise<ChatRoom | undefined>;
   getChatRoomMembers(roomId: string): Promise<Omit<User, 'password'>[]>;
   addChatRoomMember(roomId: string, userId: string): Promise<void>;
+  updateLastReadMessage(roomId: string, userId: string, messageId: string): Promise<void>;
+  getUnreadMessageCount(roomId: string, userId: string): Promise<number>;
   updateChatRoomImage(roomId: string, image: string): Promise<ChatRoom>;
  
   // Chat Messages
@@ -787,6 +790,17 @@ export class MemStorage implements IStorage {
       .where(eq(notifications.userId, userId));
   }
 
+  async markNotificationsByResourceAsRead(userId: string, resourceId: string, category: string): Promise<void> {
+    await db
+      .update(notifications)
+      .set({ isRead: true })
+      .where(and(
+        eq(notifications.userId, userId),
+        eq(notifications.category, category as any),
+        sql`metadata->>'resourceId' = ${resourceId}`
+      ));
+  }
+
   async deleteNotification(id: string): Promise<boolean> {
     const result = await db.delete(notifications).where(eq(notifications.id, id));
     return result.rowCount! > 0;
@@ -963,6 +977,71 @@ export class MemStorage implements IStorage {
   async addChatRoomMember(roomId: string, userId: string): Promise<void> {
     await db.insert(chatRoomMembers).values({ roomId, userId });
   }
+  
+  async updateLastReadMessage(roomId: string, userId: string, messageId: string): Promise<void> {
+    await db
+      .update(chatRoomMembers)
+      .set({ lastReadMessageId: messageId })
+      .where(and(
+        eq(chatRoomMembers.roomId, roomId),
+        eq(chatRoomMembers.userId, userId)
+      ));
+  }
+
+  async getUnreadMessageCount(roomId: string, userId: string): Promise<number> {
+    const member = await db
+      .select()
+      .from(chatRoomMembers)
+      .where(and(
+        eq(chatRoomMembers.roomId, roomId),
+        eq(chatRoomMembers.userId, userId)
+      ))
+      .limit(1);
+
+    if (!member || member.length === 0) return 0;
+
+    const lastReadId = member[0].lastReadMessageId;
+    
+    if (!lastReadId) {
+      const [result] = await db
+        .select({ count: count() })
+        .from(chatMessages)
+        .where(and(
+          eq(chatMessages.roomId, roomId),
+          sql`${chatMessages.senderId} != ${userId}`
+        ));
+      return result?.count || 0;
+    }
+
+    const lastReadMessage = await db
+      .select({ createdAt: chatMessages.createdAt })
+      .from(chatMessages)
+      .where(eq(chatMessages.id, lastReadId))
+      .limit(1);
+
+    if (!lastReadMessage || lastReadMessage.length === 0) {
+      const [result] = await db
+        .select({ count: count() })
+        .from(chatMessages)
+        .where(and(
+          eq(chatMessages.roomId, roomId),
+          sql`${chatMessages.senderId} != ${userId}`
+        ));
+      return result?.count || 0;
+    }
+
+    const [result] = await db
+      .select({ count: count() })
+      .from(chatMessages)
+      .where(and(
+        eq(chatMessages.roomId, roomId),
+        sql`${chatMessages.senderId} != ${userId}`,
+        sql`${chatMessages.createdAt} > ${lastReadMessage[0].createdAt}`
+      ));
+
+    return result?.count || 0;
+  }
+  
   async updateChatRoomImage(roomId: string, image: string): Promise<ChatRoom> {
     const [room] = await db.update(chatRooms).set({ image }).where(eq(chatRooms.id, roomId)).returning();
     return room;
