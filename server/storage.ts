@@ -283,22 +283,76 @@ export class MemStorage implements IStorage {
   }
 
   async getUserTasks(userId: string): Promise<Task[]> {
-    return await db
-      .select()
-      .from(tasks)
-      .where(or(
+    const tasksData = await db.query.tasks.findMany({
+      where: or(
         eq(tasks.createdBy, userId),
         eq(tasks.assignedTo, userId)
-      ))
-      .orderBy(desc(tasks.createdAt));
+      ),
+      with: {
+        createdBy: {
+          columns: {
+            id: true,
+            fullName: true,
+            email: true,
+            profilePicture: true,
+            department: true,
+            role: true,
+          },
+        },
+        assignedTo: {
+          columns: {
+            id: true,
+            fullName: true,
+            email: true,
+            profilePicture: true,
+            department: true,
+            role: true,
+          },
+        },
+      },
+      orderBy: [desc(tasks.createdAt)],
+    });
+    
+    return tasksData.map(task => ({
+      ...task,
+      createdByUser: task.createdBy,
+      assignedToUser: task.assignedTo,
+    })) as any;
   }
 
   async getAssignedTasks(userId: string): Promise<Task[]> {
-    return await db
-      .select()
-      .from(tasks)
-      .where(eq(tasks.assignedTo, userId))
-      .orderBy(desc(tasks.createdAt));
+    const tasksData = await db.query.tasks.findMany({
+      where: eq(tasks.assignedTo, userId),
+      with: {
+        createdBy: {
+          columns: {
+            id: true,
+            fullName: true,
+            email: true,
+            profilePicture: true,
+            department: true,
+            role: true,
+          },
+        },
+        assignedTo: {
+          columns: {
+            id: true,
+            fullName: true,
+            email: true,
+            profilePicture: true,
+            department: true,
+            role: true,
+          },
+        },
+      },
+      orderBy: [desc(tasks.createdAt)],
+    });
+    
+    return tasksData.map(task => ({
+      ...task,
+      createdByUser: task.createdBy,
+      assignedToUser: task.assignedTo,
+    })) as any;
   }
 
   async updateTask(id: string, updates: Partial<Task>): Promise<Task | undefined> {
@@ -316,7 +370,37 @@ export class MemStorage implements IStorage {
   }
 
   async getAllTasks(): Promise<Task[]> {
-    return await db.select().from(tasks).orderBy(desc(tasks.createdAt));
+    const tasksData = await db.query.tasks.findMany({
+      with: {
+        createdBy: {
+          columns: {
+            id: true,
+            fullName: true,
+            email: true,
+            profilePicture: true,
+            department: true,
+            role: true,
+          },
+        },
+        assignedTo: {
+          columns: {
+            id: true,
+            fullName: true,
+            email: true,
+            profilePicture: true,
+            department: true,
+            role: true,
+          },
+        },
+      },
+      orderBy: [desc(tasks.createdAt)],
+    });
+    
+    return tasksData.map(task => ({
+      ...task,
+      createdByUser: task.createdBy,
+      assignedToUser: task.assignedTo,
+    })) as any;
   }
 
   async rateTask(taskId: string, rating: number, ratedBy: string): Promise<Task> {
