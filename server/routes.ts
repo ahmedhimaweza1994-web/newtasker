@@ -1,6 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { WebSocketServer } from "ws";
+import { Server as SocketIOServer } from "socket.io";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { createGoogleMeetEvent, isGoogleCalendarConnected } from "./google-calendar-integration";
@@ -956,8 +956,14 @@ export function registerRoutes(app: Express): Server {
 
   const httpServer = createServer(app);
 
-  // WebSocket server for real-time updates
-  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+  // Socket.IO server for real-time updates
+  const io = new SocketIOServer(httpServer, {
+    cors: {
+      origin: "*",
+      methods: ["GET", "POST"]
+    },
+    path: '/socket.io/'
+  });
 
   // Map to track userId -> Set of WebSocket clients
   const userConnections = new Map<string, Set<any>>();
@@ -966,10 +972,8 @@ export function registerRoutes(app: Express): Server {
   function sendToUser(userId: string, message: any) {
     const connections = userConnections.get(userId);
     if (connections) {
-      connections.forEach((client) => {
-        if (client.readyState === client.OPEN) {
-          client.send(JSON.stringify(message));
-        }
+      connections.forEach((socket) => {
+        socket.emit('message', message);
       });
     }
   }
@@ -989,75 +993,110 @@ export function registerRoutes(app: Express): Server {
   }
 
 
-  wss.on('error', (error) => {
-    console.error('WebSocket server error:', error);
-  });
-  wss.on('connection', (ws: any) => {
-    console.log('WebSocket client connected');
+  io.on('connection', (socket: any) => {
+    console.log('Socket.IO client connected:', socket.id);
 
-    ws.on('message', (message) => {
+    socket.on('subscribe', (data: any) => {
       try {
-        const data = JSON.parse(message.toString());
-        
-        // Handle different message types
-        switch (data.type) {
-          case 'subscribe':
-            // Store userId to WebSocket mapping
-            if (data.userId) {
-              ws.userId = data.userId;
-              if (!userConnections.has(data.userId)) {
-                userConnections.set(data.userId, new Set());
-              }
-              userConnections.get(data.userId)!.add(ws);
-              console.log(`User ${data.userId} subscribed, total connections: ${userConnections.get(data.userId)!.size}`);
-            }
-            break;
-          case 'aux_update':
-            // Broadcast AUX status updates
-            wss.clients.forEach((client) => {
-              if (client.readyState === ws.OPEN) {
-                client.send(JSON.stringify({
-                  type: 'aux_status_update',
-                  data: data.payload
-                }));
-              }
-            });
-            break;
-          case 'call_offer':
-          case 'call_answer':
-          case 'ice_candidate':
-          case 'call_end':
-          case 'call_decline':
-            // Route call signaling messages only to the intended recipient
-            if (data.to) {
-              sendToUser(data.to, data);
-            } else if (data.receiverId) {
-              sendToUser(data.receiverId, data);
-            } else {
-              console.warn('Call message missing recipient information:', data.type);
-            }
-            break;
+        if (data.userId) {
+          socket.userId = data.userId;
+          if (!userConnections.has(data.userId)) {
+            userConnections.set(data.userId, new Set());
+          }
+          userConnections.get(data.userId)!.add(socket);
+          console.log(`User ${data.userId} subscribed, total connections: ${userConnections.get(data.userId)!.size}`);
         }
       } catch (error) {
-        console.error('WebSocket message error:', error);
+        console.error('Subscribe error:', error);
       }
     });
 
-    ws.on('close', () => {
-      console.log('WebSocket client disconnected');
-      // Clean up user connections
-      if (ws.userId) {
-        const connections = userConnections.get(ws.userId);
+    socket.on('aux_update', (data: any) => {
+      try {
+        io.emit('aux_status_update', data.payload);
+      } catch (error) {
+        console.error('AUX update error:', error);
+      }
+    });
+
+    socket.on('call_offer', (data: any) => {
+      try {
+        const recipientId = data.to || data.receiverId;
+        if (recipientId) {
+          sendToUser(recipientId, { type: 'call_offer', ...data });
+        } else {
+          console.warn('Call offer missing recipient information');
+        }
+      } catch (error) {
+        console.error('Call offer error:', error);
+      }
+    });
+
+    socket.on('call_answer', (data: any) => {
+      try {
+        const recipientId = data.to || data.receiverId;
+        if (recipientId) {
+          sendToUser(recipientId, { type: 'call_answer', ...data });
+        } else {
+          console.warn('Call answer missing recipient information');
+        }
+      } catch (error) {
+        console.error('Call answer error:', error);
+      }
+    });
+
+    socket.on('ice_candidate', (data: any) => {
+      try {
+        const recipientId = data.to || data.receiverId;
+        if (recipientId) {
+          sendToUser(recipientId, { type: 'ice_candidate', ...data });
+        } else {
+          console.warn('ICE candidate missing recipient information');
+        }
+      } catch (error) {
+        console.error('ICE candidate error:', error);
+      }
+    });
+
+    socket.on('call_end', (data: any) => {
+      try {
+        const recipientId = data.to || data.receiverId;
+        if (recipientId) {
+          sendToUser(recipientId, { type: 'call_end', ...data });
+        } else {
+          console.warn('Call end missing recipient information');
+        }
+      } catch (error) {
+        console.error('Call end error:', error);
+      }
+    });
+
+    socket.on('call_decline', (data: any) => {
+      try {
+        const recipientId = data.to || data.receiverId;
+        if (recipientId) {
+          sendToUser(recipientId, { type: 'call_decline', ...data });
+        } else {
+          console.warn('Call decline missing recipient information');
+        }
+      } catch (error) {
+        console.error('Call decline error:', error);
+      }
+    });
+
+    socket.on('disconnect', () => {
+      console.log('Socket.IO client disconnected:', socket.id);
+      if (socket.userId) {
+        const connections = userConnections.get(socket.userId);
         if (connections) {
-          connections.delete(ws);
+          connections.delete(socket);
           if (connections.size === 0) {
-            userConnections.delete(ws.userId);
+            userConnections.delete(socket.userId);
           }
-          console.log(`User ${ws.userId} disconnected, remaining connections: ${connections.size}`);
+          console.log(`User ${socket.userId} disconnected, remaining connections: ${connections.size}`);
         }
       }
     });
-
   });
 
 
@@ -1323,14 +1362,7 @@ export function registerRoutes(app: Express): Server {
         return res.status(404).json({ message: "الرسالة غير موجودة" });
       }
       
-      wss.clients.forEach((client) => {
-        if (client.readyState === client.OPEN) {
-          client.send(JSON.stringify({
-            type: 'message_deleted',
-            data: { messageId: req.params.id }
-          }));
-        }
-      });
+      io.emit('message_deleted', { messageId: req.params.id });
       
       res.json({ message: "تم حذف الرسالة بنجاح" });
     } catch (error) {
@@ -1371,18 +1403,7 @@ export function registerRoutes(app: Express): Server {
         req.body.emoji
       );
       
-      wss.clients.forEach((client) => {
-        if (client.readyState === client.OPEN) {
-          client.send(JSON.stringify({
-            type: 'reaction_removed',
-            data: {
-              messageId: req.body.messageId,
-              userId: req.user!.id,
-              emoji: req.body.emoji
-            }
-          }));
-        }
-      });
+      io.emit('reaction_removed', { messageId: req.body.messageId, userId: req.user!.id, emoji: req.body.emoji });
       
       res.json({ message: "تم إزالة التفاعل بنجاح" });
     } catch (error) {
@@ -1542,28 +1563,11 @@ export function registerRoutes(app: Express): Server {
           }
         });
         
-        wss.clients.forEach((client) => {
-          if (client.readyState === client.OPEN) {
-            client.send(JSON.stringify({
-              type: "new_notification",
-              data: notification
-            }));
-          }
-        });
+        io.emit('new_notification', notification);
       }
       
-      wss.clients.forEach((client) => {
-        if (client.readyState === client.OPEN) {
-          client.send(JSON.stringify({
-            type: "new_message",
-            data: message
-          }));
-          client.send(JSON.stringify({
-            type: "new_meeting",
-            data: meeting
-          }));
-        }
-      });
+      io.emit('new_message', message);
+      io.emit('new_meeting', meeting);
       
       res.status(201).json({ ...meeting, chatRoomId: chatRoom.id });
     } catch (error) {
@@ -1649,14 +1653,7 @@ export function registerRoutes(app: Express): Server {
         }
       }
       
-      wss.clients.forEach((client) => {
-        if (client.readyState === client.OPEN) {
-          client.send(JSON.stringify({
-            type: 'new_meeting',
-            data: meeting
-          }));
-        }
-      });
+      io.emit('new_meeting', meeting);
       
       res.status(201).json(meeting);
     } catch (error) {
@@ -1700,14 +1697,7 @@ export function registerRoutes(app: Express): Server {
   setInterval(async () => {
     try {
       const activeEmployees = await storage.getAllActiveAuxSessions();
-      wss.clients.forEach((client) => {
-        if (client.readyState === client.OPEN) {
-          client.send(JSON.stringify({
-            type: 'employee_status_update',
-            data: activeEmployees
-          }));
-        }
-      });
+      io.emit('employee_status_update', activeEmployees);
     } catch (error) {
       console.error('Broadcast error:', error);
     }
