@@ -17,6 +17,7 @@ import UserManagement from "@/pages/user-management";
 import Chat from "@/pages/chat";
 import CallHistory from "@/pages/call-history";
 import MyRequests from "@/pages/my-requests";
+import SuggestionsPage from "@/pages/suggestions";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -36,6 +37,7 @@ function Router() {
       <ProtectedRoute path="/chat" component={Chat} />
       <ProtectedRoute path="/call-history" component={CallHistory} />
       <ProtectedRoute path="/my-requests" component={MyRequests} />
+      <ProtectedRoute path="/suggestions" component={SuggestionsPage} />
       <ProtectedRoute path="/settings" component={Dashboard} />
       <Route component={NotFound} />
     </Switch>

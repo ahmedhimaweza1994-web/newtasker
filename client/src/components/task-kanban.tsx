@@ -394,20 +394,20 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
             </div>
           )}
 
-          <div className="flex items-center gap-2 pt-1 border-t border-border/50">
+          <div className="flex items-center gap-3 pt-1 border-t border-border/50 flex-wrap">
             {task.createdByUser && (
               <div className="flex items-center gap-1" data-testid={`task-creator-${task.id}`}>
                 <User className="w-3 h-3 text-muted-foreground" />
-                <span className="text-xs text-muted-foreground truncate max-w-[100px]">
-                  {task.createdByUser.fullName}
+                <span className="text-xs text-muted-foreground">
+                  <span className="font-medium">المنشئ:</span> {task.createdByUser.fullName}
                 </span>
               </div>
             )}
             {task.assignedToUser && (
               <div className="flex items-center gap-1" data-testid={`task-assignee-${task.id}`}>
                 <Users className="w-3 h-3 text-muted-foreground" />
-                <span className="text-xs text-muted-foreground truncate max-w-[100px]">
-                  {task.assignedToUser.fullName}
+                <span className="text-xs text-muted-foreground">
+                  <span className="font-medium">المراجع:</span> {task.assignedToUser.fullName}
                 </span>
               </div>
             )}
@@ -439,7 +439,7 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
     });
 
     return (
-      <div className="flex-1 min-w-[280px]" ref={setNodeRef}>
+      <div className="flex-1 min-w-[250px] md:min-w-[280px] w-full md:w-auto" ref={setNodeRef}>
         <Card className={cn(
           "h-full border-t-4 transition-all", 
           color,
@@ -488,39 +488,41 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
-        <div className="flex flex-col md:flex-row gap-4 overflow-x-auto pb-4" data-testid="kanban-board-trello-style">
-          <DroppableColumn
-            id="pending"
-            title="قيد الانتظار"
-            tasks={pendingTasks}
-            icon={<Clock className="w-5 h-5 text-yellow-600" />}
-            color="border-t-yellow-500"
-            testId="column-pending"
-          />
-          <DroppableColumn
-            id="in_progress"
-            title="قيد التنفيذ"
-            tasks={inProgressTasks}
-            icon={<AlertCircle className="w-5 h-5 text-blue-600" />}
-            color="border-t-blue-500"
-            testId="column-in-progress"
-          />
-          <DroppableColumn
-            id="under_review"
-            title="تحت المراجعة"
-            tasks={underReviewTasks}
-            icon={<Eye className="w-5 h-5 text-purple-600" />}
-            color="border-t-purple-500"
-            testId="column-under-review"
-          />
-          <DroppableColumn
-            id="completed"
-            title="مكتمل"
-            tasks={completedTasks}
-            icon={<CheckCircle className="w-5 h-5 text-green-600" />}
-            color="border-t-green-500"
-            testId="column-completed"
-          />
+        <div className="w-full overflow-x-auto pb-4" data-testid="kanban-board-trello-style">
+          <div className="flex flex-col md:flex-row gap-4 min-w-min">
+            <DroppableColumn
+              id="pending"
+              title="قيد الانتظار"
+              tasks={pendingTasks}
+              icon={<Clock className="w-5 h-5 text-yellow-600" />}
+              color="border-t-yellow-500"
+              testId="column-pending"
+            />
+            <DroppableColumn
+              id="in_progress"
+              title="قيد التنفيذ"
+              tasks={inProgressTasks}
+              icon={<AlertCircle className="w-5 h-5 text-blue-600" />}
+              color="border-t-blue-500"
+              testId="column-in-progress"
+            />
+            <DroppableColumn
+              id="under_review"
+              title="تحت المراجعة"
+              tasks={underReviewTasks}
+              icon={<Eye className="w-5 h-5 text-purple-600" />}
+              color="border-t-purple-500"
+              testId="column-under-review"
+            />
+            <DroppableColumn
+              id="completed"
+              title="مكتمل"
+              tasks={completedTasks}
+              icon={<CheckCircle className="w-5 h-5 text-green-600" />}
+              color="border-t-green-500"
+              testId="column-completed"
+            />
+          </div>
         </div>
 
         <DragOverlay>
@@ -805,7 +807,7 @@ function TaskDetailsDialog({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="edit-assignee">المعين إليه</Label>
+                  <Label htmlFor="edit-assignee">المراجع</Label>
                   <Select value={editedTask.assignedTo} onValueChange={(value) => setEditedTask({ ...editedTask, assignedTo: value })}>
                     <SelectTrigger id="edit-assignee" data-testid="select-edit-assignee">
                       <SelectValue placeholder="اختر موظف" />
@@ -901,14 +903,14 @@ function TaskDetailsDialog({
                 <div>
                   <Label className="text-muted-foreground flex items-center gap-1">
                     <Users className="w-4 h-4" />
-                    المعين إليه
+                    المراجع
                   </Label>
                   {task.assignedToUser ? (
                     <div className="flex items-center gap-2 mt-2">
                       <Avatar className="h-8 w-8">
                         <AvatarImage 
                           src={task.assignedToUser.profilePicture || undefined} 
-                          alt={task.assignedToUser.fullName || "معين إليه"} 
+                          alt={task.assignedToUser.fullName || "المراجع"} 
                           className="object-cover"
                         />
                         <AvatarFallback>{task.assignedToUser.fullName?.[0] || "م"}</AvatarFallback>
@@ -921,7 +923,7 @@ function TaskDetailsDialog({
                       </div>
                     </div>
                   ) : (
-                    <p className="text-muted-foreground mt-2" data-testid="text-no-assignee">غير معين</p>
+                    <p className="text-muted-foreground mt-2" data-testid="text-no-assignee">غير محدد</p>
                   )}
                 </div>
               </div>

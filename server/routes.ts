@@ -4,6 +4,7 @@ import { Server as SocketIOServer } from "socket.io";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { createGoogleMeetEvent, isGoogleCalendarConnected } from "./google-calendar-integration";
+import { insertSuggestionSchema } from "@shared/schema";
 import multer from 'multer';
 import path from 'path';
 
@@ -1693,15 +1694,84 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // Broadcast real-time updates periodically
-  setInterval(async () => {
+  // Suggestions routes
+  app.get("/api/suggestions", requireAuth, async (req, res) => {
     try {
-      const activeEmployees = await storage.getAllActiveAuxSessions();
-      io.emit('employee_status_update', activeEmployees);
+      const isAdmin = req.user!.role === 'admin' || req.user!.role === 'sub-admin';
+      const suggestions = isAdmin 
+        ? await storage.getAllSuggestions()
+        : await storage.getUserSuggestions(req.user!.id);
+      res.json(suggestions);
     } catch (error) {
-      console.error('Broadcast error:', error);
+      res.status(500).json({ message: "حدث خطأ في جلب المقترحات" });
     }
-  }, 5000); // Broadcast every 5 seconds
+  });
 
-  return httpServer;
-}
+  app.post("/api/suggestions", requireAuth, async (req, res) => {
+    try {
+      const validationResult = insertSuggestionSchema.safeParse({
+        userId: req.user!.id,
+        title: req.body.title,
+        description: req.body.description,
+        category: req.body.category || 'other',
+        status: 'pending',
+      });
+
+      if (!validationResult.success) {
+        return res.status(400).json({ 
+          message: "بيانات غير صالحة", 
+          errors: validationResult.error.errors 
+        });
+      }
+
+      const suggestion = await storage.createSuggestion(validationResult.data);
+      
+      res.status(201).json(suggestion);
+    } catch (error) {
+      console.error("Error creating suggestion:", error);
+      res.status(500).json({ message: "حدث خطأ في إضافة المقترح" });
+    }
+  });
+
+  app.patch("/api/suggestions/:id", requireAuth, requireRole(['admin', 'sub-admin']), async (req, res) => {
+    try {
+      const updates: any = {
+  app.patch("/api/suggestions/:id", requireAuth, requireRole(['admin', 'sub-admin']), async (req, res) => {
+    try {
+      // Validate status if provided
+      const validStatuses = ['pending', 'under_review', 'approved', 'rejected'];
+      if (req.body.status && !validStatuses.includes(req.body.status)) {
+        return res.status(400).json({ message: "حالة غير صالحة" });
+      }
+
+      // Validate adminResponse if provided
+      if (req.body.adminResponse !== undefined && typeof req.body.adminResponse !== 'string') {
+        return res.status(400).json({ message: "رد الإدارة يجب أن يكون نصاً" });
+      }
+
+      const updates: any = {
+        updatedAt: new Date(),
+      };
+      
+      if (req.body.status) {
+        updates.status = req.body.status;
+      }
+      
+      if (req.body.adminResponse) {
+        updates.adminResponse = req.body.adminResponse;
+        updates.respondedAt = new Date();
+        updates.respondedBy = req.user!.id;
+      }
+      
+      const suggestion = await storage.updateSuggestion(req.params.id, updates);
+      
+      if (!suggestion) {
+        return res.status(404).json({ message: "المقترح غير موجود" });
+      }
+      
+      res.json(suggestion);
+    } catch (error) {
+      console.error("Error updating suggestion:", error);
+      res.status(500).json({ message: "حدث خطأ في تحديث المقترح" });
+    }
+  });

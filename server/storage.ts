@@ -16,6 +16,7 @@ import {
   meetingParticipants,
   googleCalendarTokens,
   callLogs,
+  suggestions,
   type User,
   type InsertUser,
   type Task,
@@ -44,6 +45,8 @@ import {
   type CallLog,
   type InsertCallLog,
   type InsertGoogleCalendarToken,
+  type Suggestion,
+  type InsertSuggestion,
   advanceStatusEnum
 } from "@shared/schema";
 import { db } from "./db";
@@ -188,6 +191,12 @@ export interface IStorage {
   getUserCallLogs(userId: string): Promise<any[]>;
   getRoomCallLogs(roomId: string): Promise<any[]>;
   updateCallLog(id: string, updates: Partial<CallLog>): Promise<CallLog | undefined>;
+
+  // Suggestions
+  createSuggestion(suggestion: InsertSuggestion): Promise<Suggestion>;
+  getAllSuggestions(): Promise<Suggestion[]>;
+  getUserSuggestions(userId: string): Promise<Suggestion[]>;
+  updateSuggestion(id: string, updates: Partial<Suggestion>): Promise<Suggestion | undefined>;
 
   // Analytics & Rewards
   getUserRewards(userId: string): Promise<any[]>;
@@ -1208,6 +1217,33 @@ export class MemStorage implements IStorage {
       .where(eq(callLogs.id, id))
       .returning();
     return callLog || undefined;
+  }
+
+  // Suggestions
+  async createSuggestion(suggestion: InsertSuggestion): Promise<Suggestion> {
+    const [newSuggestion] = await db.insert(suggestions).values(suggestion).returning();
+    return newSuggestion;
+  }
+
+  async getAllSuggestions(): Promise<Suggestion[]> {
+    return await db.select().from(suggestions).orderBy(desc(suggestions.createdAt));
+  }
+
+  async getUserSuggestions(userId: string): Promise<Suggestion[]> {
+    return await db
+      .select()
+      .from(suggestions)
+      .where(eq(suggestions.userId, userId))
+      .orderBy(desc(suggestions.createdAt));
+  }
+
+  async updateSuggestion(id: string, updates: Partial<Suggestion>): Promise<Suggestion | undefined> {
+    const [suggestion] = await db
+      .update(suggestions)
+      .set(updates)
+      .where(eq(suggestions.id, id))
+      .returning();
+    return suggestion || undefined;
   }
 
   // Analytics & Rewards

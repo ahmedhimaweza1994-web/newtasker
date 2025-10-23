@@ -22,7 +22,8 @@ import {
   MessageSquare,
   DollarSign,
   AlertCircle,
-  Phone
+  Phone,
+  Lightbulb
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useLocation } from "wouter";
@@ -128,6 +129,12 @@ export default function Sidebar() {
       name: "طلباتي",
       href: "/my-requests",
       icon: DollarSign,
+      badge: null,
+    },
+    {
+      name: "صفحة المقترحات",
+      href: "/suggestions",
+      icon: Lightbulb,
       badge: null,
     },
     {
@@ -365,16 +372,6 @@ export default function Sidebar() {
               إجراءات سريعة
             </h3>
             <div className="space-y-1">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="w-full justify-start gap-3 h-11 md:h-10" 
-                onClick={() => setShowTaskDialog(true)}
-                data-testid="sidebar-quick-task"
-              >
-                <CheckSquare className="h-4 w-4" />
-                إضافة مهمة
-              </Button>
               <Button 
                 variant="ghost" 
                 size="sm" 

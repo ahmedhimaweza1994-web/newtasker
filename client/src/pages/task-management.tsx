@@ -272,13 +272,13 @@ export default function TaskManagement() {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="task-assignee" className="text-sm sm:text-base font-medium">تعيين لـ</Label>
+                      <Label htmlFor="task-assignee" className="text-sm sm:text-base font-medium">المراجع</Label>
                       <Select
                         value={newTask.assignedTo}
                         onValueChange={(value) => setNewTask({ ...newTask, assignedTo: value })}
                       >
                         <SelectTrigger data-testid="select-task-assignee" className="h-11 sm:h-10">
-                          <SelectValue placeholder="اختر موظف (اختياري)" />
+                          <SelectValue placeholder="اختر المراجع (اختياري)" />
                         </SelectTrigger>
                         <SelectContent>
                           {users.map((user) => (

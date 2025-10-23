@@ -17,6 +17,8 @@ export const messageTypeEnum = pgEnum('message_type', ['text', 'image', 'file', 
 export const callTypeEnum = pgEnum('call_type', ['audio', 'video']);
 export const callStatusEnum = pgEnum('call_status', ['initiated', 'ringing', 'connected', 'ended', 'missed', 'rejected', 'busy', 'failed']);
 export const notificationCategoryEnum = pgEnum('notification_category', ['task', 'message', 'call', 'system', 'reward']);
+export const suggestionStatusEnum = pgEnum('suggestion_status', ['pending', 'under_review', 'approved', 'rejected']);
+export const suggestionCategoryEnum = pgEnum('suggestion_category', ['improvement', 'bug', 'feature', 'other']);
 
 // Notification types
 export type NotificationCategory = 'task' | 'message' | 'call' | 'system' | 'reward';
@@ -247,6 +249,22 @@ export const callLogs = pgTable("call_logs", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+// Suggestions
+export const suggestions = pgTable("suggestions", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  category: suggestionCategoryEnum("category").notNull().default('other'),
+  status: suggestionStatusEnum("status").notNull().default('pending'),
+  adminResponse: text("admin_response"),
+  respondedBy: uuid("responded_by").references(() => users.id, { onDelete: "set null" }),
+  respondedAt: timestamp("responded_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+
 // Relations
 export const usersRelations = relations(users, ({ many, one }) => ({
   auxSessions: many(auxSessions),
@@ -267,6 +285,8 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   googleCalendarToken: one(googleCalendarTokens),
   callerLogs: many(callLogs, { relationName: "callerLogs" }),
   receiverLogs: many(callLogs, { relationName: "receiverLogs" }),
+  suggestions: many(suggestions),
+  respondedSuggestions: many(suggestions, { relationName: "respondedSuggestions" }),
 }));
 
 export const auxSessionsRelations = relations(auxSessions, ({ one }) => ({
@@ -350,6 +370,11 @@ export const callLogsRelations = relations(callLogs, ({ one }) => ({
   room: one(chatRooms, { fields: [callLogs.roomId], references: [chatRooms.id] }),
   caller: one(users, { fields: [callLogs.callerId], references: [users.id], relationName: "callerLogs" }),
   receiver: one(users, { fields: [callLogs.receiverId], references: [users.id], relationName: "receiverLogs" }),
+}));
+
+export const suggestionsRelations = relations(suggestions, ({ one }) => ({
+  user: one(users, { fields: [suggestions.userId], references: [users.id] }),
+  respondedBy: one(users, { fields: [suggestions.respondedBy], references: [users.id], relationName: "respondedSuggestions" }),
 }));
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
@@ -508,6 +533,15 @@ export const insertCallLogSchema = createInsertSchema(callLogs).omit({
   createdAt: true,
 });
 
+export const insertSuggestionSchema = createInsertSchema(suggestions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  respondedAt: true,
+  respondedBy: true,
+  adminResponse: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -528,6 +562,8 @@ export type ChatRoom = typeof chatRooms.$inferSelect;
 export type InsertChatRoom = z.infer<typeof insertChatRoomSchema>;
 export type ChatMessage = typeof chatMessages.$inferSelect;
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
+export type Suggestion = typeof suggestions.$inferSelect;
+export type InsertSuggestion = z.infer<typeof insertSuggestionSchema>;
 export type ChatRoomMember = typeof chatRoomMembers.$inferSelect;
 export type MessageReaction = typeof messageReactions.$inferSelect;
 export type Meeting = typeof meetings.$inferSelect;
