@@ -15,6 +15,8 @@ export function useEnhancedNotifications() {
   const { playNotificationSound, isSoundEnabled } = useNotificationSounds();
   const { showNotification: showBrowserNotification, permission, requestPermission } = useBrowserNotifications();
   const isPageVisibleRef = useRef(true);
+  const processedNotificationIds = useRef(new Set<string>());
+  const notificationTimestamps = useRef(new Map<string, number>());
 
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -22,7 +24,23 @@ export function useEnhancedNotifications() {
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    
+    const cleanupInterval = setInterval(() => {
+      const now = Date.now();
+      const expirationTime = 5 * 60 * 1000;
+      
+      for (const [id, timestamp] of notificationTimestamps.current.entries()) {
+        if (now - timestamp > expirationTime) {
+          processedNotificationIds.current.delete(id);
+          notificationTimestamps.current.delete(id);
+        }
+      }
+    }, 60000);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      clearInterval(cleanupInterval);
+    };
   }, []);
 
   const shouldShowBrowserNotification = useCallback((notification: Notification): boolean => {
@@ -53,6 +71,13 @@ export function useEnhancedNotifications() {
     notification: Notification,
     options: EnhancedNotificationOptions = {}
   ) => {
+    if (processedNotificationIds.current.has(notification.id)) {
+      return;
+    }
+
+    processedNotificationIds.current.add(notification.id);
+    notificationTimestamps.current.set(notification.id, Date.now());
+
     const {
       playSound = true,
       showBrowserNotification: showBrowser = true,

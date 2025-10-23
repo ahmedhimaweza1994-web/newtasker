@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
+import { useServiceWorker } from './use-service-worker';
 import type { Notification } from '@shared/schema';
 
 export function useBrowserNotifications() {
   const [permission, setPermission] = useState<NotificationPermission>('default');
   const [, setLocation] = useLocation();
+  const { registration, isSupported: isServiceWorkerSupported } = useServiceWorker();
 
   useEffect(() => {
     if ('Notification' in window) {
@@ -21,8 +23,25 @@ export function useBrowserNotifications() {
     return Notification.permission;
   };
 
-  const showNotification = (notification: Notification) => {
+  const showNotification = async (notification: Notification) => {
     if ('Notification' in window && Notification.permission === 'granted') {
+      if (isServiceWorkerSupported && registration) {
+        try {
+          await registration.showNotification(notification.title, {
+            body: notification.message,
+            icon: '/favicon.ico',
+            badge: '/favicon.ico',
+            tag: notification.id,
+            requireInteraction: notification.category === 'call',
+            data: notification,
+            vibrate: notification.category === 'call' ? [200, 100, 200, 100, 200] : [200, 100, 200],
+          });
+          return;
+        } catch (error) {
+          console.error('Service Worker notification failed, falling back to regular notification:', error);
+        }
+      }
+
       const browserNotification = new Notification(notification.title, {
         body: notification.message,
         icon: '/favicon.ico',

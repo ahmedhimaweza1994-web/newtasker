@@ -1,0 +1,70 @@
+🔔 Full Notification System — Synchronization & Stability Fixes
+1. General Synchronization Problem (Across the Entire App)
+
+Issue:
+The current notification system is not synchronized properly across the entire app.
+Notifications shown in the header menu and icon don’t update in real-time when users view messages, tasks, or calls directly.
+
+Required Fix:
+
+Make sure all notification states are fully synchronized across the app (header menu, browser notifications, in-app popups, etc.).
+
+When a user views or opens a message/task/call manually, its related notification should instantly be marked as read and removed from the unread list.
+
+Notification counters (badges and header counts) must update in real-time using WebSocket or the app’s current real-time system.
+
+2. Repeated Notifications & Sound Alerts
+
+Issue:
+When someone sends a message, the receiver gets repeated notifications and sounds multiple times for the same message — even after reading it.
+This creates constant popups and sound alerts instead of just one per new event.
+
+Required Fix:
+
+Ensure each notification (message, task, or call) triggers only once per event.
+
+Prevent duplicated notifications from being sent repeatedly.
+
+Once the user reads the message or views the related content, stop any further alerts for that event.
+
+Make sure notification sounds play only once per message, not repeatedly.
+
+Possible Cause:
+This issue might be related to WebSocket misconfiguration or event duplication. Diagnose and fix it to ensure notifications are triggered correctly once per action.
+
+3. Mobile Browser Notifications Not Working
+
+Issue:
+Push/browser notifications are not working on mobile devices (Android or iOS browsers).
+
+Required Fix:
+
+Diagnose and fix the mobile browser push notification setup.
+
+Ensure proper service worker registration for push notifications on mobile.
+
+Implement proper permission prompts and fallback for unsupported browsers.
+
+Test and confirm notifications work smoothly on Chrome (Android) and Safari (iOS).
+
+4. Overall Enhancement Goals
+
+Ensure notifications update and sync instantly across all devices and browsers.
+
+Guarantee real-time, one-time alerts with proper sound and visual indicators.
+
+Make sure clicking any notification opens its corresponding page (chat, task, call, etc.).
+
+Confirm mobile and desktop notifications behave the same way.
+
+Optimize socket or event system for efficiency and no duplication.
+
+✅ Final Deliverables:
+
+Fully synchronized notification system across all app sections.
+
+One-time, real-time notifications with correct sounds.
+
+Working push notifications for both desktop and mobile browsers.
+
+Full testing and debugging for any socket or backend event duplication.

@@ -26,6 +26,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useWebSocket } from "@/lib/websocket";
 import { useToast } from "@/hooks/use-toast";
 import { useEnhancedNotifications } from "@/hooks/use-enhanced-notifications";
+import { useAutoMarkRead } from "@/hooks/use-auto-mark-read";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Notification, Task, User as UserType } from "@shared/schema";
 import { formatArabicDate } from "@/lib/arabic-date";
@@ -46,6 +47,8 @@ export default function Navigation() {
     enabled: !!user,
     refetchInterval: 30000,
   });
+
+  useAutoMarkRead(notifications);
 
   const unreadNotifications = notifications.filter(n => !n.isRead);
 
