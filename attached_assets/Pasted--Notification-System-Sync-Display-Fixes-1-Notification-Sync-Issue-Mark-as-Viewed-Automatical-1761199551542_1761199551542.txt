@@ -1,0 +1,57 @@
+🛠 Notification System — Sync & Display Fixes
+1. Notification Sync Issue (Mark as Viewed Automatically)
+
+Problem:
+When a user receives a notification (e.g., new message, task update), it appears correctly in the header notifications section.
+However, if the user opens that message or task manually from its respective page (e.g., goes to the chat and reads the message), the notification in the header remains unread until the user clicks on it directly from the notifications dropdown.
+
+Required Fix:
+
+When a message or task is opened directly, automatically mark its related notification as “viewed/read” in the database and in the frontend UI.
+
+This should happen without needing to click the notification in the header.
+
+The unread notification count should update instantly across the app.
+
+Goal:
+Ensure that all notifications stay in perfect sync with user actions across the platform, just like in apps such as WhatsApp, Messenger, and Slack.
+
+2. Unread Message Count on Chat List (Like WhatsApp/Messenger)
+
+Problem:
+Currently, there’s no visible count of unseen/unread messages on each chat thread in the chat list.
+
+Required Enhancement:
+
+Display a small badge counter on each chat avatar or name in the chat list showing how many unseen messages exist in that conversation.
+
+The counter should disappear (or reset to zero) once the user opens that specific chat.
+
+Counts should update in real-time when new messages arrive.
+
+Goal:
+Give users a clear visual indication of how many unread messages they have per chat, similar to WhatsApp and Facebook Messenger.
+
+3. Chrome Push Notification Username Bug
+
+Problem:
+When a message notification is shown through Chrome (browser push notification), the sender’s name appears as “مستخدم” (User) instead of their actual display name.
+
+Required Fix:
+
+Update the push notification payload to include and display the actual sender’s name from the database or user profile.
+
+Make sure both message content and username are localized and displayed properly in the notification popup.
+
+Goal:
+Browser notifications should show the correct sender name and message content, just like in top messaging apps.
+
+✅ Final Deliverables:
+
+Automatic notification sync (read state linked to viewed message/task).
+
+Real-time unread badge counts for chats.
+
+Correct sender names in Chrome push notifications.
+
+Full testing for cross-page consistency and browser notifications.
