@@ -909,20 +909,20 @@ function TaskDetailsDialog({
                     <Users className="w-4 h-4" />
                     المراجع
                   </Label>
-                  {(task as any).ratedByUser ? (
+                  {(task as any).assignedToUser ? (
                     <div className="flex items-center gap-2 mt-2">
                       <Avatar className="h-8 w-8">
                         <AvatarImage 
-                          src={(task as any).ratedByUser.profilePicture || undefined} 
-                          alt={(task as any).ratedByUser.fullName || "المراجع"} 
+                          src={(task as any).assignedToUser.profilePicture || undefined} 
+                          alt={(task as any).assignedToUser.fullName || "المراجع"} 
                           className="object-cover"
                         />
-                        <AvatarFallback>{(task as any).ratedByUser.fullName?.[0] || "م"}</AvatarFallback>
+                        <AvatarFallback>{(task as any).assignedToUser.fullName?.[0] || "م"}</AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="font-medium" data-testid="text-task-reviewer">{(task as any).ratedByUser.fullName}</p>
-                        {(task as any).ratedByUser.department && (
-                          <p className="text-xs text-muted-foreground">{(task as any).ratedByUser.department}</p>
+                        <p className="font-medium" data-testid="text-task-reviewer">{(task as any).assignedToUser.fullName}</p>
+                        {(task as any).assignedToUser.department && (
+                          <p className="text-xs text-muted-foreground">{(task as any).assignedToUser.department}</p>
                         )}
                       </div>
                     </div>
