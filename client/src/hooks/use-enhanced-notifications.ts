@@ -97,38 +97,34 @@ export function useEnhancedNotifications() {
     }
   }, [playNotificationSound, shouldShowBrowserNotification, showBrowserNotification, permission, isSoundEnabled]);
 
-  const handleMessageNotification = useCallback((roomId: string, message: string, sender: string) => {
+  const handleMessageNotification = useCallback((roomId: string, message: string, sender: string, messageId?: string) => {
     const isOnChatPage = location.startsWith('/chat');
     const currentRoomId = new URLSearchParams(window.location.search).get('roomId');
     const isCurrentRoom = isOnChatPage && currentRoomId === roomId;
+
+    const notificationId = messageId || `msg-${roomId}-${Date.now()}`;
+    
+    if (processedNotificationIds.current.has(notificationId)) {
+      return;
+    }
+
+    processedNotificationIds.current.add(notificationId);
+    notificationTimestamps.current.set(notificationId, Date.now());
 
     if (isSoundEnabled() && !isCurrentRoom) {
       playNotificationSound('message');
     }
 
-    if (!isCurrentRoom && isPageVisibleRef.current && permission === 'granted') {
+    if (!isCurrentRoom && permission === 'granted') {
       const notification: Notification = {
-        id: Date.now().toString(),
+        id: notificationId,
         userId: '',
         title: sender,
         message: message,
         type: 'info',
         category: 'message',
         isRead: false,
-        metadata: { resourceId: roomId, roomId, messageId: undefined },
-        createdAt: new Date(),
-      };
-      showBrowserNotification(notification);
-    } else if (!isPageVisibleRef.current && permission === 'granted') {
-      const notification: Notification = {
-        id: Date.now().toString(),
-        userId: '',
-        title: sender,
-        message: message,
-        type: 'info',
-        category: 'message',
-        isRead: false,
-        metadata: { resourceId: roomId, roomId, messageId: undefined },
+        metadata: { resourceId: roomId, roomId, messageId: messageId },
         createdAt: new Date(),
       };
       showBrowserNotification(notification);

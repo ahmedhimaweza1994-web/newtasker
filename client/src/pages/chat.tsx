@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useSidebar } from "@/contexts/sidebar-context";
 import { cn, getMediaUrl } from "@/lib/utils";
+import { renderMessageContent } from "@/lib/linkify";
+import { groupReactions } from "@/lib/reactions";
 import { useAuth } from "@/hooks/use-auth";
 import { useSearch } from "wouter";
 import Navigation from "@/components/navigation";
@@ -35,6 +37,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -104,6 +112,7 @@ export default function Chat() {
   const [showMentions, setShowMentions] = useState(false);
   const [attachments, setAttachments] = useState<any[]>([]);
   const [openReactionPopover, setOpenReactionPopover] = useState<string | null>(null);
+  const [reactionDetailsPopover, setReactionDetailsPopover] = useState<string | null>(null);
   const [isTyping, setIsTyping] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
@@ -403,7 +412,7 @@ export default function Chat() {
         
         const senderName = message.sender?.fullName || '';
         const messageContent = message.content || 'أرسل رسالة';
-        handleMessageNotification(message.roomId, messageContent, senderName);
+        handleMessageNotification(message.roomId, messageContent, senderName, message.id);
       }
     }
   }, [lastMessage, user?.id, handleMessageNotification]);
@@ -883,7 +892,7 @@ export default function Chat() {
                                     ))}
                                   </div>
                                 )}
-                                <p className="whitespace-pre-wrap break-words">{message.content}</p>
+                                <p className="whitespace-pre-wrap break-words" dangerouslySetInnerHTML={renderMessageContent(message.content || '')} />
                                 <p className={cn(
                                   "text-xs mt-1",
                                   isOwnMessage ? "text-white/70" : "text-muted-foreground"
@@ -898,20 +907,37 @@ export default function Chat() {
 
                               <div className="flex items-center gap-2">
                                 {message.reactions && message.reactions.length > 0 && (
-                                  <motion.div
-                                    initial={{ scale: 0 }}
-                                    animate={{ scale: 1 }}
-                                    className="flex gap-1 bg-muted rounded-full px-2 py-1"
-                                  >
-                                    {message.reactions.slice(0, 3).map((reaction, i) => (
-                                      <span key={i} className="text-sm">{reaction.emoji}</span>
-                                    ))}
-                                    {message.reactions.length > 3 && (
-                                      <span className="text-xs text-muted-foreground">
-                                        +{message.reactions.length - 3}
-                                      </span>
-                                    )}
-                                  </motion.div>
+                                  <TooltipProvider>
+                                    <motion.div
+                                      initial={{ scale: 0 }}
+                                      animate={{ scale: 1 }}
+                                      className="flex gap-1 flex-wrap"
+                                    >
+                                      {groupReactions(message.reactions).map((groupedReaction) => (
+                                        <Tooltip key={groupedReaction.emoji}>
+                                          <TooltipTrigger asChild>
+                                            <span className="inline-flex items-center gap-0.5 bg-muted rounded-full px-2 py-1 text-sm cursor-pointer hover:bg-muted/80 transition-colors">
+                                              {groupedReaction.emoji}
+                                              {groupedReaction.count > 1 && (
+                                                <span className="text-xs text-muted-foreground ml-0.5">
+                                                  {groupedReaction.count}
+                                                </span>
+                                              )}
+                                            </span>
+                                          </TooltipTrigger>
+                                          <TooltipContent>
+                                            <div className="text-xs">
+                                              {groupedReaction.users.map((u, i) => (
+                                                <div key={u.id}>
+                                                  {u.fullName}{i < groupedReaction.users.length - 1 ? '، ' : ''}
+                                                </div>
+                                              ))}
+                                            </div>
+                                          </TooltipContent>
+                                        </Tooltip>
+                                      ))}
+                                    </motion.div>
+                                  </TooltipProvider>
                                 )}
                                 
                                 <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
@@ -1345,7 +1371,7 @@ export default function Chat() {
                                         ))}
                                       </div>
                                     )}
-                                    <p className="whitespace-pre-wrap break-words">{message.content}</p>
+                                    <p className="whitespace-pre-wrap break-words" dangerouslySetInnerHTML={renderMessageContent(message.content || '')} />
                                     <p className={cn(
                                       "text-xs mt-1",
                                       isOwnMessage ? "text-white/70" : "text-muted-foreground"
@@ -1360,20 +1386,37 @@ export default function Chat() {
 
                                   <div className="flex items-center gap-2">
                                     {message.reactions && message.reactions.length > 0 && (
-                                      <motion.div
-                                        initial={{ scale: 0 }}
-                                        animate={{ scale: 1 }}
-                                        className="flex gap-1 bg-muted rounded-full px-2 py-1"
-                                      >
-                                        {message.reactions.slice(0, 3).map((reaction, i) => (
-                                          <span key={i} className="text-sm">{reaction.emoji}</span>
-                                        ))}
-                                        {message.reactions.length > 3 && (
-                                          <span className="text-xs text-muted-foreground">
-                                            +{message.reactions.length - 3}
-                                          </span>
-                                        )}
-                                      </motion.div>
+                                      <TooltipProvider>
+                                        <motion.div
+                                          initial={{ scale: 0 }}
+                                          animate={{ scale: 1 }}
+                                          className="flex gap-1 flex-wrap"
+                                        >
+                                          {groupReactions(message.reactions).map((groupedReaction) => (
+                                            <Tooltip key={groupedReaction.emoji}>
+                                              <TooltipTrigger asChild>
+                                                <span className="inline-flex items-center gap-0.5 bg-muted rounded-full px-2 py-1 text-sm cursor-pointer hover:bg-muted/80 transition-colors">
+                                                  {groupedReaction.emoji}
+                                                  {groupedReaction.count > 1 && (
+                                                    <span className="text-xs text-muted-foreground ml-0.5">
+                                                      {groupedReaction.count}
+                                                    </span>
+                                                  )}
+                                                </span>
+                                              </TooltipTrigger>
+                                              <TooltipContent>
+                                                <div className="text-xs">
+                                                  {groupedReaction.users.map((u, i) => (
+                                                    <div key={u.id}>
+                                                      {u.fullName}{i < groupedReaction.users.length - 1 ? '، ' : ''}
+                                                    </div>
+                                                  ))}
+                                                </div>
+                                              </TooltipContent>
+                                            </Tooltip>
+                                          ))}
+                                        </motion.div>
+                                      </TooltipProvider>
                                     )}
                                     
                                     <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">

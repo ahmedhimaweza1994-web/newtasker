@@ -31,6 +31,7 @@ export default function TaskManagement() {
     title: "",
     description: "",
     priority: "medium",
+    createdFor: "",
     assignedTo: "",
     dueDate: "",
     companyName: "",
@@ -73,6 +74,7 @@ export default function TaskManagement() {
         title: "",
         description: "",
         priority: "medium",
+        createdFor: "",
         assignedTo: "",
         dueDate: "",
         companyName: "",
@@ -116,8 +118,19 @@ export default function TaskManagement() {
 
   const handleCreateTask = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!newTask.createdFor) {
+      toast({
+        title: "خطأ",
+        description: "يجب تحديد الموظف الذي تم إنشاء المهمة له",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     const taskData: any = {
       ...newTask,
+      createdFor: newTask.createdFor,
       assignedTo: newTask.assignedTo || undefined,
       companyName: newTask.companyName || undefined,
     };
@@ -272,6 +285,24 @@ export default function TaskManagement() {
                       </div>
                     </div>
                     <div className="space-y-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="task-created-for" className="text-sm sm:text-base font-medium">المُنشأة لـ <span className="text-destructive">*</span></Label>
+                      <Select
+                        value={newTask.createdFor}
+                        onValueChange={(value) => setNewTask({ ...newTask, createdFor: value })}
+                      >
+                        <SelectTrigger data-testid="select-task-created-for" className="h-11 sm:h-10">
+                          <SelectValue placeholder="اختر الموظف" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {users.map((user) => (
+                            <SelectItem key={user.id} value={user.id}>
+                              {user.fullName} - {user.department}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                       <Label htmlFor="task-assignee" className="text-sm sm:text-base font-medium">المراجع</Label>
                       <Select
                         value={newTask.assignedTo}

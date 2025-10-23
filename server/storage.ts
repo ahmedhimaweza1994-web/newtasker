@@ -164,6 +164,7 @@ export interface IStorage {
  
   // Chat Messages
   createChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
+  getChatMessage(messageId: string): Promise<ChatMessage | undefined>;
   getChatMessages(roomId: string, limit?: number): Promise<(ChatMessage & { sender: Omit<User, 'password'>, reactions: MessageReaction[] })[]>;
   updateChatMessage(messageId: string, content: string): Promise<ChatMessage | undefined>;
   deleteChatMessage(messageId: string): Promise<boolean>;
@@ -288,7 +289,7 @@ export class MemStorage implements IStorage {
   async getUserTasks(userId: string): Promise<Task[]> {
     const tasksData = await db.query.tasks.findMany({
       where: or(
-        eq(tasks.createdBy, userId),
+        eq(tasks.createdFor, userId),
         eq(tasks.assignedTo, userId)
       ),
       with: {
@@ -1066,6 +1067,14 @@ export class MemStorage implements IStorage {
       .where(eq(chatRooms.id, message.roomId));
 
     return chatMessage;
+  }
+
+  async getChatMessage(messageId: string): Promise<ChatMessage | undefined> {
+    const [message] = await db
+      .select()
+      .from(chatMessages)
+      .where(eq(chatMessages.id, messageId));
+    return message || undefined;
   }
 
   async getChatMessages(roomId: string, limit: number = 50): Promise<(ChatMessage & { sender: Omit<User, 'password'>, reactions: MessageReaction[] })[]> {

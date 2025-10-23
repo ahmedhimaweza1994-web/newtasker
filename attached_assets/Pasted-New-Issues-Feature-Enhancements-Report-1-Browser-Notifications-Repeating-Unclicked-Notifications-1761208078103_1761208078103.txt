@@ -1,0 +1,101 @@
+New Issues & Feature Enhancements Report
+1. Browser Notifications Repeating (Unclicked Notifications)
+
+Issue:
+When a browser notification (Chrome or desktop push notification) is received but not clicked, it keeps reappearing repeatedly with sound, even though it’s the same notification.
+
+Required Fix:
+
+Prevent repeated notifications for the same event if the user hasn’t clicked it.
+
+Ensure each event (message, task, etc.) triggers only one browser notification until it’s actually clicked or dismissed.
+
+Confirm push notifications stop duplicating due to WebSocket or event rebroadcasting.
+
+2. Header Notifications Not Updating Automatically
+
+Issue:
+Header notifications now update correctly only if the user clicks on the notification itself (either from the header or browser popup).
+However, if the user opens a message or task manually from another page (without clicking the notification), the notification stays unread in the header.
+
+Required Fix:
+
+Make sure that when a user views or opens any related content (message, task, etc.) manually, its associated notification is automatically marked as read and removed from the unread list.
+
+This behavior should apply across all app pages — even when the user is navigating without refreshing.
+
+3. Tasks System — Role & Visibility Logic Update
+
+Current Behavior:
+When a user creates a new task, it’s automatically considered as created for himself, and he can assign a “مراجع”.
+
+New Required Behavior:
+
+When creating a task, the user must choose who the task is created for — either for himself or for another user.
+
+A task should be visible only to:
+
+The user it was created for, and
+
+The assigned مراجع (reviewer).
+
+The creator should not see the task unless he selected himself as the task’s “for” user.
+
+Update task creation form to include a “Created For” user selector.
+
+4. صفحة المقترحات (Suggestions Page) — Add Edit Option
+
+Issue:
+Currently, users can submit suggestions but can’t edit them afterward.
+
+Required Fix:
+
+Add an Edit button for each submitted suggestion in صفحة المقترحات.
+
+Allow users to edit their own suggestions, with proper update handling in backend and database.
+
+5. Chat Features — Emojis, Stickers, and GIFs
+
+Feature Request:
+
+Add full emoji picker, sticker support, and GIF sending to the chat interface.
+
+Make sure messages containing these elements render correctly in all chat windows (desktop and mobile).
+
+6. Clickable Links in Chat Messages
+
+Issue:
+When users send a link in chat (e.g., https://example.com), it’s sent as plain text — not clickable.
+
+Required Fix:
+
+Detect links automatically in message text.
+
+Convert them to clickable hyperlinks (<a> elements) that open in a new tab safely (target="_blank" rel="noopener noreferrer").
+
+7. Chat Message Reactions — Duplicate Display & Reaction Popup
+
+Current Issue:
+When multiple users react with the same emoji on a message, the same reaction icon appears multiple times instead of showing a single reaction with a counter.
+
+Required Fix:
+
+Combine identical reactions into one icon with a count (e.g., 👍 × 3).
+
+When clicking on a reaction, open a small popup or modal showing which users reacted with that emoji — similar to WhatsApp, Messenger, or Slack.
+
+✅ Summary of Required Deliverables
+
+Fix repeating browser notifications.
+
+Synchronize all notification states globally.
+
+Update task creation logic with “Created For” selector and visibility rules.
+
+Add edit option in suggestions page.
+
+Add emojis, stickers, and GIFs in chat.
+
+Make links clickable in chat messages.
+
+Improve reaction display and user reaction popup.

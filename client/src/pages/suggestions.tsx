@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MotionPageShell, MotionSection } from "@/components/ui/motion-wrappers";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, Lightbulb, Bug, Sparkles, MessageSquare } from "lucide-react";
+import { Plus, Lightbulb, Bug, Sparkles, MessageSquare, Edit } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
@@ -31,6 +31,8 @@ export default function SuggestionsPage() {
     description: "",
     category: "other",
   });
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingSuggestion, setEditingSuggestion] = useState<any>(null);
 
   const { data: suggestions = [], isLoading } = useQuery({
     queryKey: ["/api/suggestions"],
@@ -60,9 +62,51 @@ export default function SuggestionsPage() {
     },
   });
 
+  const editSuggestionMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const res = await apiRequest("PUT", `/api/suggestions/${data.id}`, {
+        title: data.title,
+        description: data.description,
+        category: data.category,
+      });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/suggestions"] });
+      setIsEditDialogOpen(false);
+      setEditingSuggestion(null);
+      toast({
+        title: "تم تحديث المقترح بنجاح",
+        description: "تم حفظ التغييرات",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "خطأ في تحديث المقترح",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleCreateSuggestion = (e: React.FormEvent) => {
     e.preventDefault();
     createSuggestionMutation.mutate(newSuggestion);
+  };
+
+  const handleEditSuggestion = (e: React.FormEvent) => {
+    e.preventDefault();
+    editSuggestionMutation.mutate(editingSuggestion);
+  };
+
+  const openEditDialog = (suggestion: any) => {
+    setEditingSuggestion({
+      id: suggestion.id,
+      title: suggestion.title,
+      description: suggestion.description,
+      category: suggestion.category,
+    });
+    setIsEditDialogOpen(true);
   };
 
   const getCategoryIcon = (category: string) => {
@@ -202,6 +246,80 @@ export default function SuggestionsPage() {
                   </form>
                 </DialogContent>
               </Dialog>
+
+              <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+                <DialogContent className="sm:max-w-[550px]" data-testid="dialog-edit-suggestion">
+                  <DialogHeader>
+                    <DialogTitle className="text-xl sm:text-2xl">تعديل المقترح</DialogTitle>
+                  </DialogHeader>
+                  
+                  {editingSuggestion && (
+                    <form onSubmit={handleEditSuggestion} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="edit-suggestion-title" className="text-sm sm:text-base font-medium">عنوان المقترح *</Label>
+                        <Input
+                          id="edit-suggestion-title"
+                          placeholder="أدخل عنوان المقترح"
+                          value={editingSuggestion.title}
+                          onChange={(e) => setEditingSuggestion({ ...editingSuggestion, title: e.target.value })}
+                          required
+                          data-testid="input-edit-suggestion-title"
+                          className="text-base h-11 sm:h-10"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="edit-suggestion-category" className="text-sm sm:text-base font-medium">نوع المقترح</Label>
+                        <Select
+                          value={editingSuggestion.category}
+                          onValueChange={(value) => setEditingSuggestion({ ...editingSuggestion, category: value })}
+                        >
+                          <SelectTrigger data-testid="select-edit-suggestion-category" className="h-11 sm:h-10">
+                            <SelectValue placeholder="اختر نوع المقترح" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="improvement">تحسين</SelectItem>
+                            <SelectItem value="bug">مشكلة تقنية</SelectItem>
+                            <SelectItem value="feature">ميزة جديدة</SelectItem>
+                            <SelectItem value="other">أخرى</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="edit-suggestion-description" className="text-sm sm:text-base font-medium">التفاصيل *</Label>
+                        <Textarea
+                          id="edit-suggestion-description"
+                          placeholder="اشرح مقترحك بالتفصيل..."
+                          value={editingSuggestion.description}
+                          onChange={(e) => setEditingSuggestion({ ...editingSuggestion, description: e.target.value })}
+                          required
+                          rows={6}
+                          data-testid="input-edit-suggestion-description"
+                          className="text-base resize-none"
+                        />
+                      </div>
+                      <div className="flex gap-3 pt-4">
+                        <Button
+                          type="submit"
+                          disabled={editSuggestionMutation.isPending}
+                          data-testid="button-submit-edit-suggestion"
+                          className="flex-1 h-11 sm:h-10"
+                        >
+                          {editSuggestionMutation.isPending ? "جاري الحفظ..." : "حفظ التعديلات"}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setIsEditDialogOpen(false)}
+                          data-testid="button-cancel-edit-suggestion"
+                          className="h-11 sm:h-10"
+                        >
+                          إلغاء
+                        </Button>
+                      </div>
+                    </form>
+                  )}
+                </DialogContent>
+              </Dialog>
             </div>
           </MotionSection>
 
@@ -253,6 +371,17 @@ export default function SuggestionsPage() {
                               </Badge>
                             </div>
                           </div>
+                          {suggestion.userId === user?.id && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => openEditDialog(suggestion)}
+                              data-testid={`button-edit-suggestion-${suggestion.id}`}
+                            >
+                              <Edit className="w-4 h-4 ml-2" />
+                              تعديل
+                            </Button>
+                          )}
                         </div>
                       </CardHeader>
                       <CardContent className="space-y-3">

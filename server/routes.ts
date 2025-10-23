@@ -81,9 +81,14 @@ export function registerRoutes(app: Express): Server {
 
   app.post("/api/tasks", requireAuth, async (req, res) => {
     try {
+      if (!req.body.createdFor) {
+        return res.status(400).json({ message: "يجب تحديد الموظف الذي تم إنشاء المهمة له" });
+      }
+
       const taskData = {
         ...req.body,
         createdBy: req.user!.id,
+        createdFor: req.body.createdFor,
         companyName: req.body.companyName || null,
         assignedTo: req.body.assignedTo || null,
         // Convert ISO string dates to Date objects for Drizzle
@@ -91,12 +96,30 @@ export function registerRoutes(app: Express): Server {
       };
       const task = await storage.createTask(taskData);
       
-      // Send notification if assigned to someone
-      if (task.assignedTo && task.assignedTo !== req.user!.id) {
+      // Send notification to the user the task was created for
+      if (task.createdFor && task.createdFor !== req.user!.id) {
+        await storage.createNotification({
+          userId: task.createdFor,
+          title: "مهمة جديدة تم إنشاؤها لك",
+          message: `تم إنشاء مهمة "${task.title}" لك`,
+          type: "info",
+          category: "task",
+          metadata: {
+            resourceId: task.id,
+            taskId: task.id,
+            userId: req.user!.id,
+            userName: req.user!.fullName,
+            userAvatar: req.user!.profilePicture || undefined
+          }
+        });
+      }
+      
+      // Send notification if assigned to a reviewer (مراجع)
+      if (task.assignedTo && task.assignedTo !== req.user!.id && task.assignedTo !== task.createdFor) {
         await storage.createNotification({
           userId: task.assignedTo,
-          title: "مهمة جديدة معينة لك",
-          message: `تم تعيين مهمة "${task.title}" لك`,
+          title: "مهمة جديدة معينة لك كمراجع",
+          message: `تم تعيينك كمراجع لمهمة "${task.title}"`,
           type: "info",
           category: "task",
           metadata: {
@@ -1442,7 +1465,7 @@ export function registerRoutes(app: Express): Server {
       );
       
       // Send reaction to room members
-      const reactionMsg = await storage.getChatMessage(req.params.messageId);
+      const reactionMsg = await storage.getChatMessage(req.body.messageId);
       if (reactionMsg) {
         sendToRoomMembers(reactionMsg.roomId, {
           type: 'reaction_added',
@@ -1791,6 +1814,38 @@ export function registerRoutes(app: Express): Server {
     } catch (error) {
       console.error("Error creating suggestion:", error);
       res.status(500).json({ message: "حدث خطأ في إضافة المقترح" });
+    }
+  });
+
+
+  app.put("/api/suggestions/:id", requireAuth, async (req, res) => {
+    try {
+      // Get the existing suggestion
+      const suggestions = await storage.getUserSuggestions(req.user!.id);
+      const existingSuggestion = suggestions.find(s => s.id === req.params.id);
+      
+      if (!existingSuggestion) {
+        return res.status(404).json({ message: "المقترح غير موجود أو غير مصرح لك بتعديله" });
+      }
+      
+      const updates: any = {
+        updatedAt: new Date(),
+      };
+      
+      if (req.body.title) updates.title = req.body.title;
+      if (req.body.description) updates.description = req.body.description;
+      if (req.body.category) updates.category = req.body.category;
+      
+      const suggestion = await storage.updateSuggestion(req.params.id, updates);
+      
+      if (!suggestion) {
+        return res.status(404).json({ message: "المقترح غير موجود" });
+      }
+      
+      res.json(suggestion);
+    } catch (error) {
+      console.error("Error updating suggestion:", error);
+      res.status(500).json({ message: "حدث خطأ في تحديث المقترح" });
     }
   });
 

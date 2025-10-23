@@ -34,7 +34,7 @@ import { formatArabicDate } from "@/lib/arabic-date";
 export default function Navigation() {
   const { user, logoutMutation } = useAuth();
   const { setIsMobileOpen } = useSidebar();
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const [isDark, setIsDark] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showSearchResults, setShowSearchResults] = useState(false);
@@ -45,10 +45,14 @@ export default function Navigation() {
   const { data: notifications = [] } = useQuery<Notification[]>({
     queryKey: ["/api/notifications"],
     enabled: !!user,
-    refetchInterval: 30000,
+    refetchInterval: 10000,
   });
 
   useAutoMarkRead(notifications);
+
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
+  }, [location]);
 
   const unreadNotifications = notifications.filter(n => !n.isRead);
 
