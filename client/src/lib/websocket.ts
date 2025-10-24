@@ -117,13 +117,13 @@ export function useWebSocket(props?: UseWebSocketProps) {
 
     if (!globalSocket) {
       console.log('[WebSocket] Creating new global socket');
-      globalSocket = io({
+      globalSocket = io('https://hub.greenweb-tech.com', {
         path: '/socket.io/',
         reconnection: true,
         reconnectionDelay: 1000,
         reconnectionDelayMax: 5000,
         reconnectionAttempts: Infinity,
-        transports: ['websocket', 'polling']
+        transports: ['polling'] // Force HTTP polling only, ignore WebSocket
       });
       globalUserId = userId;
       initializeSocketHandlers(globalSocket, userId);
