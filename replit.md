@@ -6,6 +6,22 @@ GWT Task Management is a comprehensive Arabic-language task and employee managem
 
 ## Recent Changes
 
+**October 24, 2025 - UI/UX Fixes for Deductions and HR Pages (v1.2.1)**
+
+Fixed layout and data display issues in deductions and HR management pages to ensure consistent user experience across the application.
+
+**Fixes Applied:**
+- Deductions pages (both user and admin views) restructured from MotionPageShell pattern to standard Navigation + Sidebar + main layout
+- Resolved sidebar and header alignment issues on deductions pages for proper responsive behavior
+- Fixed HR payroll API endpoint to return correct field names (`fullName`, `salary`, `netSalary`) instead of incorrect mappings
+- Both deduction pages now properly integrate with sidebar collapse functionality and maintain consistent spacing
+
+**Technical Details:**
+- Removed MotionPageShell wrapper usage and replaced with `<div className="min-h-screen">` containing Navigation, Sidebar, and main content
+- Updated `/api/hr/payroll` route to map user data correctly to PayrollEntry interface
+- Employee distribution section already correctly displays all active users via department aggregation
+- All changes maintain existing animation components (MotionSection, MotionMetricCard) for visual consistency
+
 **October 24, 2025 - Salary Deductions Management Feature (v1.2.0)**
 
 Implemented comprehensive salary deductions management system with role-based access control, providing employees with read-only views of their deductions while enabling administrators to perform full CRUD operations.
