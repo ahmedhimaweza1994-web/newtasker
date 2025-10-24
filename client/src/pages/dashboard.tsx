@@ -271,12 +271,7 @@ export default function Dashboard() {
         <main className={cn("flex-1 p-4 sm:p-6 transition-all duration-300", "md:mr-16" , !isCollapsed && "md:mr-64")}>
           {/* Hero Section with Gradient */}
           <MotionSection
-            className="relative bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 overflow-hidden"
-            style={{
-              background: 'hsl(167, 70%, 48%)',
-              borderRadius: '20px',
-            }}
-          >
+            className="relative overflow-hidden bg-[hsl(167,70%,48%)] rounded-[20px]">
             <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzRjMC0yLjIxIDEuNzktNCA0LTRzNCAxLjc5IDQgNC0xLjc5IDQtNCA0LTQtMS43OS00LTR6bTAgNGMwLTIuMjEgMS43OS00IDQtNHM0IDEuNzkgNCA0LTEuNzkgNC00IDQtNC0xLjc5LTQtNHptLTIwIDRjMC0yLjIxIDEuNzktNCA0LTRzNCAxLjc5IDQgNC0xLjc5IDQtNCA0LTQtMS43OS00LTR6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-30"></div>
             <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
             
