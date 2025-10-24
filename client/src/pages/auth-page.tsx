@@ -3,16 +3,15 @@ import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useLocation } from "wouter";
-import { CheckCircle, Users, Clock, BarChart3, Shield } from "lucide-react";
+import { CheckCircle, Users, Clock, BarChart3, Shield, ArrowRight, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function AuthPage() {
   const { user, loginMutation, registerMutation } = useAuth();
   const [, setLocation] = useLocation();
+  const [isLogin, setIsLogin] = useState(true);
 
   const [loginForm, setLoginForm] = useState({
     email: "",
@@ -27,7 +26,6 @@ export default function AuthPage() {
     jobTitle: "",
   });
 
-  // Redirect if already logged in
   useEffect(() => {
     if (user) {
       setLocation("/");
@@ -63,25 +61,6 @@ export default function AuthPage() {
     "الإدارة العامة"
   ];
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { x: -20, opacity: 0 },
-    visible: {
-      x: 0,
-      opacity: 1,
-      transition: { duration: 0.5 }
-    }
-  };
-
   const features = [
     {
       icon: Users,
@@ -106,262 +85,272 @@ export default function AuthPage() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-background">
-      {/* Hero Section */}
-      <motion.div 
-        initial={{ x: -100, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        transition={{ duration: 0.6 }}
-        className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary via-secondary to-accent p-6 md:p-8 lg:p-12 text-primary-foreground relative overflow-hidden"
-      >
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzRjMC0yLjIxIDEuNzktNCA0LTRzNCAxLjc5IDQgNC0xLjc5IDQtNCA0LTQtMS43OS00LTR6bTAgNGMwLTIuMjEgMS43OS00IDQtNHM0IDEuNzkgNCA0LTEuNzkgNC00IDQtNC0xLjc5LTQtNHptLTIwIDRjMC0yLjIxIDEuNzktNCA0LTRzNCAxLjc5IDQgNC0xLjc5IDQtNCA0LTQtMS43OS00LTR6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-20"></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
-        
-        <motion.div 
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="relative z-10 flex flex-col justify-center"
-        >
-          <motion.div variants={itemVariants} className="mb-12">
-            <motion.div 
-              whileHover={{ scale: 1.05, rotate: 5 }}
-              className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-3xl flex items-center justify-center mb-6 shadow-2xl"
-            >
-              <CheckCircle className="w-12 h-12" />
-            </motion.div>
-            <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-white to-white/80 bg-clip-text">
-              GWT إدارة المهام
-            </h1>
-            <p className="text-xl opacity-90 leading-relaxed">
-              نظام شامل لإدارة المهام والموظفين مع تتبع الوقت الفعلي
-            </p>
-          </motion.div>
+    <div className="min-h-screen flex bg-gradient-to-br from-background via-background to-muted dark:from-gray-950 dark:via-gray-900 dark:to-gray-800 relative overflow-hidden" dir="rtl">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-20 w-72 h-72 bg-primary/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-20 right-20 w-96 h-96 bg-secondary/20 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-accent/10 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}}></div>
+      </div>
 
-          <div className="space-y-6">
-            {features.map((feature, index) => (
-              <motion.div
-                key={index}
-                variants={itemVariants}
-                whileHover={{ x: 10, scale: 1.02 }}
-                className="flex items-start gap-4 p-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-all"
-              >
-                <motion.div 
-                  whileHover={{ rotate: 360 }}
-                  transition={{ duration: 0.6 }}
-                  className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-lg flex items-center justify-center flex-shrink-0"
-                >
-                  <feature.icon className="w-6 h-6" />
-                </motion.div>
-                <div>
-                  <h3 className="font-semibold mb-2 text-lg">{feature.title}</h3>
-                  <p className="text-sm opacity-75 leading-relaxed">{feature.description}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-      </motion.div>
-
-      {/* Auth Form Section */}
-      <motion.div 
-        initial={{ x: 100, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        transition={{ duration: 0.6, delay: 0.2 }}
-        className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-6 md:p-8 bg-background"
-      >
-        <div className="w-full max-w-md">
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="text-center mb-8 lg:hidden"
-          >
-            <motion.div 
-              whileHover={{ scale: 1.1, rotate: 5 }}
-              className="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg"
-            >
-              <CheckCircle className="w-10 h-10 text-primary-foreground" />
-            </motion.div>
-            <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              GWT إدارة المهام
-            </h2>
-          </motion.div>
-
-          <Tabs defaultValue="login" className="w-full">
+      <div className="container mx-auto px-4 py-8 lg:py-0 flex items-center justify-center relative z-10">
+        <div className="w-full max-w-6xl">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6 }}
+              className="order-2 lg:order-1"
             >
-              <TabsList className="grid w-full grid-cols-2 mb-6">
-                <TabsTrigger value="login">تسجيل الدخول</TabsTrigger>
-                <TabsTrigger value="register">حساب جديد</TabsTrigger>
-              </TabsList>
+              <div className="text-center lg:text-right mb-8">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                  className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-primary via-accent to-secondary rounded-3xl mb-6 shadow-2xl"
+                >
+                  <CheckCircle className="w-12 h-12 text-white" />
+                </motion.div>
+                <h1 className="text-4xl lg:text-5xl font-bold mb-4 bg-gradient-to-l from-primary via-accent to-secondary bg-clip-text text-transparent dark:from-primary dark:via-accent dark:to-secondary">
+                  GWT إدارة المهام
+                </h1>
+                <p className="text-lg text-muted-foreground dark:text-gray-300 mb-8">
+                  نظام شامل لإدارة المهام والموظفين مع تتبع الوقت الفعلي
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {features.map((feature, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 * index, duration: 0.5 }}
+                    whileHover={{ scale: 1.05, y: -5 }}
+                    className="p-6 rounded-2xl bg-card/50 dark:bg-gray-800/50 backdrop-blur-sm border border-border dark:border-gray-700 shadow-lg hover:shadow-xl transition-all"
+                  >
+                    <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-accent/20 dark:from-primary/30 dark:to-accent/30 rounded-xl flex items-center justify-center mb-4">
+                      <feature.icon className="w-6 h-6 text-primary dark:text-primary" />
+                    </div>
+                    <h3 className="font-semibold text-foreground dark:text-white mb-2">{feature.title}</h3>
+                    <p className="text-sm text-muted-foreground dark:text-gray-400">{feature.description}</p>
+                  </motion.div>
+                ))}
+              </div>
             </motion.div>
 
-            <TabsContent value="login">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Card className="border-2 hover:border-primary/50 transition-all duration-300 shadow-xl">
-                  <CardHeader>
-                    <CardTitle className="text-2xl">تسجيل الدخول</CardTitle>
-                    <CardDescription>
-                      أدخل بريدك الإلكتروني وكلمة المرور للوصول إلى حسابك
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <form onSubmit={handleLogin} className="space-y-3 sm:space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="login-email">البريد الإلكتروني</Label>
-                      <Input
-                        id="login-email"
-                        type="email"
-                        placeholder="البريد الإلكتروني"
-                        value={loginForm.email}
-                        onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
-                        required
-                        data-testid="login-email-input"
-                        className="h-11 sm:h-10"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="login-password">كلمة المرور</Label>
-                      <Input
-                        id="login-password"
-                        type="password"
-                        placeholder="••••••••"
-                        value={loginForm.password}
-                        onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
-                        required
-                        data-testid="login-password-input"
-                        className="h-11 sm:h-10"
-                      />
-                    </div>
-                    <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                      <Button 
-                        type="submit" 
-                        className="w-full h-11 sm:h-10 shadow-lg hover:shadow-xl transition-all" 
-                        disabled={loginMutation.isPending}
-                        data-testid="login-submit-button"
-                      >
-                        {loginMutation.isPending ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
-                      </Button>
-                    </motion.div>
-                  </form>
-                </CardContent>
-              </Card>
-              </motion.div>
-            </TabsContent>
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="order-1 lg:order-2"
+            >
+              <div className="bg-card/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-border/50 dark:border-gray-700/50">
+                <div className="flex gap-2 mb-8">
+                  <Button
+                    variant={isLogin ? "default" : "ghost"}
+                    className={`flex-1 h-12 text-base font-semibold transition-all ${
+                      isLogin 
+                        ? "shadow-lg" 
+                        : "text-muted-foreground dark:text-gray-400 hover:text-foreground dark:hover:text-white"
+                    }`}
+                    onClick={() => setIsLogin(true)}
+                    data-testid="tab-login"
+                  >
+                    تسجيل الدخول
+                  </Button>
+                  <Button
+                    variant={!isLogin ? "default" : "ghost"}
+                    className={`flex-1 h-12 text-base font-semibold transition-all ${
+                      !isLogin 
+                        ? "shadow-lg" 
+                        : "text-muted-foreground dark:text-gray-400 hover:text-foreground dark:hover:text-white"
+                    }`}
+                    onClick={() => setIsLogin(false)}
+                    data-testid="tab-register"
+                  >
+                    حساب جديد
+                  </Button>
+                </div>
 
-            <TabsContent value="register">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Card className="border-2 hover:border-accent/50 transition-all duration-300 shadow-xl">
-                  <CardHeader>
-                    <CardTitle className="text-2xl">إنشاء حساب جديد</CardTitle>
-                    <CardDescription>
-                      أدخل بياناتك لإنشاء حساب جديد في النظام
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <form onSubmit={handleRegister} className="space-y-3 sm:space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="register-name">الاسم الكامل</Label>
-                      <Input
-                        id="register-name"
-                        type="text"
-                        placeholder="أحمد محمد علي"
-                        value={registerForm.fullName}
-                        onChange={(e) => setRegisterForm({ ...registerForm, fullName: e.target.value })}
-                        required
-                        data-testid="register-name-input"
-                        className="h-11 sm:h-10"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="register-email">البريد الإلكتروني</Label>
-                      <Input
-                        id="register-email"
-                        type="email"
-                        placeholder="البريد الإلكتروني"
-                        value={registerForm.email}
-                        onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
-                        required
-                        data-testid="register-email-input"
-                        className="h-11 sm:h-10"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="register-password">كلمة المرور</Label>
-                      <Input
-                        id="register-password"
-                        type="password"
-                        placeholder="••••••••"
-                        value={registerForm.password}
-                        onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
-                        required
-                        data-testid="register-password-input"
-                        className="h-11 sm:h-10"
-                      />
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <AnimatePresence mode="wait">
+                  {isLogin ? (
+                    <motion.form
+                      key="login"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 20 }}
+                      transition={{ duration: 0.3 }}
+                      onSubmit={handleLogin}
+                      className="space-y-6"
+                    >
                       <div className="space-y-2">
-                        <Label htmlFor="register-department">القسم</Label>
-                        <Select
-                          value={registerForm.department}
-                          onValueChange={(value) => setRegisterForm({ ...registerForm, department: value })}
-                          required
-                        >
-                          <SelectTrigger data-testid="register-department-select" className="h-11 sm:h-10">
-                            <SelectValue placeholder="اختر القسم" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {departments.map((dept) => (
-                              <SelectItem key={dept} value={dept}>
-                                {dept}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="register-job">المسمى الوظيفي</Label>
+                        <Label htmlFor="login-email" className="text-foreground dark:text-white">البريد الإلكتروني</Label>
                         <Input
-                          id="register-job"
-                          type="text"
-                          placeholder="مطور ويب"
-                          value={registerForm.jobTitle}
-                          onChange={(e) => setRegisterForm({ ...registerForm, jobTitle: e.target.value })}
-                          data-testid="register-job-input"
-                          className="h-11 sm:h-10"
+                          id="login-email"
+                          type="email"
+                          placeholder="example@domain.com"
+                          value={loginForm.email}
+                          onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
+                          required
+                          className="h-12 bg-background/50 dark:bg-gray-900/50 border-border dark:border-gray-600 text-foreground dark:text-white placeholder:text-muted-foreground dark:placeholder:text-gray-500"
+                          data-testid="login-email-input"
                         />
                       </div>
-                    </div>
-                    <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                      <Button 
-                        type="submit" 
-                        className="w-full h-11 sm:h-10 shadow-lg hover:shadow-xl transition-all" 
-                        disabled={registerMutation.isPending}
-                        data-testid="register-submit-button"
+                      <div className="space-y-2">
+                        <Label htmlFor="login-password" className="text-foreground dark:text-white">كلمة المرور</Label>
+                        <Input
+                          id="login-password"
+                          type="password"
+                          placeholder="••••••••"
+                          value={loginForm.password}
+                          onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
+                          required
+                          className="h-12 bg-background/50 dark:bg-gray-900/50 border-border dark:border-gray-600 text-foreground dark:text-white"
+                          data-testid="login-password-input"
+                        />
+                      </div>
+                      <motion.div
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                       >
-                        {registerMutation.isPending ? "جاري إنشاء الحساب..." : "إنشاء الحساب"}
-                      </Button>
-                    </motion.div>
-                  </form>
-                </CardContent>
-              </Card>
-              </motion.div>
-            </TabsContent>
-          </Tabs>
+                        <Button
+                          type="submit"
+                          className="w-full h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all bg-gradient-to-l from-primary via-accent to-secondary hover:opacity-90"
+                          disabled={loginMutation.isPending}
+                          data-testid="login-submit-button"
+                        >
+                          {loginMutation.isPending ? (
+                            <motion.div
+                              animate={{ rotate: 360 }}
+                              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                              className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
+                            />
+                          ) : (
+                            <span className="flex items-center gap-2">
+                              تسجيل الدخول
+                              <ArrowRight className="w-5 h-5" />
+                            </span>
+                          )}
+                        </Button>
+                      </motion.div>
+                    </motion.form>
+                  ) : (
+                    <motion.form
+                      key="register"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      transition={{ duration: 0.3 }}
+                      onSubmit={handleRegister}
+                      className="space-y-5"
+                    >
+                      <div className="space-y-2">
+                        <Label htmlFor="register-name" className="text-foreground dark:text-white">الاسم الكامل</Label>
+                        <Input
+                          id="register-name"
+                          type="text"
+                          placeholder="أحمد محمد علي"
+                          value={registerForm.fullName}
+                          onChange={(e) => setRegisterForm({ ...registerForm, fullName: e.target.value })}
+                          required
+                          className="h-12 bg-background/50 dark:bg-gray-900/50 border-border dark:border-gray-600 text-foreground dark:text-white placeholder:text-muted-foreground dark:placeholder:text-gray-500"
+                          data-testid="register-name-input"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="register-email" className="text-foreground dark:text-white">البريد الإلكتروني</Label>
+                        <Input
+                          id="register-email"
+                          type="email"
+                          placeholder="example@domain.com"
+                          value={registerForm.email}
+                          onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
+                          required
+                          className="h-12 bg-background/50 dark:bg-gray-900/50 border-border dark:border-gray-600 text-foreground dark:text-white placeholder:text-muted-foreground dark:placeholder:text-gray-500"
+                          data-testid="register-email-input"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="register-password" className="text-foreground dark:text-white">كلمة المرور</Label>
+                        <Input
+                          id="register-password"
+                          type="password"
+                          placeholder="••••••••"
+                          value={registerForm.password}
+                          onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
+                          required
+                          className="h-12 bg-background/50 dark:bg-gray-900/50 border-border dark:border-gray-600 text-foreground dark:text-white"
+                          data-testid="register-password-input"
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="register-department" className="text-foreground dark:text-white">القسم</Label>
+                          <Select
+                            value={registerForm.department}
+                            onValueChange={(value) => setRegisterForm({ ...registerForm, department: value })}
+                            required
+                          >
+                            <SelectTrigger 
+                              className="h-12 bg-background/50 dark:bg-gray-900/50 border-border dark:border-gray-600 text-foreground dark:text-white" 
+                              data-testid="register-department-select"
+                            >
+                              <SelectValue placeholder="اختر القسم" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {departments.map((dept) => (
+                                <SelectItem key={dept} value={dept}>
+                                  {dept}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="register-job" className="text-foreground dark:text-white">المسمى الوظيفي</Label>
+                          <Input
+                            id="register-job"
+                            type="text"
+                            placeholder="مطور ويب"
+                            value={registerForm.jobTitle}
+                            onChange={(e) => setRegisterForm({ ...registerForm, jobTitle: e.target.value })}
+                            className="h-12 bg-background/50 dark:bg-gray-900/50 border-border dark:border-gray-600 text-foreground dark:text-white placeholder:text-muted-foreground dark:placeholder:text-gray-500"
+                            data-testid="register-job-input"
+                          />
+                        </div>
+                      </div>
+                      <motion.div
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <Button
+                          type="submit"
+                          className="w-full h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all bg-gradient-to-l from-primary via-accent to-secondary hover:opacity-90"
+                          disabled={registerMutation.isPending}
+                          data-testid="register-submit-button"
+                        >
+                          {registerMutation.isPending ? (
+                            <motion.div
+                              animate={{ rotate: 360 }}
+                              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                              className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
+                            />
+                          ) : (
+                            <span className="flex items-center gap-2">
+                              إنشاء الحساب
+                              <Sparkles className="w-5 h-5" />
+                            </span>
+                          )}
+                        </Button>
+                      </motion.div>
+                    </motion.form>
+                  )}
+                </AnimatePresence>
+              </div>
+            </motion.div>
+          </div>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }

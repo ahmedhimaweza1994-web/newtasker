@@ -364,15 +364,15 @@ export default function Sidebar() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className={cn(
-                    "flex items-center w-full justify-start gap-3 text-right h-11 md:h-10 transition-all duration-200 rounded-md px-3 hover:bg-accent",
+                    "flex items-center w-full justify-start gap-3 text-right h-11 md:h-10 transition-all duration-200 rounded-md px-3 hover:bg-accent text-foreground dark:text-foreground",
                     isCollapsed && "justify-center px-2"
                   )}
                   data-testid={`sidebar-link-${item.href.replace('/', '')}`}
                 >
-                  <item.icon className="h-5 w-5 flex-shrink-0" />
+                  <item.icon className="h-5 w-5 flex-shrink-0 text-foreground dark:text-foreground" />
                   {!isCollapsed && (
                     <div className="flex flex-1 items-center justify-between overflow-hidden">
-                      <span className="flex-1 dark:text-white">{item.name}</span>
+                      <span className="flex-1 text-foreground dark:text-foreground">{item.name}</span>
                       {item.badge && (
                         <Badge variant="secondary" className="mr-auto">
                           {item.badge}
@@ -398,7 +398,7 @@ export default function Sidebar() {
                   <item.icon className="h-5 w-5 flex-shrink-0" />
                   {!isCollapsed && (
                     <div className="flex flex-1 items-center justify-between overflow-hidden">
-                      <span className="flex-1 dark:text-white">{item.name}</span>
+                      <span className="flex-1">{item.name}</span>
                       {item.badge && (
                         <Badge variant="secondary" className="mr-auto">
                           {item.badge}
@@ -414,19 +414,19 @@ export default function Sidebar() {
 
         {!isCollapsed && (
           <div className="mt-8 space-y-2">
-            <h3 className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            <h3 className="px-3 text-xs font-semibold text-muted-foreground dark:text-muted-foreground uppercase tracking-wider">
               إجراءات سريعة
             </h3>
             <div className="space-y-1">
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="w-full justify-start gap-3 h-11 md:h-10" 
+                className="w-full justify-start gap-3 h-11 md:h-10 text-foreground dark:text-foreground" 
                 onClick={() => window.open('https://meet.google.com/new', '_blank')}
                 data-testid="sidebar-quick-schedule"
               >
-                <Calendar className="h-4 w-4" />
-                جدولة اجتماع
+                <Calendar className="h-4 w-4 dark:text-foreground" />
+                <span className="dark:text-foreground">جدولة اجتماع</span>
               </Button>
             </div>
           </div>

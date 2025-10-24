@@ -103,10 +103,30 @@ body {
   direction: rtl;
 }
 
-/* Dark mode text visibility improvements - only override hardcoded grays */
+html[dir="rtl"] *:not([dir="ltr"]) {
+  text-align: right;
+}
+
+html[dir="rtl"] .space-x-reverse {
+  direction: rtl;
+}
+
+/* Dark mode text visibility improvements */
 .dark .text-gray-800,
-.dark .text-gray-900 {
+.dark .text-gray-900,
+.dark .text-gray-700,
+.dark .text-gray-600 {
   color: hsl(var(--foreground)) !important;
+}
+
+.dark .text-muted-foreground {
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+/* Dark mode icon visibility for ghost/outline buttons - only affect icons without their own color classes */
+.dark button[data-variant="ghost"] svg:not([class*="text-"]):not(.text-destructive):not(.text-success):not(.text-warning):not(.text-primary):not(.text-secondary),
+.dark button[data-variant="outline"] svg:not([class*="text-"]):not(.text-destructive):not(.text-success):not(.text-warning):not(.text-primary):not(.text-secondary) {
+  color: hsl(var(--foreground));
 }
 
 /* Glass effect */

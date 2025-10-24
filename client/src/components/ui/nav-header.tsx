@@ -111,20 +111,20 @@ export default function NavHeader({ onMenuToggle, showMenuToggle = false }: NavH
               variant="ghost"
               size="sm"
               onClick={onMenuToggle}
-              className="md:hidden"
+              className="md:hidden text-foreground dark:text-foreground"
               data-testid="nav-menu-toggle"
             >
-              <Menu className="h-5 w-5" />
+              <Menu className="h-5 w-5 text-foreground dark:text-foreground" />
             </Button>
           )}
           
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent">
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-white dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
               </svg>
             </div>
-            <h1 className="text-lg font-bold text-foreground hidden sm:block">GWT إدارة المهام</h1>
+            <h1 className="text-lg font-bold text-foreground dark:text-foreground hidden sm:block">GWT إدارة المهام</h1>
           </div>
         </div>
 
@@ -143,17 +143,17 @@ export default function NavHeader({ onMenuToggle, showMenuToggle = false }: NavH
         {/* Right side - Actions */}
         <div className="flex items-center gap-2">
           {/* Search button for mobile */}
-          <Button variant="ghost" size="sm" className="md:hidden" data-testid="nav-search-mobile">
-            <Search className="h-5 w-5" />
+          <Button variant="ghost" size="sm" className="md:hidden text-foreground dark:text-foreground" data-testid="nav-search-mobile">
+            <Search className="h-5 w-5 text-foreground dark:text-foreground" />
           </Button>
 
           {/* Notifications */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="relative" data-testid="nav-notifications">
-                <Bell className="h-5 w-5" />
+              <Button variant="ghost" size="sm" className="relative text-foreground dark:text-foreground" data-testid="nav-notifications">
+                <Bell className="h-5 w-5 text-foreground dark:text-foreground" />
                 {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-[10px] text-white">
+                  <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-[10px] text-white dark:text-white">
                     {unreadCount}
                   </span>
                 )}
@@ -195,8 +195,8 @@ export default function NavHeader({ onMenuToggle, showMenuToggle = false }: NavH
           </DropdownMenu>
 
           {/* Dark mode toggle */}
-          <Button variant="ghost" size="sm" onClick={toggleDarkMode} data-testid="nav-dark-toggle">
-            {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          <Button variant="ghost" size="sm" onClick={toggleDarkMode} className="text-foreground dark:text-foreground" data-testid="nav-dark-toggle">
+            {isDark ? <Sun className="h-5 w-5 text-foreground dark:text-foreground" /> : <Moon className="h-5 w-5 text-foreground dark:text-foreground" />}
           </Button>
 
           {/* User menu */}
