@@ -88,3 +88,45 @@ Preferred communication style: Simple, everyday language.
 **Required Environment Variables:** `DATABASE_URL`, `SESSION_SECRET`, `NODE_ENV`.
 
 **Google Calendar OAuth (VPS-Compatible):** `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`. Instructions for Google Cloud Console setup are available within the codebase.
+---
+
+## 📦 Production Deployment
+
+### Socket.IO & WebSocket Configuration
+
+The application uses **Socket.IO** for real-time communication with the following features:
+
+✅ **WebSocket** and **HTTP polling** fallback support
+✅ **CORS** configured for production (use `ALLOWED_ORIGINS` environment variable)
+✅ **Service Worker** for push notifications
+✅ **Automatic reconnection** on network failures
+
+### Deployment Files
+
+- **DEPLOYMENT.md** - Complete deployment guide for cPanel/VPS with Apache
+- **.env.example** - Environment variable template
+- **public/service-worker.js** - Service worker for push notifications
+
+### Quick Deploy to Production
+
+1. Set environment variables (see `.env.example`)
+2. Build: `npm run build`
+3. Copy service worker: `cp public/service-worker.js dist/public/service-worker.js`
+4. Start with PM2: `pm2 start npm --name "gwt-tasks" -- run start`
+5. Configure Apache proxy (see `DEPLOYMENT.md`)
+
+**Important:** After building, always copy `public/service-worker.js` to `dist/public/service-worker.js`
+
+### Environment Variables for Production
+
+Required for production deployment:
+
+```env
+NODE_ENV=production
+PORT=3001
+DATABASE_URL=postgresql://user:password@host:5432/database
+SESSION_SECRET=your-secure-random-secret
+ALLOWED_ORIGINS=https://hub.greenweb-tech.com
+```
+
+See `DEPLOYMENT.md` for complete deployment instructions.

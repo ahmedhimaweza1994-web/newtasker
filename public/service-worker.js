@@ -89,3 +89,17 @@ self.addEventListener('notificationclick', (event) => {
 self.addEventListener('notificationclose', (event) => {
   console.log('Notification closed:', event.notification);
 });
+
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    fetch(event.request).catch(() => {
+      if (event.request.destination === 'document') {
+        return caches.match('/index.html');
+      }
+      return new Response('Offline', {
+        status: 503,
+        statusText: 'Service Unavailable'
+      });
+    })
+  );
+});

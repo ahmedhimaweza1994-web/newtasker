@@ -1,0 +1,36 @@
+[Developer Name],
+
+I'm facing an issue with the WebSocket/Socket.IO connection in the Newtasker app deployed on my cPanel VPS. The app is running on https://hub.greenweb-tech.com, using Node.js (PM2) on port 3001. The backend is working fine locally (tested with `wscat -c ws://localhost:3001/socket.io/?EIO=4&transport=websocket`), but the WebSocket connection (`wss://hub.greenweb-tech.com/socket.io/?EIO=4&transport=websocket`) fails in the browser with "WebSocket connection failed" errors.
+
+Here’s what I’ve tried:
+1. Added Apache proxy configuration in `/var/cpanel/userdata/greenwebtech/hub.greenweb-tech.com` with:
+ProxyPass /socket.io/ http://127.0.0.1:3001/socket.io/
+ProxyPassReverse /socket.io/ http://127.0.0.1:3001/socket.io/
+ProxyPass / http://127.0.0.1:3001/
+ProxyPassReverse / http://127.0.0.1:3001/
+RewriteEngine On
+RewriteCond %{HTTP:Upgrade} websocket [NC]
+RewriteCond %{HTTP:Connection} upgrade [NC]
+RewriteRule ^/socket.io/(.*) ws://127.0.0.1:3001/socket.io/$1 [P,L]
+text2. Ran `/scripts/rebuildhttpdconf` and `systemctl reload httpd`, but the WebSocket connection still fails.
+3. Apache logs show "Connection refused" errors when trying to connect to 127.0.0.1:3001, even though PM2 is running and port 3001 is active locally.
+4. Also seeing a Service Worker error: "The script has an unsupported MIME type ('text/html')" for `/service-worker.js`, indicating a 404.
+
+Can you please:
+1. Check the Socket.IO configuration in the backend (`server/index.ts` or similar) to ensure it’s set up correctly for WebSocket and HTTP polling fallback?
+2. Add a `public/service-worker.js` file to the repository (or fix the existing one) to resolve the Service Worker error. A basic example:
+```javascript
+self.addEventListener('install', (event) => {
+  self.skipWaiting();
+});
+self.addEventListener('activate', (event) => {
+  event.waitUntil(self.clients.claim());
+});
+self.addEventListener('fetch', (event) => {
+  event.respondWith(fetch(event.request));
+});
+
+Update the GitHub repo with any necessary changes to make Socket.IO work seamlessly with Apache proxy on cPanel.
+Confirm if any additional server-side configurations are needed for WebSocket support.
+
+Please let me know if you need more details about the server setup or logs. Thanks!

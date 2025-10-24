@@ -1033,10 +1033,15 @@ export function registerRoutes(app: Express): Server {
   // Socket.IO server for real-time updates
   const io = new SocketIOServer(httpServer, {
     cors: {
-      origin: "*",
-      methods: ["GET", "POST"]
+      origin: process.env.NODE_ENV === 'production' 
+        ? process.env.ALLOWED_ORIGINS?.split(',') || ["https://hub.greenweb-tech.com"]
+        : "*",
+      methods: ["GET", "POST"],
+      credentials: true
     },
-    path: '/socket.io/'
+    path: '/socket.io/',
+    transports: ['websocket', 'polling'],
+    allowEIO3: true
   });
 
   // Map to track userId -> Set of WebSocket clients
