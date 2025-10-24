@@ -329,50 +329,35 @@ export default function AdminDeductions() {
 
           {/* Summary Cards */}
           <ResponsiveGrid>
-            <MotionMetricCard delay={0.1}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">إجمالي الخصومات</CardTitle>
-                <DollarSign className="h-4 w-4 text-red-600 dark:text-red-400" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-red-600 dark:text-red-400" data-testid="text-total-amount">
-                  {totalAmount.toFixed(2)} ر.س
-                </div>
-                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                  من {filteredDeductions.length} خصم
-                </p>
-              </CardContent>
-            </MotionMetricCard>
+            <MotionMetricCard 
+              title="إجمالي الخصومات"
+              value={`${totalAmount.toFixed(2)} ر.س`}
+              subtitle={`من ${filteredDeductions.length} خصم`}
+              icon={DollarSign}
+              variant="red-pink"
+              index={0}
+              testId="text-total-amount"
+            />
 
-            <MotionMetricCard delay={0.2}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">إجمالي الأيام</CardTitle>
-                <Calendar className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-orange-600 dark:text-orange-400" data-testid="text-total-days">
-                  {totalDays} يوم
-                </div>
-                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                  أيام الخصم المطبقة
-                </p>
-              </CardContent>
-            </MotionMetricCard>
+            <MotionMetricCard 
+              title="إجمالي الأيام"
+              value={`${totalDays} يوم`}
+              subtitle="أيام الخصم المطبقة"
+              icon={Calendar}
+              variant="orange-yellow"
+              index={1}
+              testId="text-total-days"
+            />
 
-            <MotionMetricCard delay={0.3}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">عدد الخصومات</CardTitle>
-                <TrendingDown className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-purple-600 dark:text-purple-400" data-testid="text-count">
-                  {filteredDeductions.length}
-                </div>
-                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                  إجمالي السجلات
-                </p>
-              </CardContent>
-            </MotionMetricCard>
+            <MotionMetricCard 
+              title="عدد الخصومات"
+              value={filteredDeductions.length}
+              subtitle="إجمالي السجلات"
+              icon={TrendingDown}
+              variant="indigo-purple"
+              index={2}
+              testId="text-count"
+            />
           </ResponsiveGrid>
 
           {/* Search & Filter */}
