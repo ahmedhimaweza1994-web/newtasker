@@ -6,6 +6,25 @@ GWT Task Management is a comprehensive Arabic-language task and employee managem
 
 ## Recent Changes
 
+**October 24, 2025 - Salary Deductions Management Feature (v1.2.0)**
+
+Implemented comprehensive salary deductions management system with role-based access control, providing employees with read-only views of their deductions while enabling administrators to perform full CRUD operations.
+
+**Features Implemented:**
+- Database schema with `salary_deductions` table (UUID relations, decimal amounts, optional days deducted)
+- Secure API routes with Zod validation preventing unauthorized field modifications
+- User deductions page (`/my-deductions`) - read-only view of personal deductions with reason, days, amount, and date
+- Admin deductions page (`/admin/deductions`) - full CRUD with user filtering, search, and real-time updates
+- Socket.IO real-time broadcasts for create/update/delete operations
+- Automatic notifications sent to employees when deductions are added, updated, or removed
+- Navigation links added to sidebar for both user and admin roles (TrendingDown icons)
+
+**Security Enhancements:**
+- Zod validation schemas enforce data integrity (insertSalaryDeductionSchema, updateSalaryDeductionSchema)
+- Protected fields (userId, addedBy, createdAt, updatedAt) are server-controlled and cannot be modified via API
+- Update operations whitelist only allowed fields: reason, daysDeducted, amount
+- Validation errors return helpful 400 responses with detailed error information
+
 **October 19, 2025 - Calling Feature Synchronization Fix (v1.1.0)**
 
 Fixed critical synchronization issue in the WebRTC calling system where callers would remain stuck on "جاري الاتصال..." (Connecting) while receivers saw a connected call with running timer.
@@ -47,7 +66,7 @@ Preferred communication style: Simple, everyday language.
 
 **Database:** PostgreSQL (Neon serverless).
 
-**Schema Design:** Tables for users, AUX sessions, tasks, task collaborators, task notes, leave requests, notifications, and shifts. UUID primary keys, enum types for status fields, soft delete (`isActive`), timestamp tracking.
+**Schema Design:** Tables for users, AUX sessions, tasks, task collaborators, task notes, leave requests, notifications, shifts, and salary deductions. UUID primary keys, enum types for status fields, soft delete (`isActive`), timestamp tracking.
 
 ### State Management
 
@@ -80,6 +99,7 @@ Preferred communication style: Simple, everyday language.
 - `/api/analytics` (Reporting)
 - `/api/notifications` (Notifications)
 - `/api/profile` (Profile management)
+- `/api/deductions` (Salary deductions management)
 
 **WebSocket Endpoints:** `/ws` (Real-time updates).
 
