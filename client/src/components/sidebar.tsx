@@ -23,7 +23,8 @@ import {
   DollarSign,
   AlertCircle,
   Phone,
-  Lightbulb
+  Lightbulb,
+  TrendingDown
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useLocation } from "wouter";
@@ -132,6 +133,12 @@ export default function Sidebar() {
       badge: null,
     },
     {
+      name: "خصومات الراتب",
+      href: "/my-deductions",
+      icon: TrendingDown,
+      badge: null,
+    },
+    {
       name: "صفحة المقترحات",
       href: "/suggestions",
       icon: Lightbulb,
@@ -169,6 +176,12 @@ export default function Sidebar() {
       href: "/hr",
       icon: Briefcase,
       badge: pendingLeaves > 0 ? pendingLeaves.toString() : null,
+    },
+    {
+      name: "إدارة الخصومات",
+      href: "/admin-deductions",
+      icon: TrendingDown,
+      badge: null,
     },
   ];
 

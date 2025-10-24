@@ -4,6 +4,7 @@ import {
   auxSessions,
   leaveRequests,
   salaryAdvanceRequests,
+  salaryDeductions,
   taskNotes,
   taskCollaborators,
   notifications,
@@ -27,6 +28,8 @@ import {
   type InsertLeaveRequest,
   type SalaryAdvanceRequest,
   type InsertSalaryAdvanceRequest,
+  type SalaryDeduction,
+  type InsertSalaryDeduction,
   type TaskNote,
   type Notification,
   type InsertNotification,
@@ -202,6 +205,14 @@ export interface IStorage {
   getAllSuggestions(): Promise<Suggestion[]>;
   getUserSuggestions(userId: string): Promise<Suggestion[]>;
   updateSuggestion(id: string, updates: Partial<Suggestion>): Promise<Suggestion | undefined>;
+
+  // Salary Deductions
+  createSalaryDeduction(deduction: InsertSalaryDeduction): Promise<SalaryDeduction>;
+  getSalaryDeduction(id: string): Promise<SalaryDeduction | undefined>;
+  getUserSalaryDeductions(userId: string): Promise<SalaryDeduction[]>;
+  getAllSalaryDeductions(): Promise<SalaryDeduction[]>;
+  updateSalaryDeduction(id: string, updates: Partial<SalaryDeduction>): Promise<SalaryDeduction | undefined>;
+  deleteSalaryDeduction(id: string): Promise<boolean>;
 
   // Analytics & Rewards
   getUserRewards(userId: string): Promise<any[]>;
@@ -1510,6 +1521,43 @@ export class MemStorage implements IStorage {
       .where(eq(suggestions.id, id))
       .returning();
     return suggestion || undefined;
+  }
+
+  // Salary Deductions
+  async createSalaryDeduction(deduction: InsertSalaryDeduction): Promise<SalaryDeduction> {
+    const [newDeduction] = await db.insert(salaryDeductions).values(deduction).returning();
+    return newDeduction;
+  }
+
+  async getSalaryDeduction(id: string): Promise<SalaryDeduction | undefined> {
+    const [deduction] = await db.select().from(salaryDeductions).where(eq(salaryDeductions.id, id));
+    return deduction || undefined;
+  }
+
+  async getUserSalaryDeductions(userId: string): Promise<SalaryDeduction[]> {
+    return await db
+      .select()
+      .from(salaryDeductions)
+      .where(eq(salaryDeductions.userId, userId))
+      .orderBy(desc(salaryDeductions.createdAt));
+  }
+
+  async getAllSalaryDeductions(): Promise<SalaryDeduction[]> {
+    return await db.select().from(salaryDeductions).orderBy(desc(salaryDeductions.createdAt));
+  }
+
+  async updateSalaryDeduction(id: string, updates: Partial<SalaryDeduction>): Promise<SalaryDeduction | undefined> {
+    const [deduction] = await db
+      .update(salaryDeductions)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(salaryDeductions.id, id))
+      .returning();
+    return deduction || undefined;
+  }
+
+  async deleteSalaryDeduction(id: string): Promise<boolean> {
+    const result = await db.delete(salaryDeductions).where(eq(salaryDeductions.id, id)).returning();
+    return result.length > 0;
   }
 
   // Analytics & Rewards

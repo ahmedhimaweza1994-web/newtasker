@@ -265,6 +265,18 @@ export const suggestions = pgTable("suggestions", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+// Salary Deductions
+export const salaryDeductions = pgTable("salary_deductions", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  addedBy: uuid("added_by").notNull().references(() => users.id, { onDelete: "cascade" }),
+  reason: text("reason").notNull(),
+  daysDeducted: integer("days_deducted"),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 
 // Relations
 export const usersRelations = relations(users, ({ many, one }) => ({
@@ -289,6 +301,8 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   receiverLogs: many(callLogs, { relationName: "receiverLogs" }),
   suggestions: many(suggestions),
   respondedSuggestions: many(suggestions, { relationName: "respondedSuggestions" }),
+  salaryDeductions: many(salaryDeductions),
+  addedDeductions: many(salaryDeductions, { relationName: "addedDeductions" }),
 }));
 
 export const auxSessionsRelations = relations(auxSessions, ({ one }) => ({
@@ -379,6 +393,12 @@ export const suggestionsRelations = relations(suggestions, ({ one }) => ({
   user: one(users, { fields: [suggestions.userId], references: [users.id] }),
   respondedBy: one(users, { fields: [suggestions.respondedBy], references: [users.id], relationName: "respondedSuggestions" }),
 }));
+
+export const salaryDeductionsRelations = relations(salaryDeductions, ({ one }) => ({
+  user: one(users, { fields: [salaryDeductions.userId], references: [users.id] }),
+  addedBy: one(users, { fields: [salaryDeductions.addedBy], references: [users.id], relationName: "addedDeductions" }),
+}));
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -415,6 +435,12 @@ export const insertSalaryAdvanceRequestSchema = createInsertSchema(salaryAdvance
   updatedAt: true,
   approvedAt: true,
   approvedBy: true,
+});
+
+export const insertSalaryDeductionSchema = createInsertSchema(salaryDeductions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
 });
 
 export const insertChatRoomSchema = createInsertSchema(chatRooms).omit({
@@ -564,6 +590,8 @@ export type LeaveRequest = typeof leaveRequests.$inferSelect;
 export type InsertLeaveRequest = z.infer<typeof insertLeaveRequestSchema>;
 export type SalaryAdvanceRequest = typeof salaryAdvanceRequests.$inferSelect;
 export type InsertSalaryAdvanceRequest = z.infer<typeof insertSalaryAdvanceRequestSchema>;
+export type SalaryDeduction = typeof salaryDeductions.$inferSelect;
+export type InsertSalaryDeduction = z.infer<typeof insertSalaryDeductionSchema>;
 export type TaskNote = typeof taskNotes.$inferSelect;
 export type TaskCollaborator = typeof taskCollaborators.$inferSelect;
 export type Notification = typeof notifications.$inferSelect;

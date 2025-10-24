@@ -4,7 +4,8 @@ import { Server as SocketIOServer } from "socket.io";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { createGoogleMeetEvent, isGoogleCalendarConnected } from "./google-calendar-integration";
-import { insertSuggestionSchema } from "@shared/schema";
+import { insertSuggestionSchema, insertSalaryDeductionSchema } from "@shared/schema";
+import { z } from "zod";
 import multer from 'multer';
 import path from 'path';
 
@@ -838,6 +839,184 @@ export function registerRoutes(app: Express): Server {
     } catch (error) {
       res.status(500).json({ message: "حدث خطأ في تحديث طلب السلفة" });
     }
+  });
+
+  // Salary Deductions routes
+  
+  // Define update schema - only allow updating these fields
+  const updateSalaryDeductionSchema = z.object({
+    reason: z.string().min(1),
+    daysDeducted: z.number().int().min(0).nullable().optional(),
+    amount: z.string().or(z.number()).transform(val => String(val)),
+  });
+
+  app.post("/api/deductions", requireAuth, requireRole(['admin', 'sub-admin']), async (req, res) => {
+    try {
+      // Validate input data
+      const validationResult = insertSalaryDeductionSchema.safeParse({
+        userId: req.body.userId,
+        addedBy: req.user!.id,
+        reason: req.body.reason,
+        daysDeducted: req.body.daysDeducted || null,
+        amount: req.body.amount,
+      });
+
+      if (!validationResult.success) {
+        return res.status(400).json({ 
+          message: "بيانات غير صالحة",
+          errors: validationResult.error.errors 
+        });
+      }
+
+      const deduction = await storage.createSalaryDeduction(validationResult.data);
+      
+      // Notify employee about the deduction
+      const notification = await storage.createNotification({
+        userId: deduction.userId,
+        title: "خصم من الراتب",
+        message: `تم إضافة خصم على راتبك: ${deduction.reason}`,
+        type: 'warning',
+        category: "system",
+        metadata: {
+          resourceId: deduction.id,
+          userId: req.user!.id,
+          userName: req.user!.fullName
+        }
+      });
+      
+      // Send notification via WebSocket
+      sendToUser(notification.userId, {
+        type: 'new_notification',
+        data: notification
+      });
+      
+      // Broadcast deduction update
+      broadcast({
+        type: 'deduction_created',
+        data: deduction
+      });
+      
+      res.status(201).json(deduction);
+    } catch (error) {
+      console.error("Error creating deduction:", error);
+      res.status(500).json({ message: "حدث خطأ في إضافة الخصم" });
+    }
+  });
+
+  app.get("/api/deductions", requireAuth, requireRole(['admin', 'sub-admin']), async (req, res) => {
+    try {
+      const deductions = await storage.getAllSalaryDeductions();
+      res.json(deductions);
+    } catch (error) {
+      console.error("Error fetching deductions:", error);
+      res.status(500).json({ message: "حدث خطأ في جلب الخصومات" });
+    }
+  });
+
+  app.get("/api/deductions/user", requireAuth, async (req, res) => {
+    try {
+      const deductions = await storage.getUserSalaryDeductions(req.user!.id);
+      res.json(deductions);
+    } catch (error) {
+      console.error("Error fetching user deductions:", error);
+      res.status(500).json({ message: "حدث خطأ في جلب الخصومات" });
+    }
+  });
+
+  app.put("/api/deductions/:id", requireAuth, requireRole(['admin', 'sub-admin']), async (req, res) => {
+    try {
+      // Validate input data - only allow updating specific fields
+      const validationResult = updateSalaryDeductionSchema.safeParse(req.body);
+
+      if (!validationResult.success) {
+        return res.status(400).json({ 
+          message: "بيانات غير صالحة",
+          errors: validationResult.error.errors 
+        });
+      }
+
+      // Only update allowed fields - never userId or addedBy
+      const deduction = await storage.updateSalaryDeduction(req.params.id, validationResult.data);
+      if (!deduction) {
+        return res.status(404).json({ message: "الخصم غير موجود" });
+      }
+      
+      // Notify employee about the update
+      const notification = await storage.createNotification({
+        userId: deduction.userId,
+        title: "تحديث خصم الراتب",
+        message: `تم تحديث خصم على راتبك: ${deduction.reason}`,
+        type: 'info',
+        category: "system",
+        metadata: {
+          resourceId: deduction.id,
+          userId: req.user!.id,
+          userName: req.user!.fullName
+        }
+      });
+      
+      // Send notification via WebSocket
+      sendToUser(notification.userId, {
+        type: 'new_notification',
+        data: notification
+      });
+      
+      // Broadcast deduction update
+      broadcast({
+        type: 'deduction_updated',
+        data: deduction
+      });
+      
+      res.json(deduction);
+    } catch (error) {
+      console.error("Error updating deduction:", error);
+      res.status(500).json({ message: "حدث خطأ في تحديث الخصم" });
+    }
+  });
+
+  app.delete("/api/deductions/:id", requireAuth, requireRole(['admin', 'sub-admin']), async (req, res) => {
+    try {
+      const deduction = await storage.getSalaryDeduction(req.params.id);
+      if (!deduction) {
+        return res.status(404).json({ message: "الخصم غير موجود" });
+      }
+      
+      const deleted = await storage.deleteSalaryDeduction(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ message: "الخصم غير موجود" });
+      }
+      
+      // Notify employee about the deletion
+      const notification = await storage.createNotification({
+        userId: deduction.userId,
+        title: "حذف خصم الراتب",
+        message: `تم حذف خصم من راتبك: ${deduction.reason}`,
+        type: 'success',
+        category: "system",
+        metadata: {
+          userId: req.user!.id,
+          userName: req.user!.fullName
+        }
+      });
+      
+      // Send notification via WebSocket
+      sendToUser(notification.userId, {
+        type: 'new_notification',
+        data: notification
+      });
+      
+      // Broadcast deduction deletion
+      broadcast({
+        type: 'deduction_deleted',
+        data: { id: req.params.id }
+      });
+      
+      res.json({ message: "تم حذف الخصم بنجاح" });
+    } catch (error) {
+      console.error("Error deleting deduction:", error);
+      res.status(500).json({ message: "حدث خطأ في حذف الخصم" });
+    }
+  });
   });
 
   // Notifications routes
