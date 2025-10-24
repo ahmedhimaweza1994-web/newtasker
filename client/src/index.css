@@ -103,6 +103,12 @@ body {
   direction: rtl;
 }
 
+/* Dark mode text visibility improvements - only override hardcoded grays */
+.dark .text-gray-800,
+.dark .text-gray-900 {
+  color: hsl(var(--foreground)) !important;
+}
+
 /* Glass effect */
 .glass {
   background: rgba(255, 255, 255, 0.1);

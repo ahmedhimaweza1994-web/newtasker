@@ -870,6 +870,10 @@ export function registerRoutes(app: Express): Server {
 
       const deduction = await storage.createSalaryDeduction(validationResult.data);
       
+      // Fetch the deduction with user data
+      const allDeductions = await storage.getAllSalaryDeductions();
+      const deductionWithUser = allDeductions.find(d => d.id === deduction.id);
+      
       // Notify employee about the deduction
       const notification = await storage.createNotification({
         userId: deduction.userId,
@@ -893,10 +897,10 @@ export function registerRoutes(app: Express): Server {
       // Broadcast deduction update
       broadcast({
         type: 'deduction_created',
-        data: deduction
+        data: deductionWithUser || deduction
       });
       
-      res.status(201).json(deduction);
+      res.status(201).json(deductionWithUser || deduction);
     } catch (error) {
       console.error("Error creating deduction:", error);
       res.status(500).json({ message: "حدث خطأ في إضافة الخصم" });
@@ -1195,11 +1199,46 @@ export function registerRoutes(app: Express): Server {
         percentage: (count / activeUsers.length) * 100,
       }));
       
+      // Employee performance reports
+      const employeeReports = await Promise.all(activeUsers.map(async (user) => {
+        const userTasks = await storage.getUserTasks(user.id);
+        const completedTasks = userTasks.filter(t => t.status === 'completed');
+        const userSessions = allSessions.filter(s => s.userId === user.id && new Date(s.startTime) >= last30Days);
+        
+        const totalWorkMinutes = userSessions.reduce((sum, session) => {
+          if (session.duration) {
+            return sum + session.duration;
+          }
+          return sum;
+        }, 0);
+        
+        const avgRating = completedTasks.length > 0 ?
+          completedTasks.reduce((sum, task) => sum + (task.performanceRating || 0), 0) / completedTasks.length : 0;
+        
+        const userLeaves = allLeaves.filter(l => l.userId === user.id && l.status === 'approved');
+        const userLeaveDays = userLeaves.reduce((sum, leave) => sum + leave.days, 0);
+        
+        return {
+          userId: user.id,
+          fullName: user.fullName,
+          department: user.department || 'غير محدد',
+          jobTitle: user.jobTitle || 'غير محدد',
+          profilePicture: user.profilePicture,
+          completedTasks: completedTasks.length,
+          totalTasks: userTasks.length,
+          workHours: (totalWorkMinutes / 60).toFixed(1),
+          avgRating: avgRating.toFixed(1),
+          leaveDays: userLeaveDays,
+          activeStatus: user.isActive,
+        };
+      }));
+      
       res.json({
         attendanceRate: Math.round(attendanceRate),
         avgWorkHoursPerDay: avgWorkHoursPerDay.toFixed(1),
         usedLeaveDays,
         departmentDistribution,
+        employeeReports,
       });
     } catch (error) {
       res.status(500).json({ message: "حدث خطأ في جلب تقارير الموارد البشرية" });

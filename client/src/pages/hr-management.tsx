@@ -58,11 +58,26 @@ interface PayrollEntry {
   netSalary?: number;
 }
 
+interface EmployeeReport {
+  userId: string;
+  fullName: string;
+  department: string;
+  jobTitle: string;
+  profilePicture?: string;
+  completedTasks: number;
+  totalTasks: number;
+  workHours: string;
+  avgRating: string;
+  leaveDays: number;
+  activeStatus: boolean;
+}
+
 interface HRReports {
   attendanceRate: number;
   avgWorkHoursPerDay: number;
   usedLeaveDays: number;
   departmentDistribution: Array<{ dept: string; count: number; percentage: number }>;
+  employeeReports: EmployeeReport[];
 }
 
 export default function HRManagement() {
@@ -1158,6 +1173,86 @@ export default function HRManagement() {
                     </Card>
                   </motion.div>
                 </div>
+
+                {/* Employee Performance Reports */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="mt-6"
+                >
+                  <Card data-testid="card-employee-performance">
+                    <CardHeader>
+                      <CardTitle>تقارير أداء الموظفين</CardTitle>
+                      <CardDescription>تقرير شامل لأداء جميع الموظفين</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {hrReports?.employeeReports && hrReports.employeeReports.length > 0 ? (
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-sm">
+                            <thead>
+                              <tr className="border-b">
+                                <th className="text-right py-3 px-2">الموظف</th>
+                                <th className="text-right py-3 px-2">القسم</th>
+                                <th className="text-right py-3 px-2">المهام</th>
+                                <th className="text-right py-3 px-2">ساعات العمل</th>
+                                <th className="text-right py-3 px-2">التقييم</th>
+                                <th className="text-right py-3 px-2">الإجازات</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {hrReports.employeeReports.map((employee: EmployeeReport, index: number) => (
+                                <tr key={employee.userId} className="border-b hover:bg-muted/50" data-testid={`employee-report-${index}`}>
+                                  <td className="py-3 px-2">
+                                    <div className="flex items-center gap-2">
+                                      {employee.profilePicture ? (
+                                        <img
+                                          src={employee.profilePicture}
+                                          alt={employee.fullName}
+                                          className="w-8 h-8 rounded-full"
+                                        />
+                                      ) : (
+                                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                                          <span className="text-xs font-medium">
+                                            {employee.fullName?.charAt(0)}
+                                          </span>
+                                        </div>
+                                      )}
+                                      <div>
+                                        <div className="font-medium" data-testid={`employee-name-${index}`}>{employee.fullName}</div>
+                                        <div className="text-xs text-muted-foreground">{employee.jobTitle}</div>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td className="py-3 px-2" data-testid={`employee-dept-${index}`}>{employee.department}</td>
+                                  <td className="py-3 px-2">
+                                    <div>
+                                      <span className="font-bold text-success" data-testid={`employee-completed-${index}`}>{employee.completedTasks}</span>
+                                      <span className="text-muted-foreground"> / {employee.totalTasks}</span>
+                                    </div>
+                                  </td>
+                                  <td className="py-3 px-2" data-testid={`employee-hours-${index}`}>{employee.workHours} س</td>
+                                  <td className="py-3 px-2">
+                                    {employee.avgRating !== '0.0' ? (
+                                      <Badge variant="outline" className="bg-yellow-50 dark:bg-yellow-950 text-yellow-700 dark:text-yellow-300" data-testid={`employee-rating-${index}`}>
+                                        ⭐ {employee.avgRating}
+                                      </Badge>
+                                    ) : (
+                                      <span className="text-muted-foreground">-</span>
+                                    )}
+                                  </td>
+                                  <td className="py-3 px-2" data-testid={`employee-leave-${index}`}>{employee.leaveDays} يوم</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <p className="text-center text-muted-foreground py-4">لا توجد بيانات أداء متاحة</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                </motion.div>
               </TabsContent>
             </Tabs>
           </MotionSection>

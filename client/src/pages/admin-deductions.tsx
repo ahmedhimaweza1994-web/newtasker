@@ -407,20 +407,97 @@ export default function AdminDeductions() {
                     {searchTerm ? "لا توجد نتائج للبحث" : "لا توجد خصومات مسجلة"}
                   </div>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="text-right">التاريخ</TableHead>
-                          <TableHead className="text-right">الموظف</TableHead>
-                          <TableHead className="text-right">السبب</TableHead>
-                          <TableHead className="text-right">الأيام</TableHead>
-                          <TableHead className="text-right">المبلغ</TableHead>
-                          <TableHead className="text-right">الإجراءات</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {filteredDeductions.map((deduction, index) => (
+                  <>
+                    {/* Mobile Card View */}
+                    <div className="block md:hidden space-y-4">
+                      {filteredDeductions.map((deduction, index) => (
+                        <Card key={deduction.id} className="p-4" data-testid={`card-deduction-mobile-${index}`}>
+                          <div className="space-y-3">
+                            <div className="flex items-start justify-between">
+                              <div className="flex items-center gap-3 flex-1">
+                                {deduction.user?.profilePicture ? (
+                                  <img
+                                    src={deduction.user.profilePicture}
+                                    alt={deduction.user.fullName}
+                                    className="w-12 h-12 rounded-full"
+                                  />
+                                ) : (
+                                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                                    <span className="text-lg font-medium">
+                                      {deduction.user?.fullName?.charAt(0)}
+                                    </span>
+                                  </div>
+                                )}
+                                <div className="flex-1">
+                                  <div className="font-bold text-base">{deduction.user?.fullName || 'غير معروف'}</div>
+                                  <div className="text-sm text-muted-foreground">{deduction.user?.department}</div>
+                                </div>
+                              </div>
+                              <span className="font-bold text-red-600 dark:text-red-400 text-lg">
+                                {parseFloat(deduction.amount?.toString() || '0').toFixed(2)} ر.س
+                              </span>
+                            </div>
+                            
+                            <div className="space-y-2 text-sm">
+                              <div>
+                                <span className="font-semibold text-muted-foreground">السبب: </span>
+                                <span>{deduction.reason}</span>
+                              </div>
+                              <div className="flex items-center gap-4">
+                                <div>
+                                  <span className="font-semibold text-muted-foreground">التاريخ: </span>
+                                  <span>{formatArabicDate(deduction.createdAt)}</span>
+                                </div>
+                                {deduction.daysDeducted && (
+                                  <Badge variant="outline" className="bg-orange-50 dark:bg-orange-950 text-orange-700 dark:text-orange-300">
+                                    {deduction.daysDeducted} يوم
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                            
+                            <div className="flex gap-2 pt-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openEditDialog(deduction)}
+                                className="flex-1"
+                                data-testid={`button-edit-mobile-${index}`}
+                              >
+                                <Pencil className="h-4 w-4 ml-2" />
+                                تعديل
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openDeleteDialog(deduction)}
+                                className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
+                                data-testid={`button-delete-mobile-${index}`}
+                              >
+                                <Trash2 className="h-4 w-4 ml-2" />
+                                حذف
+                              </Button>
+                            </div>
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+
+                    {/* Desktop Table View */}
+                    <div className="hidden md:block overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="text-right">التاريخ</TableHead>
+                            <TableHead className="text-right">الموظف</TableHead>
+                            <TableHead className="text-right">السبب</TableHead>
+                            <TableHead className="text-right">الأيام</TableHead>
+                            <TableHead className="text-right">المبلغ</TableHead>
+                            <TableHead className="text-right">الإجراءات</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filteredDeductions.map((deduction, index) => (
                           <TableRow key={deduction.id} data-testid={`row-deduction-${index}`}>
                             <TableCell className="font-medium" data-testid={`text-date-${index}`}>
                               {formatArabicDate(deduction.createdAt)}
@@ -491,6 +568,7 @@ export default function AdminDeductions() {
                       </TableBody>
                     </Table>
                   </div>
+                  </>
                 )}
               </CardContent>
             </Card>

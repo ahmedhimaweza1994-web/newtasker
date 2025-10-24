@@ -1534,16 +1534,69 @@ export class MemStorage implements IStorage {
     return deduction || undefined;
   }
 
-  async getUserSalaryDeductions(userId: string): Promise<SalaryDeduction[]> {
-    return await db
-      .select()
+  async getUserSalaryDeductions(userId: string): Promise<any[]> {
+    const results = await db
+      .select({
+        id: salaryDeductions.id,
+        userId: salaryDeductions.userId,
+        addedBy: salaryDeductions.addedBy,
+        reason: salaryDeductions.reason,
+        daysDeducted: salaryDeductions.daysDeducted,
+        amount: salaryDeductions.amount,
+        createdAt: salaryDeductions.createdAt,
+        updatedAt: salaryDeductions.updatedAt,
+        user: {
+          id: users.id,
+          fullName: users.fullName,
+          email: users.email,
+          department: users.department,
+          profilePicture: users.profilePicture,
+        },
+      })
       .from(salaryDeductions)
+      .leftJoin(users, eq(salaryDeductions.userId, users.id))
       .where(eq(salaryDeductions.userId, userId))
       .orderBy(desc(salaryDeductions.createdAt));
+    return results;
   }
 
-  async getAllSalaryDeductions(): Promise<SalaryDeduction[]> {
-    return await db.select().from(salaryDeductions).orderBy(desc(salaryDeductions.createdAt));
+  async getAllSalaryDeductions(): Promise<any[]> {
+    const results = await db
+      .select({
+        id: salaryDeductions.id,
+        userId: salaryDeductions.userId,
+        addedBy: salaryDeductions.addedBy,
+        reason: salaryDeductions.reason,
+        daysDeducted: salaryDeductions.daysDeducted,
+        amount: salaryDeductions.amount,
+        createdAt: salaryDeductions.createdAt,
+        updatedAt: salaryDeductions.updatedAt,
+        user: {
+          id: users.id,
+          fullName: users.fullName,
+          email: users.email,
+          department: users.department,
+          profilePicture: users.profilePicture,
+        },
+        addedByUser: {
+          id: sql`added_by_user.id`.as('added_by_user_id'),
+          fullName: sql`added_by_user.full_name`.as('added_by_user_full_name'),
+          email: sql`added_by_user.email`.as('added_by_user_email'),
+        },
+      })
+      .from(salaryDeductions)
+      .leftJoin(users, eq(salaryDeductions.userId, users.id))
+      .leftJoin(sql`users AS added_by_user`, sql`${salaryDeductions.addedBy} = added_by_user.id`)
+      .orderBy(desc(salaryDeductions.createdAt));
+    
+    return results.map((row: any) => ({
+      ...row,
+      addedByUser: row.added_by_user_id ? {
+        id: row.added_by_user_id,
+        fullName: row.added_by_user_full_name,
+        email: row.added_by_user_email,
+      } : null,
+    }));
   }
 
   async updateSalaryDeduction(id: string, updates: Partial<SalaryDeduction>): Promise<SalaryDeduction | undefined> {
