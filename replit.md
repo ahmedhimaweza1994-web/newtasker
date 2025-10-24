@@ -6,6 +6,29 @@ GWT Task Management is a comprehensive Arabic-language task and employee managem
 
 ## Recent Changes
 
+**October 24, 2025 - UI/UX Enhancements (v1.3.0)**
+
+Comprehensive UI/UX improvements to modernize the application design and fix visibility issues in dark mode.
+
+**Design Improvements:**
+- Changed application font from Noto Sans Arabic to Cairo for better readability
+- Added custom favicon with task management theme
+- Completely redesigned authentication pages with modern gradient backgrounds, glassmorphism effects, and smooth animations
+- Enhanced RTL (Right-to-Left) support with comprehensive CSS helpers throughout the application
+
+**Dark Mode Fixes:**
+- Fixed icon visibility issues in dark mode by adding `data-variant` attribute to Button component
+- Implemented targeted CSS selectors for ghost/outline button icons that preserve semantic colors
+- Icons in sidebar, navigation header, and quick action menus now properly display in light colors in dark mode
+- Semantic icon colors (destructive/red, success/green, warning/yellow) are preserved across all themes
+
+**Technical Implementation:**
+- Updated `client/index.html` to reference Cairo font from Google Fonts and include custom favicon
+- Modified `tailwind.config.ts` to use Cairo as the primary font family
+- Enhanced `client/src/index.css` with dark mode visibility improvements and RTL alignment utilities
+- Added `data-variant` prop to Button component for reliable CSS targeting
+- Implemented scoped CSS rules that only affect icons without explicit color classes
+
 **October 24, 2025 - UI/UX Fixes for Deductions and HR Pages (v1.2.1)**
 
 Fixed layout and data display issues in deductions and HR management pages to ensure consistent user experience across the application.
@@ -64,7 +87,7 @@ Preferred communication style: Simple, everyday language.
 
 ### Frontend Architecture
 
-**Technology Stack:** React 18 (TypeScript), Vite, Wouter (routing), TanStack Query (server state), Shadcn UI (components), Radix UI (primitives), Tailwind CSS (styling), Noto Sans Arabic (fonts).
+**Technology Stack:** React 18 (TypeScript), Vite, Wouter (routing), TanStack Query (server state), Shadcn UI (components), Radix UI (primitives), Tailwind CSS (styling), Cairo (fonts).
 
 **Design Patterns:** Component-based architecture, custom hooks, HOC for protected routes, Context API for global state, real-time updates via WebSockets.
 
