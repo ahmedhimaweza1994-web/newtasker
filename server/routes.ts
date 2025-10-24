@@ -1142,10 +1142,10 @@ export function registerRoutes(app: Express): Server {
       const activeUsers = users.filter(u => u.isActive);
       
       const payrollData = activeUsers.map(user => ({
-        id: user.id,
-        employee: user.fullName,
+        userId: user.id,
+        fullName: user.fullName,
         department: user.department || 'غير محدد',
-        baseSalary: user.salary || 0,
+        salary: user.salary || 0,
         overtime: 0,
         deductions: 0,
         netSalary: user.salary || 0,

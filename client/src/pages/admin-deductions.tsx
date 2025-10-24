@@ -28,8 +28,7 @@ import {
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { SalaryDeduction, User } from "@shared/schema";
-import { motion } from "framer-motion";
-import { MotionPageShell, MotionSection, MotionMetricCard, ResponsiveGrid } from "@/components/ui/motion-wrappers";
+import { MotionSection, MotionMetricCard, ResponsiveGrid } from "@/components/ui/motion-wrappers";
 import { formatArabicDate } from "@/lib/arabic-date";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
@@ -217,15 +216,11 @@ export default function AdminDeductions() {
   };
 
   return (
-    <MotionPageShell>
-      <Sidebar />
-      <div className={cn(
-        "flex-1 transition-all duration-300",
-        isCollapsed ? "mr-16" : "mr-64"
-      )}>
-        <Navigation title="إدارة خصومات الرواتب" />
-        
-        <main className="p-4 md:p-6 space-y-6">
+    <div className="min-h-screen bg-background">
+      <Navigation title="إدارة خصومات الرواتب" />
+      <div className="flex">
+        <Sidebar />
+        <main className={cn("flex-1 p-4 md:p-6 space-y-6 transition-all duration-300", "md:mr-16", !isCollapsed && "md:mr-64")}>
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
@@ -502,7 +497,7 @@ export default function AdminDeductions() {
           </MotionSection>
         </main>
       </div>
-
+      
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent>
@@ -594,6 +589,6 @@ export default function AdminDeductions() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </MotionPageShell>
+    </div>
   );
 }

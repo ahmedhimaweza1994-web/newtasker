@@ -13,8 +13,7 @@ import {
   TrendingDown
 } from "lucide-react";
 import type { SalaryDeduction } from "@shared/schema";
-import { motion } from "framer-motion";
-import { MotionPageShell, MotionSection, MotionMetricCard, ResponsiveGrid } from "@/components/ui/motion-wrappers";
+import { MotionSection, MotionMetricCard, ResponsiveGrid } from "@/components/ui/motion-wrappers";
 import { formatArabicDate } from "@/lib/arabic-date";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
@@ -31,15 +30,11 @@ export default function MyDeductions() {
   const totalDays = myDeductions.reduce((sum, d) => sum + (d.daysDeducted || 0), 0);
 
   return (
-    <MotionPageShell>
-      <Sidebar />
-      <div className={cn(
-        "flex-1 transition-all duration-300",
-        isCollapsed ? "mr-16" : "mr-64"
-      )}>
-        <Navigation title="خصومات الراتب" />
-        
-        <main className="p-4 md:p-6 space-y-6">
+    <div className="min-h-screen bg-background">
+      <Navigation title="خصومات الراتب" />
+      <div className="flex">
+        <Sidebar />
+        <main className={cn("flex-1 p-4 md:p-6 space-y-6 transition-all duration-300", "md:mr-16", !isCollapsed && "md:mr-64")}>
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
@@ -151,6 +146,6 @@ export default function MyDeductions() {
           </MotionSection>
         </main>
       </div>
-    </MotionPageShell>
+    </div>
   );
 }
