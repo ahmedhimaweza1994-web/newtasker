@@ -1017,7 +1017,6 @@ export function registerRoutes(app: Express): Server {
       res.status(500).json({ message: "حدث خطأ في حذف الخصم" });
     }
   });
-  });
 
   // Notifications routes
   app.get("/api/notifications", requireAuth, async (req, res) => {
