@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -73,7 +73,7 @@
     background-color: hsl(167, 70%, 48%);
 }
 body {
-  font-family: "Noto Sans Arabic", "Inter", system-ui, sans-serif;
+  font-family: "Cairo", "Inter", system-ui, sans-serif;
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
 }

@@ -55,8 +55,8 @@ export default {
         warning: "var(--warning)",
       },
       fontFamily: {
-        sans: ["Noto Sans Arabic", "Inter", "system-ui", "sans-serif"],
-        arabic: ["Noto Sans Arabic", "Cairo", "Tajawal", "sans-serif"],
+        sans: ["Cairo", "Inter", "system-ui", "sans-serif"],
+        arabic: ["Cairo", "Tajawal", "sans-serif"],
       },
       keyframes: {
         "accordion-down": {
