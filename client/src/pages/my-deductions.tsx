@@ -67,7 +67,7 @@ export default function MyDeductions() {
               value={`${totalDays} يوم`}
               subtitle="أيام الخصم المطبقة"
               icon={Calendar}
-              variant="orange-yellow"
+              variant="orange-red"
               index={1}
               testId="text-total-days"
             />

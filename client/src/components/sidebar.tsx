@@ -24,7 +24,8 @@ import {
   AlertCircle,
   Phone,
   Lightbulb,
-  TrendingDown
+  TrendingDown,
+  Brain
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useLocation } from "wouter";
@@ -139,12 +140,6 @@ export default function Sidebar() {
       badge: null,
     },
     {
-      name: "صفحة المقترحات",
-      href: "/suggestions",
-      icon: Lightbulb,
-      badge: null,
-    },
-    {
       name: "التقارير",
       href: "/reports",
       icon: BarChart3,
@@ -154,6 +149,19 @@ export default function Sidebar() {
       name: "الملف الشخصي",
       href: `/profile/${user?.id}`,
       icon: Users,
+      badge: null,
+    },
+    {
+      name: "منصة الذكاء الاصطناعي",
+      href: "https://ai.greenweb-tech.com/",
+      icon: Brain,
+      badge: null,
+      external: true,
+    },
+    {
+      name: "صفحة المقترحات",
+      href: "/suggestions",
+      icon: Lightbulb,
       badge: null,
     },
   ];
@@ -350,31 +358,56 @@ export default function Sidebar() {
         <nav className="space-y-2">
           {allNavigation.map((item) => (
             <div key={item.name}>
-              <Button
-                variant={isActive(item.href) ? "default" : "ghost"}
-                className={cn(
-                  "w-full justify-start gap-3 text-right h-11 md:h-10 transition-all duration-200",
-                  isCollapsed && "justify-center px-2",
-                  isActive(item.href) && "shadow-md"
-                )}
-                onClick={() => {
-                  setLocation(item.href);
-                  if (isMobile) setIsMobileOpen(false);
-                }}
-                data-testid={`sidebar-link-${item.href.replace('/', '')}`}
-              >
-                <item.icon className="h-5 w-5 flex-shrink-0" />
-                {!isCollapsed && (
-                  <div className="flex flex-1 items-center justify-between overflow-hidden">
-                    <span className="flex-1 dark:text-white">{item.name}</span>
-                    {item.badge && (
-                      <Badge variant="secondary" className="mr-auto">
-                        {item.badge}
-                      </Badge>
-                    )}
-                  </div>
-                )}
-              </Button>
+              {item.external ? (
+                <a
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={cn(
+                    "flex items-center w-full justify-start gap-3 text-right h-11 md:h-10 transition-all duration-200 rounded-md px-3 hover:bg-accent",
+                    isCollapsed && "justify-center px-2"
+                  )}
+                  data-testid={`sidebar-link-${item.href.replace('/', '')}`}
+                >
+                  <item.icon className="h-5 w-5 flex-shrink-0" />
+                  {!isCollapsed && (
+                    <div className="flex flex-1 items-center justify-between overflow-hidden">
+                      <span className="flex-1 dark:text-white">{item.name}</span>
+                      {item.badge && (
+                        <Badge variant="secondary" className="mr-auto">
+                          {item.badge}
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+                </a>
+              ) : (
+                <Button
+                  variant={isActive(item.href) ? "default" : "ghost"}
+                  className={cn(
+                    "w-full justify-start gap-3 text-right h-11 md:h-10 transition-all duration-200",
+                    isCollapsed && "justify-center px-2",
+                    isActive(item.href) && "shadow-md"
+                  )}
+                  onClick={() => {
+                    setLocation(item.href);
+                    if (isMobile) setIsMobileOpen(false);
+                  }}
+                  data-testid={`sidebar-link-${item.href.replace('/', '')}`}
+                >
+                  <item.icon className="h-5 w-5 flex-shrink-0" />
+                  {!isCollapsed && (
+                    <div className="flex flex-1 items-center justify-between overflow-hidden">
+                      <span className="flex-1 dark:text-white">{item.name}</span>
+                      {item.badge && (
+                        <Badge variant="secondary" className="mr-auto">
+                          {item.badge}
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+                </Button>
+              )}
             </div>
           ))}
         </nav>
