@@ -1,4 +1,4 @@
-modules = ["nodejs-20", "web", "postgresql-16"]
+modules = ["nodejs-20", "web"]
 [agent]
 expertMode = true
 integrations = ["google-calendar:1.0.0"]
@@ -27,13 +27,12 @@ task = "shell.exec"
 args = "npm run dev"
 waitForPort = 5000
 
+[workflows.workflow.metadata]
+outputType = "webview"
+
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[[ports]]
-localPort = 33139
-externalPort = 8008
 
 [[ports]]
 localPort = 33607
@@ -58,6 +57,10 @@ externalPort = 3002
 [[ports]]
 localPort = 38699
 externalPort = 5173
+
+[[ports]]
+localPort = 39999
+externalPort = 8008
 
 [[ports]]
 localPort = 41585
