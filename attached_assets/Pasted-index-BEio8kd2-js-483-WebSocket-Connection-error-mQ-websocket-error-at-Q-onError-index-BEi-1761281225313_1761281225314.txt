@@ -1,0 +1,49 @@
+index-BEio8kd2.js:483 [WebSocket] Connection error: mQ: websocket error
+    at _Q.onError (index-BEio8kd2.js:483:53921)
+    at ws.onerror (index-BEio8kd2.js:483:60112)
+(anonymous) @ index-BEio8kd2.js:483
+Si.emit @ index-BEio8kd2.js:483
+onerror @ index-BEio8kd2.js:483
+Si.emit @ index-BEio8kd2.js:483
+s @ index-BEio8kd2.js:483
+Si.emit @ index-BEio8kd2.js:483
+_onError @ index-BEio8kd2.js:483
+Si.emit @ index-BEio8kd2.js:483
+onError @ index-BEio8kd2.js:483
+ws.onerror @ index-BEio8kd2.js:483Understand this error
+index-BEio8kd2.js:483 WebSocket connection to 'wss://hub.greenweb-tech.com/socket.io/?EIO=4&transport=websocket' failed: 
+createSocket @ index-BEio8kd2.js:483
+doOpen @ index-BEio8kd2.js:483
+open @ index-BEio8kd2.js:483
+_open @ index-BEio8kd2.js:483
+qf @ index-BEio8kd2.js:483
+TQ @ index-BEio8kd2.js:483
+AQ @ index-BEio8kd2.js:483
+open @ index-BEio8kd2.js:483
+(anonymous) @ index-BEio8kd2.js:483Understand this error
+index-BEio8kd2.js:483 [WebSocket] Connection error: mQ: websocket error
+    at _Q.onError (index-BEio8kd2.js:483:53921)
+    at ws.onerror (index-BEio8kd2.js:483:60112)
+(anonymous) @ index-BEio8kd2.js:483
+Si.emit @ index-BEio8kd2.js:483
+onerror @ index-BEio8kd2.js:483
+Si.emit @ index-BEio8kd2.js:483
+s @ index-BEio8kd2.js:483
+Si.emit @ index-BEio8kd2.js:483
+_onError @ index-BEio8kd2.js:483
+Si.emit @ index-BEio8kd2.js:483
+onError @ index-BEio8kd2.js:483
+ws.onerror @ index-BEio8kd2.js:483Understand this error
+index-BEio8kd2.js:483 WebSocket connection to 'wss://hub.greenweb-tech.com/socket.io/?EIO=4&transport=websocket' failed: 
+createSocket @ index-BEio8kd2.js:483
+doOpen @ index-BEio8kd2.js:483
+open @ index-BEio8kd2.js:483
+_open @ index-BEio8kd2.js:483
+qf @ index-BEio8kd2.js:483
+TQ @ index-BEio8kd2.js:483
+AQ @ index-BEio8kd2.js:483
+open @ index-BEio8kd2.js:483
+(anonymous) @ index-BEio8kd2.js:483Understand this error
+index-BEio8kd2.js:483 [WebSocket] Connection error: mQ: websocket error
+    at _Q.onError (index-BEio8kd2.js:483:53921)
+    at ws.onerror (index-BEio8kd2.js:483:60112)
