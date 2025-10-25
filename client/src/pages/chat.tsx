@@ -120,9 +120,16 @@ export default function Chat() {
   const [incomingCallFrom, setIncomingCallFrom] = useState<User | null>(null);
   const [incomingCallType, setIncomingCallType] = useState<'audio' | 'video'>('audio');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [imageViewerOpen, setImageViewerOpen] = useState(false);
+  const [selectedImageUrl, setSelectedImageUrl] = useState("");
+  const [recordingTime, setRecordingTime] = useState(0);
+  const [editRoomImageOpen, setEditRoomImageOpen] = useState(false);
+  const [editingRoomImage, setEditingRoomImage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const recordingIntervalRef = useRef<number | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lastMarkedMessageIdRef = useRef<Map<string, string>>(new Map());
   const pendingMarkReadRef = useRef<Map<string, string>>(new Map());
   const { isConnected, lastMessage, sendMessage } = useWebSocket({ userId: user?.id });
@@ -205,6 +212,22 @@ export default function Chat() {
     },
   });
 
+  const updateRoomImageMutation = useMutation({
+    mutationFn: async ({ roomId, image }: { roomId: string; image: string }) => {
+      const res = await apiRequest("PUT", `/api/chat/rooms/${roomId}/image`, { image });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/chat/rooms"] });
+      setEditRoomImageOpen(false);
+      setEditingRoomImage("");
+      toast({
+        title: "تم تحديث الصورة",
+        description: "تم تحديث صورة الغرفة بنجاح",
+      });
+    },
+  });
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
@@ -229,6 +252,57 @@ export default function Chat() {
     setAttachments([...attachments, ...newAttachments]);
   };
 
+  const handlePaste = async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    const imageItems = Array.from(items).filter(item => item.type.startsWith('image/'));
+    if (imageItems.length === 0) return;
+
+    e.preventDefault();
+
+    const newAttachments = await Promise.all(
+      imageItems.map(async (item) => {
+        const file = item.getAsFile();
+        if (!file) return null;
+
+        const reader = new FileReader();
+        return new Promise<any>((resolve) => {
+          reader.onloadend = () => {
+            resolve({
+              name: `pasted-image-${Date.now()}.png`,
+              type: "image",
+              url: reader.result as string,
+              size: file.size,
+            });
+          };
+          reader.readAsDataURL(file);
+        });
+      })
+    );
+
+    const validAttachments = newAttachments.filter(att => att !== null);
+    setAttachments([...attachments, ...validAttachments]);
+    
+    if (validAttachments.length > 0) {
+      toast({
+        title: "تم لصق الصورة",
+        description: `تم إضافة ${validAttachments.length} صورة`,
+      });
+    }
+  };
+
+  const handleImageClick = (imageUrl: string) => {
+    setSelectedImageUrl(imageUrl);
+    setImageViewerOpen(true);
+  };
+
+  const formatRecordingTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -241,10 +315,20 @@ export default function Chat() {
         const blob = new Blob(chunks, { type: "audio/webm" });
         setRecordedAudio(blob);
         stream.getTracks().forEach((track) => track.stop());
+        if (recordingIntervalRef.current) {
+          clearInterval(recordingIntervalRef.current);
+          recordingIntervalRef.current = null;
+        }
+        setRecordingTime(0);
       };
 
       mediaRecorder.start();
       setIsRecording(true);
+      setRecordingTime(0);
+      
+      recordingIntervalRef.current = setInterval(() => {
+        setRecordingTime(prev => prev + 1);
+      }, 1000);
     } catch (error) {
       toast({
         title: "خطأ",
@@ -818,6 +902,15 @@ export default function Chat() {
                               <Search className="w-4 h-4 ml-2" />
                               بحث في المحادثة
                             </DropdownMenuItem>
+                            {selectedRoom?.type === 'group' && (
+                              <DropdownMenuItem onClick={() => {
+                                setEditingRoomImage(getRoomAvatar(selectedRoom) || "");
+                                setEditRoomImageOpen(true);
+                              }}>
+                                <ImageIcon className="w-4 h-4 ml-2" />
+                                تعديل صورة الغرفة
+                              </DropdownMenuItem>
+                            )}
                             <DropdownMenuItem className="text-destructive">
                               <Trash2 className="w-4 h-4 ml-2" />
                               حذف المحادثة
@@ -1155,7 +1248,7 @@ export default function Chat() {
                           <Paperclip className="w-4 h-4" />
                         </Button>
                       </motion.div>
-                      <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                      <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} className="relative">
                         <Button
                           variant="outline"
                           size="icon"
@@ -1168,19 +1261,31 @@ export default function Chat() {
                         >
                           <Mic className="w-4 h-4" />
                         </Button>
+                        {isRecording && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-destructive text-white px-2 py-1 rounded text-xs font-mono whitespace-nowrap shadow-lg"
+                            data-testid="text-recording-time"
+                          >
+                            {formatRecordingTime(recordingTime)}
+                          </motion.div>
+                        )}
                       </motion.div>
                     </div>
                     <div className="flex-1 relative">
                       <Textarea
+                        ref={textareaRef}
                         value={messageText}
                         onChange={(e) => setMessageText(e.target.value)}
+                        onPaste={handlePaste}
                         onKeyDown={(e) => {
                           if (e.key === "Enter" && !e.shiftKey) {
                             e.preventDefault();
                             handleSendMessage();
                           }
                         }}
-                        placeholder="اكتب رسالتك..."
+                        placeholder="اكتب رسالتك... (يمكنك لصق الصور)"
                         className="min-h-[44px] max-h-32 resize-none pr-10"
                         data-testid="input-message"
                       />
@@ -1318,6 +1423,15 @@ export default function Chat() {
                               <Search className="w-4 h-4 ml-2" />
                               بحث في المحادثة
                             </DropdownMenuItem>
+                            {selectedRoom?.type === 'group' && (
+                              <DropdownMenuItem onClick={() => {
+                                setEditingRoomImage(getRoomAvatar(selectedRoom) || "");
+                                setEditRoomImageOpen(true);
+                              }}>
+                                <ImageIcon className="w-4 h-4 ml-2" />
+                                تعديل صورة الغرفة
+                              </DropdownMenuItem>
+                            )}
                             <DropdownMenuItem className="text-destructive">
                               <Trash2 className="w-4 h-4 ml-2" />
                               حذف المحادثة
@@ -1414,7 +1528,9 @@ export default function Chat() {
                                               <img
                                                 src={getMediaUrl(att.url)}
                                                 alt={att.name}
+                                                onClick={() => handleImageClick(getMediaUrl(att.url)!)}
                                                 className="rounded-lg max-w-xs hover:scale-105 transition-transform cursor-pointer"
+                                                data-testid={`image-message-${message.id}`}
                                               />
                                             ) : att.type === "audio" ? (
                                               <div className="flex items-center gap-2 p-2 rounded-lg bg-background/10">
@@ -1748,6 +1864,101 @@ export default function Chat() {
         onAccept={handleAcceptCall}
         onDecline={handleDeclineCall}
       />
+
+      <Dialog open={imageViewerOpen} onOpenChange={setImageViewerOpen}>
+        <DialogContent className="max-w-4xl w-full p-0 overflow-hidden bg-black/95" data-testid="dialog-image-viewer">
+          <div className="relative w-full h-[80vh] flex items-center justify-center">
+            <motion.img
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              src={selectedImageUrl}
+              alt="عرض الصورة"
+              className="max-w-full max-h-full object-contain"
+              data-testid="img-viewer"
+            />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setImageViewerOpen(false)}
+              className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white"
+              data-testid="button-close-viewer"
+            >
+              <X className="w-6 h-6" />
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={editRoomImageOpen} onOpenChange={setEditRoomImageOpen}>
+        <DialogContent className="sm:max-w-md" dir="rtl" data-testid="dialog-edit-room-image">
+          <DialogHeader>
+            <DialogTitle className="text-right">تعديل صورة الغرفة</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {editingRoomImage && (
+              <div className="flex justify-center">
+                <img 
+                  src={editingRoomImage} 
+                  alt="معاينة الصورة" 
+                  className="w-32 h-32 rounded-lg object-cover border-2 border-border"
+                />
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="room-image-edit">اختر صورة جديدة</Label>
+              <Input
+                id="room-image-edit"
+                type="file"
+                accept="image/*"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  if (!file.type.startsWith('image/')) {
+                    toast({
+                      title: "خطأ",
+                      description: "يرجى اختيار صورة فقط",
+                      variant: "destructive",
+                    });
+                    return;
+                  }
+                  const reader = new FileReader();
+                  reader.onloadend = () => {
+                    setEditingRoomImage(reader.result as string);
+                  };
+                  reader.readAsDataURL(file);
+                }}
+                data-testid="input-room-image"
+              />
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setEditRoomImageOpen(false);
+                  setEditingRoomImage("");
+                }}
+                data-testid="button-cancel-edit"
+              >
+                إلغاء
+              </Button>
+              <Button
+                onClick={() => {
+                  if (!selectedRoom) return;
+                  updateRoomImageMutation.mutate({
+                    roomId: selectedRoom.id,
+                    image: editingRoomImage,
+                  });
+                }}
+                disabled={!editingRoomImage}
+                data-testid="button-save-room-image"
+              >
+                حفظ
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </MotionPageShell>
   );
 }

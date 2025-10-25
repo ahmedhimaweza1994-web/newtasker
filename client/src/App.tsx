@@ -20,6 +20,7 @@ import MyRequests from "@/pages/my-requests";
 import MyDeductions from "@/pages/my-deductions";
 import AdminDeductions from "@/pages/admin-deductions";
 import SuggestionsPage from "@/pages/suggestions";
+import AICenter from "@/pages/ai-center";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -42,6 +43,7 @@ function Router() {
       <ProtectedRoute path="/my-deductions" component={MyDeductions} />
       <ProtectedRoute path="/admin-deductions" component={AdminDeductions} />
       <ProtectedRoute path="/suggestions" component={SuggestionsPage} />
+      <ProtectedRoute path="/ai-center" component={AICenter} />
       <ProtectedRoute path="/settings" component={Dashboard} />
       <Route component={NotFound} />
     </Switch>

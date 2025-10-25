@@ -1,0 +1,115 @@
+Chat System — Feature Fixes & Enhancements
+1. Image Pasting Support
+
+Current Issue:
+User can attach/upload an image manually, but cannot paste an image directly into the chat input (e.g., Ctrl+V from clipboard).
+
+Required Fix:
+
+Enable pasting images from clipboard directly into the chat.
+
+When pasted, it should automatically preview the image before sending (similar to WhatsApp or Telegram behavior).
+
+Once sent, it should be stored and displayed like any other uploaded image message.
+
+2. Image Viewer Popup
+
+Current Issue:
+Images sent in chat appear only as thumbnails and cannot be enlarged.
+
+Required Fix:
+
+When the user clicks any image message, open it in a popup modal (lightbox) displaying the image in full size.
+
+Modal should have:
+
+Click outside to close
+
+Zoom in/out and close buttons
+
+Smooth transition animation
+
+3. Voice Recording Timer
+
+Current Issue:
+During voice message recording, there is no timer visible to track duration.
+
+Required Fix:
+
+Add a live recording timer (mm:ss format) visible during recording.
+
+Timer should start when recording begins and stop/reset when user stops recording.
+
+Place the timer near the recording button with clean, minimal UI.
+
+4. Chat Room Image Editing
+
+Current Issue:
+While creating a chat room, there’s an option to add a room image — but no way to edit it later.
+
+Required Fix:
+
+Add an Edit Room Image option on the room settings or info page.
+
+Allow users with permission (admin/moderator) to:
+
+Upload or change the current image
+
+Remove image entirely (optional)
+
+Ensure image preview and validation before saving.
+
+Additional Requirement:
+
+Allow adding images for common/public rooms (currently missing).
+
+🤖 AI Menu — Redesigned Interactive Page
+1. Current Issue
+
+Currently, the “AI” menu item opens an external link.
+This needs to be replaced with a dedicated in-app AI page.
+
+2. New Page Structure
+
+Create a new internal route/page for AI tools with an interactive, animated design.
+
+Page Title: “AI Center” (or localized equivalent)
+
+Main Elements:
+
+Beautiful animated AI interface with interactive elements reacting to mouse hover.
+
+A main AI character/face that shows facial expressions/emotions.
+
+Consistent colors and design language with the main app UI.
+
+Sections (AI Models):
+Each model should be displayed as a clickable card/button with an animated icon:
+
+🖼️ موديل انشاء الصور
+
+🎬 موديل انشاء الفيديوهات
+
+📈 موديل التسويق والسيو
+
+✍️ موديل النصي
+
+💻 موديل البرمجة
+
+Each button/card will:
+
+Have hover animation
+
+Display the model name clearly
+
+Redirect to # (temporary placeholder until actual model pages are built)
+
+3. Technical Notes
+
+Keep the design fully responsive (desktop & mobile).
+
+Smooth hover/transition animations (can use Framer Motion or similar).
+
+All icons should be vector-based and match app theme colors.
+
+Future-ready structure — easy to link real model pages later.

@@ -153,10 +153,9 @@ export default function Sidebar() {
     },
     {
       name: "منصة الذكاء الاصطناعي",
-      href: "https://ai.greenweb-tech.com/",
+      href: "/ai-center",
       icon: Brain,
       badge: null,
-      external: true,
     },
     {
       name: "صفحة المقترحات",
