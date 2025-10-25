@@ -8,8 +8,9 @@ import { MotionPageShell } from "@/components/ui/motion-wrappers";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Code, Send, Copy, Maximize2, Bot, User, BookOpen, Save } from "lucide-react";
+import { Code, Send, Copy, Maximize2, Bot, User, BookOpen, Save, ArrowRight } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Link } from "wouter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
@@ -150,6 +151,12 @@ example();`,
         <Sidebar />
         <main className={cn("flex-1 min-h-screen bg-gradient-to-br from-background via-background to-indigo-500/5 dark:bg-gray-950 transition-all duration-300", isCollapsed ? "md:mr-16" : "md:mr-64")}>
           <div className="container mx-auto px-4 py-8 max-w-7xl h-[calc(100vh-2rem)]">
+            <Link href="/ai-center">
+              <Button variant="ghost" className="mb-4" data-testid="button-back">
+                <ArrowRight className="ml-2 h-4 w-4" />
+                العودة إلى مركز الذكاء الاصطناعي
+              </Button>
+            </Link>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
