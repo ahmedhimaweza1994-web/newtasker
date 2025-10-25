@@ -6,6 +6,39 @@ GWT Task Management is a comprehensive Arabic-language task and employee managem
 
 ## Recent Changes
 
+**October 25, 2025 - Chat System Enhancements & AI Center (v1.4.0)**
+
+Implemented comprehensive chat system improvements and a new AI Center page with interactive animations.
+
+**Chat System Features:**
+- **Image Pasting Support**: Users can now paste images directly from clipboard (Ctrl+V) into chat input with automatic preview before sending
+- **Image Viewer Popup**: Clicking any image in chat messages opens a full-screen lightbox viewer with smooth animations and close button
+- **Voice Recording Timer**: Live recording timer displays in mm:ss format during voice message recording, updating every second
+- **Room Image Editing**: Group chat rooms now have "تعديل صورة الغرفة" option in dropdown menu allowing admins to update room images
+- All common/public rooms support image editing functionality
+
+**AI Center Page:**
+- New internal route `/ai-center` replacing external AI platform link
+- Animated AI character with interactive hover effects and rotating icons
+- Five model cards with gradient backgrounds and smooth hover animations:
+  - موديل انشاء الصور (Image Generation)
+  - موديل انشاء الفيديوهات (Video Generation)
+  - موديل التسويق والسيو (Marketing/SEO)
+  - موديل النصي (Text Model)
+  - موديل البرمجة (Programming)
+- Responsive design with motion-driven UI using Framer Motion
+- Cards animate on hover with scale effects and gradient progress bars
+- Floating sparkle and lightning effects around AI brain icon
+
+**Technical Implementation:**
+- Added `handlePaste` event handler to chat Textarea for clipboard image processing
+- Implemented image viewer dialog with motion animations and full-screen display
+- Added recording timer state management with setInterval and proper cleanup
+- Created `updateRoomImageMutation` for room image updates with cache invalidation
+- Built `client/src/pages/ai-center.tsx` with animated components and test IDs
+- Updated sidebar navigation to link to internal AI page instead of external URL
+- Fixed TypeScript error: changed `recordingIntervalRef` from `NodeJS.Timeout` to `number` for browser compatibility
+
 **October 24, 2025 - UI/UX Enhancements (v1.3.0)**
 
 Comprehensive UI/UX improvements to modernize the application design and fix visibility issues in dark mode.
