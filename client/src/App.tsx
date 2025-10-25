@@ -21,6 +21,11 @@ import MyDeductions from "@/pages/my-deductions";
 import AdminDeductions from "@/pages/admin-deductions";
 import SuggestionsPage from "@/pages/suggestions";
 import AICenter from "@/pages/ai-center";
+import AIImageGenerator from "@/pages/ai-image-generator";
+import AIVideoGenerator from "@/pages/ai-video-generator";
+import AIMarketingSEO from "@/pages/ai-marketing-seo";
+import AITextChat from "@/pages/ai-text-chat";
+import AICodeAssistant from "@/pages/ai-code-assistant";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -44,6 +49,11 @@ function Router() {
       <ProtectedRoute path="/admin-deductions" component={AdminDeductions} />
       <ProtectedRoute path="/suggestions" component={SuggestionsPage} />
       <ProtectedRoute path="/ai-center" component={AICenter} />
+      <ProtectedRoute path="/ai/image-generator" component={AIImageGenerator} />
+      <ProtectedRoute path="/ai/video-generator" component={AIVideoGenerator} />
+      <ProtectedRoute path="/ai/marketing-seo" component={AIMarketingSEO} />
+      <ProtectedRoute path="/ai/text-chat" component={AITextChat} />
+      <ProtectedRoute path="/ai/code-assistant" component={AICodeAssistant} />
       <ProtectedRoute path="/settings" component={Dashboard} />
       <Route component={NotFound} />
     </Switch>

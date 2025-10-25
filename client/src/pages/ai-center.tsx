@@ -24,7 +24,7 @@ const modelCards = [
     icon: ImageIcon,
     description: "إنشاء صور احترافية باستخدام الذكاء الاصطناعي",
     gradient: "from-purple-500 to-pink-500",
-    href: "#",
+    href: "/ai/image-generator",
   },
   {
     id: "video-model",
@@ -32,7 +32,7 @@ const modelCards = [
     icon: Video,
     description: "إنتاج فيديوهات مذهلة بتقنيات متقدمة",
     gradient: "from-blue-500 to-cyan-500",
-    href: "#",
+    href: "/ai/video-generator",
   },
   {
     id: "marketing-model",
@@ -40,7 +40,7 @@ const modelCards = [
     icon: TrendingUp,
     description: "تحسين المحتوى وزيادة التفاعل",
     gradient: "from-green-500 to-emerald-500",
-    href: "#",
+    href: "/ai/marketing-seo",
   },
   {
     id: "text-model",
@@ -48,7 +48,7 @@ const modelCards = [
     icon: FileText,
     description: "كتابة وتحرير نصوص بذكاء اصطناعي",
     gradient: "from-orange-500 to-red-500",
-    href: "#",
+    href: "/ai/text-chat",
   },
   {
     id: "code-model",
@@ -56,7 +56,7 @@ const modelCards = [
     icon: Code,
     description: "كتابة وتطوير الأكواد البرمجية",
     gradient: "from-indigo-500 to-purple-500",
-    href: "#",
+    href: "/ai/code-assistant",
   },
 ];
 
@@ -90,7 +90,7 @@ export default function AICenter() {
                       ease: "easeInOut",
                     }}
                   >
-                    <Brain className="w-24 h-24 text-primary mx-auto" />
+                    <Brain className="w-16 h-16 text-primary mx-auto" />
                   </motion.div>
                   <motion.div
                     animate={{
@@ -104,7 +104,7 @@ export default function AICenter() {
                     }}
                     className="absolute -top-2 -right-2"
                   >
-                    <Sparkles className="w-8 h-8 text-accent" />
+                    <Sparkles className="w-6 h-6 text-accent" />
                   </motion.div>
                   <motion.div
                     animate={{
@@ -119,7 +119,7 @@ export default function AICenter() {
                     }}
                     className="absolute -bottom-2 -left-2"
                   >
-                    <Zap className="w-8 h-8 text-yellow-500" />
+                    <Zap className="w-6 h-6 text-yellow-500" />
                   </motion.div>
                 </div>
               </motion.div>
@@ -128,7 +128,7 @@ export default function AICenter() {
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.2 }}
-                className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-4"
+                className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-4"
               >
                 مركز الذكاء الاصطناعي
               </motion.h1>
@@ -137,7 +137,7 @@ export default function AICenter() {
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.3 }}
-                className="text-lg text-muted-foreground max-w-2xl mx-auto"
+                className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto"
               >
                 اكتشف قوة الذكاء الاصطناعي مع مجموعة متنوعة من النماذج المتخصصة
               </motion.p>
@@ -160,17 +160,6 @@ export default function AICenter() {
                       hoveredCard === model.id ? "shadow-2xl border-primary" : "shadow-lg border-transparent"
                     )}>
                       <CardContent className="p-6 relative">
-                        <div className="absolute top-0 right-0 w-32 h-32 opacity-10">
-                          <motion.div
-                            animate={hoveredCard === model.id ? {
-                              rotate: [0, 360],
-                              scale: [1, 1.2, 1],
-                            } : {}}
-                            transition={{ duration: 2 }}
-                          >
-                            <model.icon className="w-full h-full" />
-                          </motion.div>
-                        </div>
 
                         <motion.div
                           animate={hoveredCard === model.id ? {

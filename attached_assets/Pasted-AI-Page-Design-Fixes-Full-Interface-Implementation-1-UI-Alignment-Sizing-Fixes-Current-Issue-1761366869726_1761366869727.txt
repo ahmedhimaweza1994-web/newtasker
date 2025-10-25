@@ -1,0 +1,153 @@
+AI Page — Design Fixes & Full Interface Implementation
+1. UI Alignment & Sizing Fixes
+
+Current Issues:
+
+The AI page title and subtitle text are too large compared to other pages in the app.
+
+The brain icon at the top is oversized and misaligned with the layout.
+
+Required Fixes:
+
+Reduce title and subtitle font sizes to match the typography used on other main app pages.
+
+Adjust alignment and spacing so the layout looks consistent with the rest of the app design.
+
+Scale down the brain icon to a balanced size (visually proportional to the title).
+
+Maintain responsive design and center alignment on all devices.
+
+2. AI Model Cards — Remove Hover Effect
+
+Current Issue:
+Each AI model card currently shows a large transparent spinning icon on hover.
+
+Required Fix:
+
+Remove the spinning transparent icon completely.
+
+Keep only the main static small icon for each model (the one already displayed on the card).
+
+Maintain hover effects like glow or shadow if they exist, but no extra icons or overlays.
+
+3. AI Models — Full Demo Interfaces
+
+Current Issue:
+Currently, all AI model cards link to # and have no interface or page.
+We need to build full front-end demo interfaces for each model type.
+
+4. New Requirement — Full Demo Interfaces
+
+Each model card should open its own dedicated interactive page, simulating a real AI app experience — but front-end only (no backend or API calls yet).
+
+Each interface should match modern AI app standards like ChatGPT, Grok, Gemini, etc., with smooth UI/UX.
+
+5. Model Pages & Features
+🖼️ 1. موديل انشاء الصور (AI Image Generator)
+
+Page Name: /ai/image-generator
+UI Features:
+
+Text prompt input box with “Generate” button.
+
+Optional settings panel (image size, style, quality).
+
+Generated images displayed in a grid gallery below.
+
+Each image can be:
+
+Clicked to open a full-size modal view.
+
+Downloaded via a button overlay.
+
+Animated placeholder while “generating”.
+
+🎬 2. موديل انشاء الفيديوهات (AI Video Generator)
+
+Page Name: /ai/video-generator
+UI Features:
+
+Text prompt + optional image/video upload input.
+
+“Generate Video” button with progress/loading bar.
+
+Output section showing a video player preview.
+
+Buttons: Play / Pause / Download / Re-generate.
+
+Side info panel showing “prompt history” and “video details”.
+
+📈 3. موديل التسويق والسيو (AI Marketing & SEO Assistant)
+
+Page Name: /ai/marketing-seo
+UI Features:
+
+Chat-like interface for generating marketing content, SEO titles, or ad copy.
+
+Sidebar with selectable templates:
+
+Blog SEO
+
+Ad Campaign
+
+Keyword Optimization
+
+Social Media Captions
+
+Output displayed as formatted text with copy/download buttons.
+
+✍️ 4. موديل النصي (Text AI / Chat Assistant)
+
+Page Name: /ai/text-chat
+UI Features:
+
+Full AI chat layout similar to ChatGPT:
+
+Conversation thread with bubbles (user + AI).
+
+Text area for prompt input and send button.
+
+Chat history on sidebar.
+
+Option to clear or start new chat.
+
+Animated typing indicator.
+
+Support for markdown rendering, code blocks, and inline formatting.
+
+💻 5. موديل البرمجة (Coding Assistant)
+
+Page Name: /ai/code-assistant
+UI Features:
+
+Chat layout optimized for code:
+
+Syntax-highlighted code blocks.
+
+Copy and expand buttons for code snippets.
+
+Sidebar: choose language (Python, JS, PHP, etc.).
+
+Tabs for:
+
+“Chat”
+
+“Snippets Library”
+
+“Saved Projects”
+
+Dark theme mode for comfortable coding look.
+
+6. General UI/UX Requirements
+
+All pages must match the app’s main design system (colors, typography, spacing, shadows).
+
+Add smooth transitions between AI models (Framer Motion recommended).
+
+Use animated AI icons that respond subtly to hover/mouse.
+
+Ensure full responsiveness across mobile, tablet, and desktop.
+
+All routes should be properly linked in the sidebar or main menu.
+
+Prepare structure for future backend integration, keeping functions stubbed (no actual API calls yet).
