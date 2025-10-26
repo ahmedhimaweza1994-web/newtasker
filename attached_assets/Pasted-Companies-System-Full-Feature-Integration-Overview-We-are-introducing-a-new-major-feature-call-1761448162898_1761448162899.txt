@@ -1,0 +1,232 @@
+Companies System — Full Feature Integration
+🔹 Overview
+
+We are introducing a new major feature called Companies, designed to manage all client organizations within the app.
+This feature will allow us to add, view, and manage full company profiles, track their related data, tasks, files, milestones, reports, and team members — in one centralized system.
+
+Each company will have its own dedicated profile page inside the app, accessible via a unique link.
+
+🧩 1. Companies Main Page
+
+Route: /companies
+Purpose: Acts as the central hub for managing all client companies.
+
+Core Features:
+
+List view of all existing companies (grid or table layout).
+
+Search and filter by name, status, manager, or creation date.
+
+Button to Add New Company.
+
+Each company item should link to its dedicated company profile page.
+
+Columns/Display Info:
+
+Company name
+
+Company manager
+
+Industry / Type
+
+Number of active tasks
+
+Date added
+
+Quick action buttons (View / Edit / Delete)
+
+🧱 2. Add New Company
+
+Button: Add Company
+Form Fields Include:
+
+Company Name
+
+Company Manager / Contact Person
+
+Email / Phone / Website
+
+Address
+
+Industry / Type
+
+Company Logo / Profile Picture Upload
+
+Description / Notes
+
+Start Date / Partnership Date
+
+Status (Active / Pending / Inactive)
+
+Additional Functionalities:
+
+Upload multiple attachments/files/reports/images related to the company.
+
+Option to add tags or categories for classification.
+
+On submission, company gets a unique ID and profile link.
+
+🧭 3. Company Profile Page
+
+Route Example: /companies/:companyId
+
+Each company will have a dedicated profile page that includes all relevant data and sections:
+
+🏠 Header Section
+
+Company logo and name
+
+Basic info (manager, contact details, website)
+
+Quick action buttons:
+
+Edit Company Info
+
+Add Task
+
+Upload File
+
+Add Report
+
+Add Comment
+
+📊 Tabs / Sections Within Company Profile
+1. Overview
+
+Displays summary data (total tasks, milestones, progress).
+
+Quick statistics cards (e.g., “Tasks Completed,” “Files Uploaded,” “Reports Added”).
+
+Notes or description area.
+
+2. Tasks
+
+Full list of all tasks linked to this company.
+
+Each task clickable to open or edit in detail view.
+
+Add new tasks directly from here (synchronized with the main Tasks system).
+
+Automatically updates both:
+
+The global Tasks page, and
+
+The Company’s Tasks tab.
+
+3. Milestones
+
+Timeline view showing company-related milestones (e.g., project stages, important dates).
+
+Ability to add/edit/delete milestones.
+
+Optional percentage completion tracker.
+
+4. Files & Documents
+
+Upload area for documents, reports, images, and media.
+
+File preview and download options.
+
+Organized by folders or tags if needed.
+
+5. Reports
+
+Section to upload or view detailed reports (PDFs, summaries, analytics, etc.).
+
+Can include date range filters.
+
+Add “Add Report” button for admin users.
+
+6. Comments / Notes
+
+Comment system for internal notes or updates per company.
+
+Each comment shows:
+
+User avatar & name
+
+Date & time
+
+Comment content
+
+Option to reply or react to comments.
+
+7. Managers / Team
+
+List of all managers or employees associated with that company.
+
+Ability to assign or unassign team members.
+
+Display roles and contact info.
+
+🔗 4. Task Synchronization
+
+Goal: Ensure full connection between the Companies system and the Tasks system.
+
+Required Changes:
+
+When creating or editing a task:
+
+Replace the free-text “Company Name” field with a dropdown list of existing companies.
+
+Option to add a new company directly from the task creation form (auto-syncs to Companies list).
+
+Each task linked to a company should:
+
+Automatically appear under that company’s “Tasks” section.
+
+Update in both pages if edited or deleted.
+
+Be filterable by company in the main tasks list.
+
+🛠️ 5. Admin Permissions
+
+Admins can:
+
+Add / Edit / Delete companies.
+
+Manage all data inside any company profile (tasks, reports, files, milestones, comments).
+
+Regular users:
+
+Can view only companies they are assigned to.
+
+Can upload files, add comments, and see related tasks.
+
+Cannot delete or modify company details unless permitted.
+
+🔒 6. File Uploads & Storage
+
+Support multiple file formats: PDF, DOCX, XLSX, JPG, PNG, MP4, etc.
+
+Implement file preview modal.
+
+Show upload progress bars.
+
+Store metadata: uploaded by, upload date, file size.
+
+🧠 7. Technical Requirements
+
+Build as modular, scalable system compatible with current architecture.
+
+Use existing app design system for full visual consistency.
+
+Integrate all necessary libraries for:
+
+File upload (drag & drop)
+
+Date pickers
+
+Charts for reports/milestones
+
+Rich text or markdown editor for notes/comments
+
+🌐 8. Enhancements
+
+Company activity timeline (log of all actions and updates).
+
+Integration with notification system:
+
+When new task/report/comment added to company, notify related users.
+
+Company performance analytics dashboard (KPIs, charts, trends).

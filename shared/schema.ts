@@ -20,6 +20,7 @@ export const notificationCategoryEnum = pgEnum('notification_category', ['task',
 export const suggestionStatusEnum = pgEnum('suggestion_status', ['pending', 'under_review', 'approved', 'rejected']);
 export const suggestionCategoryEnum = pgEnum('suggestion_category', ['improvement', 'bug', 'feature', 'other']);
 export const companyStatusEnum = pgEnum('company_status', ['active', 'pending', 'inactive']);
+export const milestoneStatusEnum = pgEnum('milestone_status', ['pending', 'in_progress', 'completed']);
 
 // Notification types
 export type NotificationCategory = 'task' | 'message' | 'call' | 'system' | 'reward';
@@ -303,6 +304,7 @@ export const companyMilestones = pgTable("company_milestones", {
   title: text("title").notNull(),
   description: text("description"),
   dueDate: timestamp("due_date"),
+  status: milestoneStatusEnum("status").notNull().default('pending'),
   completionPercentage: integer("completion_percentage").default(0),
   isCompleted: boolean("is_completed").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -761,15 +763,21 @@ export const insertCompanyTeamMemberSchema = createInsertSchema(companyTeamMembe
 });
 
 // Company types
+export type SelectCompany = typeof companies.$inferSelect;
 export type Company = typeof companies.$inferSelect;
 export type InsertCompany = z.infer<typeof insertCompanySchema>;
+export type SelectCompanyMilestone = typeof companyMilestones.$inferSelect;
 export type CompanyMilestone = typeof companyMilestones.$inferSelect;
 export type InsertCompanyMilestone = z.infer<typeof insertCompanyMilestoneSchema>;
+export type SelectCompanyFile = typeof companyFiles.$inferSelect;
 export type CompanyFile = typeof companyFiles.$inferSelect;
 export type InsertCompanyFile = z.infer<typeof insertCompanyFileSchema>;
+export type SelectCompanyReport = typeof companyReports.$inferSelect;
 export type CompanyReport = typeof companyReports.$inferSelect;
 export type InsertCompanyReport = z.infer<typeof insertCompanyReportSchema>;
+export type SelectCompanyComment = typeof companyComments.$inferSelect;
 export type CompanyComment = typeof companyComments.$inferSelect;
 export type InsertCompanyComment = z.infer<typeof insertCompanyCommentSchema>;
+export type SelectCompanyTeamMember = typeof companyTeamMembers.$inferSelect;
 export type CompanyTeamMember = typeof companyTeamMembers.$inferSelect;
 export type InsertCompanyTeamMember = z.infer<typeof insertCompanyTeamMemberSchema>;

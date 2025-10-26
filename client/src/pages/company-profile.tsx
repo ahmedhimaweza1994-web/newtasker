@@ -646,9 +646,9 @@ function FilesTab({ files, isLoading, companyId, users, isAdmin }: any) {
   const { toast } = useToast();
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
   const [newFile, setNewFile] = useState({
-    fileName: "",
-    fileUrl: "",
-    fileType: "",
+    name: "",
+    url: "",
+    type: "",
   });
 
   const uploadFileMutation = useMutation({
@@ -659,7 +659,7 @@ function FilesTab({ files, isLoading, companyId, users, isAdmin }: any) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/companies", companyId, "files"] });
       setIsUploadDialogOpen(false);
-      setNewFile({ fileName: "", fileUrl: "", fileType: "" });
+      setNewFile({ name: "", url: "", type: "" });
       toast({ title: "تم رفع الملف بنجاح" });
     },
     onError: (error: Error) => {
@@ -711,8 +711,8 @@ function FilesTab({ files, isLoading, companyId, users, isAdmin }: any) {
                 <Label htmlFor="file-name">اسم الملف *</Label>
                 <Input
                   id="file-name"
-                  value={newFile.fileName}
-                  onChange={(e) => setNewFile({ ...newFile, fileName: e.target.value })}
+                  value={newFile.name}
+                  onChange={(e) => setNewFile({ ...newFile, name: e.target.value })}
                   required
                   data-testid="input-file-name"
                 />
@@ -721,8 +721,8 @@ function FilesTab({ files, isLoading, companyId, users, isAdmin }: any) {
                 <Label htmlFor="file-url">رابط الملف *</Label>
                 <Input
                   id="file-url"
-                  value={newFile.fileUrl}
-                  onChange={(e) => setNewFile({ ...newFile, fileUrl: e.target.value })}
+                  value={newFile.url}
+                  onChange={(e) => setNewFile({ ...newFile, url: e.target.value })}
                   required
                   data-testid="input-file-url"
                 />
@@ -731,8 +731,8 @@ function FilesTab({ files, isLoading, companyId, users, isAdmin }: any) {
                 <Label htmlFor="file-type">نوع الملف</Label>
                 <Input
                   id="file-type"
-                  value={newFile.fileType}
-                  onChange={(e) => setNewFile({ ...newFile, fileType: e.target.value })}
+                  value={newFile.type}
+                  onChange={(e) => setNewFile({ ...newFile, type: e.target.value })}
                   placeholder="مثال: PDF, DOCX, XLSX"
                   data-testid="input-file-type"
                 />
@@ -767,9 +767,9 @@ function FilesTab({ files, isLoading, companyId, users, isAdmin }: any) {
                   <div className="flex items-center gap-3 flex-1">
                     <FileText className="w-8 h-8 text-primary" />
                     <div>
-                      <p className="font-medium">{file.fileName}</p>
+                      <p className="font-medium">{file.name}</p>
                       <p className="text-sm text-muted-foreground">
-                        رفع بواسطة {getUserName(file.uploadedBy)} • {file.fileType}
+                        رفع بواسطة {getUserName(file.uploadedBy)} • {file.type}
                       </p>
                     </div>
                   </div>
@@ -777,7 +777,7 @@ function FilesTab({ files, isLoading, companyId, users, isAdmin }: any) {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => window.open(file.fileUrl, "_blank")}
+                      onClick={() => window.open(file.url, "_blank")}
                       data-testid={`button-open-file-${file.id}`}
                     >
                       فتح
@@ -808,7 +808,7 @@ function ReportsTab({ reports, isLoading, companyId, users, isAdmin }: any) {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [newReport, setNewReport] = useState({
     title: "",
-    content: "",
+    description: "",
   });
 
   const createReportMutation = useMutation({
@@ -819,7 +819,7 @@ function ReportsTab({ reports, isLoading, companyId, users, isAdmin }: any) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/companies", companyId, "reports"] });
       setIsCreateDialogOpen(false);
-      setNewReport({ title: "", content: "" });
+      setNewReport({ title: "", description: "" });
       toast({ title: "تم إنشاء التقرير بنجاح" });
     },
     onError: (error: Error) => {
@@ -878,14 +878,14 @@ function ReportsTab({ reports, isLoading, companyId, users, isAdmin }: any) {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="report-content">المحتوى *</Label>
+                <Label htmlFor="report-description">الوصف *</Label>
                 <Textarea
-                  id="report-content"
-                  value={newReport.content}
-                  onChange={(e) => setNewReport({ ...newReport, content: e.target.value })}
+                  id="report-description"
+                  value={newReport.description}
+                  onChange={(e) => setNewReport({ ...newReport, description: e.target.value })}
                   rows={5}
                   required
-                  data-testid="input-report-content"
+                  data-testid="input-report-description"
                 />
               </div>
               <div className="flex gap-2 justify-end">
@@ -935,7 +935,7 @@ function ReportsTab({ reports, isLoading, companyId, users, isAdmin }: any) {
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-sm whitespace-pre-wrap">{report.content}</p>
+                <p className="text-sm whitespace-pre-wrap">{report.description}</p>
               </CardContent>
             </Card>
           ))}
