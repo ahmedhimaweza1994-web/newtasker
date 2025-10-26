@@ -6,6 +6,34 @@ GWT Task Management is a comprehensive Arabic-language task and employee managem
 
 ## Recent Changes
 
+**October 26, 2025 - Companies Integration & Critical Bug Fixes (v1.4.1)**
+
+Fixed critical issues preventing task creation and integrated companies system into navigation.
+
+**Bug Fixes:**
+- **WebSocket Configuration**: Fixed hardcoded domain URL causing connection errors in development environment
+  - Changed from `io('https://hub.greenweb-tech.com')` to `io()` for automatic relative path resolution
+  - Enabled both polling and WebSocket transports for better connectivity
+  - WebSocket connections now work correctly across all deployment environments
+- **Task Creation White Screen**: Fixed invalid HTML nesting in task creation form
+  - Removed duplicate `<div className="space-y-2">` wrapper causing React rendering failure
+  - Task creation dialog now displays properly without white screen errors
+  - All form fields (createdFor, assignedTo, company) render correctly
+
+**Companies System Integration:**
+- Added "الشركات" (Companies) link to sidebar navigation for all users
+- Companies page now accessible from main navigation menu
+- Integrated with existing Building icon from lucide-react
+- Route already existed but was hidden from navigation
+
+**Technical Implementation:**
+- Updated `client/src/lib/websocket.ts` with environment-agnostic Socket.IO configuration
+- Modified `client/src/components/ui/sidebar.tsx` to include Companies navigation item
+- Fixed form structure in `client/src/pages/task-management.tsx` ensuring valid JSX/HTML nesting
+- All changes reviewed and approved by architect for code quality and security
+
+## Recent Changes
+
 **October 25, 2025 - Chat System Enhancements & AI Center (v1.4.0)**
 
 Implemented comprehensive chat system improvements and a new AI Center page with interactive animations.
