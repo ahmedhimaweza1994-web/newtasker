@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Download, Maximize2, ImageIcon, Sparkles, ArrowRight } from "lucide-react";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Link } from "wouter";
 
 interface GeneratedImage {
@@ -242,8 +242,11 @@ export default function AIImageGenerator() {
                                 </Button>
                               </DialogTrigger>
                               <DialogContent className="max-w-4xl">
+                                <DialogHeader>
+                                  <DialogTitle>عرض الصورة</DialogTitle>
+                                  <DialogDescription>{image.prompt}</DialogDescription>
+                                </DialogHeader>
                                 <img src={image.url} alt={image.prompt} className="w-full" />
-                                <p className="text-sm text-muted-foreground mt-2">{image.prompt}</p>
                               </DialogContent>
                             </Dialog>
                             <Button

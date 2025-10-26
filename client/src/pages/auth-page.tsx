@@ -205,6 +205,7 @@ export default function AuthPage() {
                           value={loginForm.password}
                           onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
                           required
+                          autoComplete="current-password"
                           className="h-12 bg-background/50 dark:bg-gray-900/50 border-border dark:border-gray-600 text-foreground dark:text-white"
                           data-testid="login-password-input"
                         />
@@ -279,6 +280,7 @@ export default function AuthPage() {
                           value={registerForm.password}
                           onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
                           required
+                          autoComplete="new-password"
                           className="h-12 bg-background/50 dark:bg-gray-900/50 border-border dark:border-gray-600 text-foreground dark:text-white"
                           data-testid="register-password-input"
                         />
