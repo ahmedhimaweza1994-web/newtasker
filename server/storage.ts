@@ -18,6 +18,12 @@ import {
   googleCalendarTokens,
   callLogs,
   suggestions,
+  companies,
+  companyMilestones,
+  companyFiles,
+  companyReports,
+  companyComments,
+  companyTeamMembers,
   type User,
   type InsertUser,
   type Task,
@@ -50,6 +56,18 @@ import {
   type InsertGoogleCalendarToken,
   type Suggestion,
   type InsertSuggestion,
+  type Company,
+  type InsertCompany,
+  type CompanyMilestone,
+  type InsertCompanyMilestone,
+  type CompanyFile,
+  type InsertCompanyFile,
+  type CompanyReport,
+  type InsertCompanyReport,
+  type CompanyComment,
+  type InsertCompanyComment,
+  type CompanyTeamMember,
+  type InsertCompanyTeamMember,
   advanceStatusEnum
 } from "@shared/schema";
 import { db } from "./db";
@@ -213,6 +231,42 @@ export interface IStorage {
   getAllSalaryDeductions(): Promise<SalaryDeduction[]>;
   updateSalaryDeduction(id: string, updates: Partial<SalaryDeduction>): Promise<SalaryDeduction | undefined>;
   deleteSalaryDeduction(id: string): Promise<boolean>;
+
+  // Companies
+  createCompany(company: InsertCompany): Promise<Company>;
+  getCompany(id: string): Promise<(Company & { manager?: Omit<User, 'password'>, taskCount?: number }) | undefined>;
+  getAllCompanies(): Promise<(Company & { manager?: Omit<User, 'password'>, taskCount?: number })[]>;
+  updateCompany(id: string, updates: Partial<Company>): Promise<Company | undefined>;
+  deleteCompany(id: string): Promise<boolean>;
+  getCompanyTasks(companyId: string): Promise<Task[]>;
+
+  // Company Milestones
+  createCompanyMilestone(milestone: InsertCompanyMilestone): Promise<CompanyMilestone>;
+  getCompanyMilestones(companyId: string): Promise<CompanyMilestone[]>;
+  updateCompanyMilestone(id: string, updates: Partial<CompanyMilestone>): Promise<CompanyMilestone | undefined>;
+  deleteCompanyMilestone(id: string): Promise<boolean>;
+
+  // Company Files
+  createCompanyFile(file: InsertCompanyFile): Promise<CompanyFile>;
+  getCompanyFiles(companyId: string): Promise<(CompanyFile & { uploadedBy: Omit<User, 'password'> })[]>;
+  deleteCompanyFile(id: string): Promise<boolean>;
+
+  // Company Reports
+  createCompanyReport(report: InsertCompanyReport): Promise<CompanyReport>;
+  getCompanyReports(companyId: string): Promise<(CompanyReport & { uploadedBy: Omit<User, 'password'> })[]>;
+  updateCompanyReport(id: string, updates: Partial<CompanyReport>): Promise<CompanyReport | undefined>;
+  deleteCompanyReport(id: string): Promise<boolean>;
+
+  // Company Comments
+  createCompanyComment(comment: InsertCompanyComment): Promise<CompanyComment>;
+  getCompanyComments(companyId: string): Promise<(CompanyComment & { user: Omit<User, 'password'> })[]>;
+  updateCompanyComment(id: string, content: string): Promise<CompanyComment | undefined>;
+  deleteCompanyComment(id: string): Promise<boolean>;
+
+  // Company Team Members
+  addCompanyTeamMember(companyId: string, userId: string, role?: string): Promise<CompanyTeamMember>;
+  getCompanyTeamMembers(companyId: string): Promise<(CompanyTeamMember & { user: Omit<User, 'password'> })[]>;
+  removeCompanyTeamMember(companyId: string, userId: string): Promise<boolean>;
 
   // Analytics & Rewards
   getUserRewards(userId: string): Promise<any[]>;
@@ -1715,6 +1769,283 @@ export class MemStorage implements IStorage {
     });
 
     return Array.from(departments.values());
+  }
+
+  // Companies
+  async createCompany(company: InsertCompany): Promise<Company> {
+    const [newCompany] = await db.insert(companies).values(company).returning();
+    return newCompany;
+  }
+
+  async getCompany(id: string): Promise<(Company & { manager?: Omit<User, 'password'>, taskCount?: number }) | undefined> {
+    const [company] = await db.select().from(companies).where(eq(companies.id, id));
+    if (!company) return undefined;
+
+    let manager = undefined;
+    if (company.managerId) {
+      const [managerUser] = await db.select(userPublicFields).from(users).where(eq(users.id, company.managerId));
+      manager = managerUser;
+    }
+
+    const taskCountResult = await db
+      .select({ count: count() })
+      .from(tasks)
+      .where(eq(tasks.companyId, id));
+    const taskCount = taskCountResult[0]?.count || 0;
+
+    return { ...company, manager, taskCount: Number(taskCount) };
+  }
+
+  async getAllCompanies(): Promise<(Company & { manager?: Omit<User, 'password'>, taskCount?: number })[]> {
+    const allCompanies = await db.select().from(companies).orderBy(desc(companies.createdAt));
+    
+    const companiesWithDetails = await Promise.all(
+      allCompanies.map(async (company) => {
+        let manager = undefined;
+        if (company.managerId) {
+          const [managerUser] = await db.select(userPublicFields).from(users).where(eq(users.id, company.managerId));
+          manager = managerUser;
+        }
+
+        const taskCountResult = await db
+          .select({ count: count() })
+          .from(tasks)
+          .where(eq(tasks.companyId, company.id));
+        const taskCount = taskCountResult[0]?.count || 0;
+
+        return { ...company, manager, taskCount: Number(taskCount) };
+      })
+    );
+
+    return companiesWithDetails;
+  }
+
+  async updateCompany(id: string, updates: Partial<Company>): Promise<Company | undefined> {
+    const [company] = await db
+      .update(companies)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(companies.id, id))
+      .returning();
+    return company || undefined;
+  }
+
+  async deleteCompany(id: string): Promise<boolean> {
+    const result = await db.delete(companies).where(eq(companies.id, id));
+    return result.rowCount! > 0;
+  }
+
+  async getCompanyTasks(companyId: string): Promise<Task[]> {
+    const tasksData = await db.query.tasks.findMany({
+      where: eq(tasks.companyId, companyId),
+      with: {
+        createdBy: {
+          columns: {
+            id: true,
+            fullName: true,
+            email: true,
+            profilePicture: true,
+            department: true,
+            role: true,
+          },
+        },
+        createdFor: {
+          columns: {
+            id: true,
+            fullName: true,
+            email: true,
+            profilePicture: true,
+            department: true,
+            role: true,
+          },
+        },
+        assignedTo: {
+          columns: {
+            id: true,
+            fullName: true,
+            email: true,
+            profilePicture: true,
+            department: true,
+            role: true,
+          },
+        },
+      },
+      orderBy: [desc(tasks.createdAt)],
+    });
+
+    return tasksData.map(task => ({
+      ...task,
+      createdByUser: task.createdBy,
+      createdForUser: task.createdFor,
+      assignedToUser: task.assignedTo,
+    })) as any;
+  }
+
+  // Company Milestones
+  async createCompanyMilestone(milestone: InsertCompanyMilestone): Promise<CompanyMilestone> {
+    const [newMilestone] = await db.insert(companyMilestones).values(milestone).returning();
+    return newMilestone;
+  }
+
+  async getCompanyMilestones(companyId: string): Promise<CompanyMilestone[]> {
+    return await db
+      .select()
+      .from(companyMilestones)
+      .where(eq(companyMilestones.companyId, companyId))
+      .orderBy(companyMilestones.dueDate);
+  }
+
+  async updateCompanyMilestone(id: string, updates: Partial<CompanyMilestone>): Promise<CompanyMilestone | undefined> {
+    const [milestone] = await db
+      .update(companyMilestones)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(companyMilestones.id, id))
+      .returning();
+    return milestone || undefined;
+  }
+
+  async deleteCompanyMilestone(id: string): Promise<boolean> {
+    const result = await db.delete(companyMilestones).where(eq(companyMilestones.id, id));
+    return result.rowCount! > 0;
+  }
+
+  // Company Files
+  async createCompanyFile(file: InsertCompanyFile): Promise<CompanyFile> {
+    const [newFile] = await db.insert(companyFiles).values(file).returning();
+    return newFile;
+  }
+
+  async getCompanyFiles(companyId: string): Promise<(CompanyFile & { uploadedBy: Omit<User, 'password'> })[]> {
+    const files = await db
+      .select({
+        file: companyFiles,
+        uploadedBy: userPublicFields,
+      })
+      .from(companyFiles)
+      .innerJoin(users, eq(companyFiles.uploadedBy, users.id))
+      .where(eq(companyFiles.companyId, companyId))
+      .orderBy(desc(companyFiles.createdAt));
+
+    return files.map(({ file, uploadedBy }) => ({
+      ...file,
+      uploadedBy,
+    }));
+  }
+
+  async deleteCompanyFile(id: string): Promise<boolean> {
+    const result = await db.delete(companyFiles).where(eq(companyFiles.id, id));
+    return result.rowCount! > 0;
+  }
+
+  // Company Reports
+  async createCompanyReport(report: InsertCompanyReport): Promise<CompanyReport> {
+    const [newReport] = await db.insert(companyReports).values(report).returning();
+    return newReport;
+  }
+
+  async getCompanyReports(companyId: string): Promise<(CompanyReport & { uploadedBy: Omit<User, 'password'> })[]> {
+    const reports = await db
+      .select({
+        report: companyReports,
+        uploadedBy: userPublicFields,
+      })
+      .from(companyReports)
+      .innerJoin(users, eq(companyReports.uploadedBy, users.id))
+      .where(eq(companyReports.companyId, companyId))
+      .orderBy(desc(companyReports.reportDate));
+
+    return reports.map(({ report, uploadedBy }) => ({
+      ...report,
+      uploadedBy,
+    }));
+  }
+
+  async updateCompanyReport(id: string, updates: Partial<CompanyReport>): Promise<CompanyReport | undefined> {
+    const [report] = await db
+      .update(companyReports)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(companyReports.id, id))
+      .returning();
+    return report || undefined;
+  }
+
+  async deleteCompanyReport(id: string): Promise<boolean> {
+    const result = await db.delete(companyReports).where(eq(companyReports.id, id));
+    return result.rowCount! > 0;
+  }
+
+  // Company Comments
+  async createCompanyComment(comment: InsertCompanyComment): Promise<CompanyComment> {
+    const [newComment] = await db.insert(companyComments).values(comment).returning();
+    return newComment;
+  }
+
+  async getCompanyComments(companyId: string): Promise<(CompanyComment & { user: Omit<User, 'password'> })[]> {
+    const comments = await db
+      .select({
+        comment: companyComments,
+        user: userPublicFields,
+      })
+      .from(companyComments)
+      .innerJoin(users, eq(companyComments.userId, users.id))
+      .where(eq(companyComments.companyId, companyId))
+      .orderBy(desc(companyComments.createdAt));
+
+    return comments.map(({ comment, user }) => ({
+      ...comment,
+      user,
+    }));
+  }
+
+  async updateCompanyComment(id: string, content: string): Promise<CompanyComment | undefined> {
+    const [comment] = await db
+      .update(companyComments)
+      .set({ content, updatedAt: new Date() })
+      .where(eq(companyComments.id, id))
+      .returning();
+    return comment || undefined;
+  }
+
+  async deleteCompanyComment(id: string): Promise<boolean> {
+    const result = await db.delete(companyComments).where(eq(companyComments.id, id));
+    return result.rowCount! > 0;
+  }
+
+  // Company Team Members
+  async addCompanyTeamMember(companyId: string, userId: string, role?: string): Promise<CompanyTeamMember> {
+    const [member] = await db
+      .insert(companyTeamMembers)
+      .values({ companyId, userId, role })
+      .returning();
+    return member;
+  }
+
+  async getCompanyTeamMembers(companyId: string): Promise<(CompanyTeamMember & { user: Omit<User, 'password'> })[]> {
+    const members = await db
+      .select({
+        member: companyTeamMembers,
+        user: userPublicFields,
+      })
+      .from(companyTeamMembers)
+      .innerJoin(users, eq(companyTeamMembers.userId, users.id))
+      .where(eq(companyTeamMembers.companyId, companyId))
+      .orderBy(companyTeamMembers.assignedAt);
+
+    return members.map(({ member, user }) => ({
+      ...member,
+      user,
+    }));
+  }
+
+  async removeCompanyTeamMember(companyId: string, userId: string): Promise<boolean> {
+    const result = await db
+      .delete(companyTeamMembers)
+      .where(
+        and(
+          eq(companyTeamMembers.companyId, companyId),
+          eq(companyTeamMembers.userId, userId)
+        )
+      );
+    return result.rowCount! > 0;
   }
 }
 

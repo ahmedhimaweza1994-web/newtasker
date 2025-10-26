@@ -19,6 +19,7 @@ export const callStatusEnum = pgEnum('call_status', ['initiated', 'ringing', 'co
 export const notificationCategoryEnum = pgEnum('notification_category', ['task', 'message', 'call', 'system', 'reward']);
 export const suggestionStatusEnum = pgEnum('suggestion_status', ['pending', 'under_review', 'approved', 'rejected']);
 export const suggestionCategoryEnum = pgEnum('suggestion_category', ['improvement', 'bug', 'feature', 'other']);
+export const companyStatusEnum = pgEnum('company_status', ['active', 'pending', 'inactive']);
 
 // Notification types
 export type NotificationCategory = 'task' | 'message' | 'call' | 'system' | 'reward';
@@ -64,7 +65,7 @@ export const tasks = pgTable("tasks", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   title: text("title").notNull(),
   description: text("description"),
-  companyName: text("company_name"), // الحقل الجديد: اسم الشركة
+  companyId: uuid("company_id").references(() => companies.id, { onDelete: "set null" }),
   status: taskStatusEnum("status").notNull().default('pending'),
   priority: taskPriorityEnum("priority").notNull().default('medium'),
   createdBy: uuid("created_by").notNull().references(() => users.id, { onDelete: "cascade" }),
@@ -277,6 +278,83 @@ export const salaryDeductions = pgTable("salary_deductions", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+// Companies
+export const companies = pgTable("companies", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  managerId: uuid("manager_id").references(() => users.id, { onDelete: "set null" }),
+  email: text("email"),
+  phone: text("phone"),
+  website: text("website"),
+  address: text("address"),
+  industry: text("industry"),
+  logo: text("logo"),
+  description: text("description"),
+  startDate: timestamp("start_date"),
+  status: companyStatusEnum("status").notNull().default('active'),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// Company Milestones
+export const companyMilestones = pgTable("company_milestones", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  companyId: uuid("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  description: text("description"),
+  dueDate: timestamp("due_date"),
+  completionPercentage: integer("completion_percentage").default(0),
+  isCompleted: boolean("is_completed").notNull().default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// Company Files
+export const companyFiles = pgTable("company_files", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  companyId: uuid("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  url: text("url").notNull(),
+  type: text("type").notNull(),
+  size: integer("size"),
+  uploadedBy: uuid("uploaded_by").notNull().references(() => users.id, { onDelete: "cascade" }),
+  folder: text("folder"),
+  tags: text("tags").array(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// Company Reports
+export const companyReports = pgTable("company_reports", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  companyId: uuid("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  description: text("description"),
+  fileUrl: text("file_url"),
+  reportDate: timestamp("report_date").notNull(),
+  uploadedBy: uuid("uploaded_by").notNull().references(() => users.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// Company Comments
+export const companyComments = pgTable("company_comments", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  companyId: uuid("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// Company Team Members
+export const companyTeamMembers = pgTable("company_team_members", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  companyId: uuid("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  role: text("role"),
+  assignedAt: timestamp("assigned_at").notNull().defaultNow(),
+});
+
 
 // Relations
 export const usersRelations = relations(users, ({ many, one }) => ({
@@ -397,6 +475,40 @@ export const suggestionsRelations = relations(suggestions, ({ one }) => ({
 export const salaryDeductionsRelations = relations(salaryDeductions, ({ one }) => ({
   user: one(users, { fields: [salaryDeductions.userId], references: [users.id] }),
   addedBy: one(users, { fields: [salaryDeductions.addedBy], references: [users.id], relationName: "addedDeductions" }),
+}));
+
+export const companiesRelations = relations(companies, ({ one, many }) => ({
+  manager: one(users, { fields: [companies.managerId], references: [users.id] }),
+  tasks: many(tasks),
+  milestones: many(companyMilestones),
+  files: many(companyFiles),
+  reports: many(companyReports),
+  comments: many(companyComments),
+  teamMembers: many(companyTeamMembers),
+}));
+
+export const companyMilestonesRelations = relations(companyMilestones, ({ one }) => ({
+  company: one(companies, { fields: [companyMilestones.companyId], references: [companies.id] }),
+}));
+
+export const companyFilesRelations = relations(companyFiles, ({ one }) => ({
+  company: one(companies, { fields: [companyFiles.companyId], references: [companies.id] }),
+  uploadedBy: one(users, { fields: [companyFiles.uploadedBy], references: [users.id] }),
+}));
+
+export const companyReportsRelations = relations(companyReports, ({ one }) => ({
+  company: one(companies, { fields: [companyReports.companyId], references: [companies.id] }),
+  uploadedBy: one(users, { fields: [companyReports.uploadedBy], references: [users.id] }),
+}));
+
+export const companyCommentsRelations = relations(companyComments, ({ one }) => ({
+  company: one(companies, { fields: [companyComments.companyId], references: [companies.id] }),
+  user: one(users, { fields: [companyComments.userId], references: [users.id] }),
+}));
+
+export const companyTeamMembersRelations = relations(companyTeamMembers, ({ one }) => ({
+  company: one(companies, { fields: [companyTeamMembers.companyId], references: [companies.id] }),
+  user: one(users, { fields: [companyTeamMembers.userId], references: [users.id] }),
 }));
 
 // Insert schemas
@@ -612,3 +724,52 @@ export type GoogleCalendarToken = typeof googleCalendarTokens.$inferSelect;
 export type InsertGoogleCalendarToken = z.infer<typeof insertGoogleCalendarTokenSchema>;
 export type CallLog = typeof callLogs.$inferSelect;
 export type InsertCallLog = z.infer<typeof insertCallLogSchema>;
+
+// Company insert schemas
+export const insertCompanySchema = createInsertSchema(companies).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertCompanyMilestoneSchema = createInsertSchema(companyMilestones).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertCompanyFileSchema = createInsertSchema(companyFiles).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertCompanyReportSchema = createInsertSchema(companyReports).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertCompanyCommentSchema = createInsertSchema(companyComments).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertCompanyTeamMemberSchema = createInsertSchema(companyTeamMembers).omit({
+  id: true,
+  assignedAt: true,
+});
+
+// Company types
+export type Company = typeof companies.$inferSelect;
+export type InsertCompany = z.infer<typeof insertCompanySchema>;
+export type CompanyMilestone = typeof companyMilestones.$inferSelect;
+export type InsertCompanyMilestone = z.infer<typeof insertCompanyMilestoneSchema>;
+export type CompanyFile = typeof companyFiles.$inferSelect;
+export type InsertCompanyFile = z.infer<typeof insertCompanyFileSchema>;
+export type CompanyReport = typeof companyReports.$inferSelect;
+export type InsertCompanyReport = z.infer<typeof insertCompanyReportSchema>;
+export type CompanyComment = typeof companyComments.$inferSelect;
+export type InsertCompanyComment = z.infer<typeof insertCompanyCommentSchema>;
+export type CompanyTeamMember = typeof companyTeamMembers.$inferSelect;
+export type InsertCompanyTeamMember = z.infer<typeof insertCompanyTeamMemberSchema>;

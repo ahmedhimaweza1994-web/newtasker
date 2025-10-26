@@ -4,7 +4,15 @@ import { Server as SocketIOServer } from "socket.io";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { createGoogleMeetEvent, isGoogleCalendarConnected } from "./google-calendar-integration";
-import { insertSuggestionSchema, insertSalaryDeductionSchema } from "@shared/schema";
+import { 
+  insertSuggestionSchema, 
+  insertSalaryDeductionSchema,
+  insertCompanySchema,
+  insertCompanyMilestoneSchema,
+  insertCompanyFileSchema,
+  insertCompanyReportSchema,
+  insertCompanyCommentSchema
+} from "@shared/schema";
 import { z } from "zod";
 import multer from 'multer';
 import path from 'path';
@@ -90,7 +98,7 @@ export function registerRoutes(app: Express): Server {
         ...req.body,
         createdBy: req.user!.id,
         createdFor: req.body.createdFor,
-        companyName: req.body.companyName || null,
+        companyId: req.body.companyId || null,
         assignedTo: req.body.assignedTo || null,
         // Convert ISO string dates to Date objects for Drizzle
         dueDate: req.body.dueDate ? new Date(req.body.dueDate) : undefined,
@@ -2143,6 +2151,393 @@ export function registerRoutes(app: Express): Server {
     } catch (error) {
       console.error("Error updating suggestion:", error);
       res.status(500).json({ message: "حدث خطأ في تحديث المقترح" });
+    }
+  });
+
+  // =================
+  // Companies Routes
+  // =================
+
+  // Get all companies
+  app.get("/api/companies", requireAuth, async (req, res) => {
+    try {
+      const companies = await storage.getAllCompanies();
+      res.json(companies);
+    } catch (error) {
+      console.error("Error fetching companies:", error);
+      res.status(500).json({ message: "حدث خطأ في جلب الشركات" });
+    }
+  });
+
+  // Create new company
+  app.post("/api/companies", requireAuth, requireRole(['admin', 'sub-admin']), async (req, res) => {
+    try {
+      const validationResult = insertCompanySchema.safeParse({
+        ...req.body,
+        startDate: req.body.startDate ? new Date(req.body.startDate) : undefined,
+      });
+
+      if (!validationResult.success) {
+        return res.status(400).json({ 
+          message: "بيانات غير صالحة",
+          errors: validationResult.error.errors 
+        });
+      }
+
+      const company = await storage.createCompany(validationResult.data);
+      res.status(201).json(company);
+    } catch (error) {
+      console.error("Error creating company:", error);
+      res.status(500).json({ message: "حدث خطأ في إنشاء الشركة" });
+    }
+  });
+
+  // Get specific company
+  app.get("/api/companies/:id", requireAuth, async (req, res) => {
+    try {
+      const company = await storage.getCompany(req.params.id);
+      if (!company) {
+        return res.status(404).json({ message: "الشركة غير موجودة" });
+      }
+      res.json(company);
+    } catch (error) {
+      console.error("Error fetching company:", error);
+      res.status(500).json({ message: "حدث خطأ في جلب الشركة" });
+    }
+  });
+
+  // Update company
+  app.put("/api/companies/:id", requireAuth, requireRole(['admin', 'sub-admin']), async (req, res) => {
+    try {
+      const updateData = {
+        ...req.body,
+        startDate: req.body.startDate ? new Date(req.body.startDate) : undefined,
+      };
+
+      const company = await storage.updateCompany(req.params.id, updateData);
+      if (!company) {
+        return res.status(404).json({ message: "الشركة غير موجودة" });
+      }
+      res.json(company);
+    } catch (error) {
+      console.error("Error updating company:", error);
+      res.status(500).json({ message: "حدث خطأ في تحديث الشركة" });
+    }
+  });
+
+  // Delete company
+  app.delete("/api/companies/:id", requireAuth, requireRole(['admin', 'sub-admin']), async (req, res) => {
+    try {
+      const success = await storage.deleteCompany(req.params.id);
+      if (!success) {
+        return res.status(404).json({ message: "الشركة غير موجودة" });
+      }
+      res.json({ message: "تم حذف الشركة بنجاح" });
+    } catch (error) {
+      console.error("Error deleting company:", error);
+      res.status(500).json({ message: "حدث خطأ في حذف الشركة" });
+    }
+  });
+
+  // Get company tasks
+  app.get("/api/companies/:id/tasks", requireAuth, async (req, res) => {
+    try {
+      const tasks = await storage.getCompanyTasks(req.params.id);
+      res.json(tasks);
+    } catch (error) {
+      console.error("Error fetching company tasks:", error);
+      res.status(500).json({ message: "حدث خطأ في جلب مهام الشركة" });
+    }
+  });
+
+  // =================
+  // Company Milestones
+  // =================
+
+  app.get("/api/companies/:id/milestones", requireAuth, async (req, res) => {
+    try {
+      const milestones = await storage.getCompanyMilestones(req.params.id);
+      res.json(milestones);
+    } catch (error) {
+      console.error("Error fetching company milestones:", error);
+      res.status(500).json({ message: "حدث خطأ في جلب المعالم" });
+    }
+  });
+
+  app.post("/api/companies/:id/milestones", requireAuth, async (req, res) => {
+    try {
+      const validationResult = insertCompanyMilestoneSchema.safeParse({
+        companyId: req.params.id,
+        ...req.body,
+        dueDate: req.body.dueDate ? new Date(req.body.dueDate) : undefined,
+      });
+
+      if (!validationResult.success) {
+        return res.status(400).json({ 
+          message: "بيانات غير صالحة",
+          errors: validationResult.error.errors 
+        });
+      }
+
+      const milestone = await storage.createCompanyMilestone(validationResult.data);
+      res.status(201).json(milestone);
+    } catch (error) {
+      console.error("Error creating milestone:", error);
+      res.status(500).json({ message: "حدث خطأ في إنشاء المعلم" });
+    }
+  });
+
+  app.put("/api/companies/:id/milestones/:milestoneId", requireAuth, async (req, res) => {
+    try {
+      const updateData = {
+        ...req.body,
+        dueDate: req.body.dueDate ? new Date(req.body.dueDate) : undefined,
+      };
+
+      const milestone = await storage.updateCompanyMilestone(req.params.milestoneId, updateData);
+      if (!milestone) {
+        return res.status(404).json({ message: "المعلم غير موجود" });
+      }
+      res.json(milestone);
+    } catch (error) {
+      console.error("Error updating milestone:", error);
+      res.status(500).json({ message: "حدث خطأ في تحديث المعلم" });
+    }
+  });
+
+  app.delete("/api/companies/:id/milestones/:milestoneId", requireAuth, async (req, res) => {
+    try {
+      const success = await storage.deleteCompanyMilestone(req.params.milestoneId);
+      if (!success) {
+        return res.status(404).json({ message: "المعلم غير موجود" });
+      }
+      res.json({ message: "تم حذف المعلم بنجاح" });
+    } catch (error) {
+      console.error("Error deleting milestone:", error);
+      res.status(500).json({ message: "حدث خطأ في حذف المعلم" });
+    }
+  });
+
+  // =================
+  // Company Files
+  // =================
+
+  app.get("/api/companies/:id/files", requireAuth, async (req, res) => {
+    try {
+      const files = await storage.getCompanyFiles(req.params.id);
+      res.json(files);
+    } catch (error) {
+      console.error("Error fetching company files:", error);
+      res.status(500).json({ message: "حدث خطأ في جلب الملفات" });
+    }
+  });
+
+  app.post("/api/companies/:id/files", requireAuth, async (req, res) => {
+    try {
+      const validationResult = insertCompanyFileSchema.safeParse({
+        companyId: req.params.id,
+        uploadedBy: req.user!.id,
+        ...req.body,
+      });
+
+      if (!validationResult.success) {
+        return res.status(400).json({ 
+          message: "بيانات غير صالحة",
+          errors: validationResult.error.errors 
+        });
+      }
+
+      const file = await storage.createCompanyFile(validationResult.data);
+      res.status(201).json(file);
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      res.status(500).json({ message: "حدث خطأ في رفع الملف" });
+    }
+  });
+
+  app.delete("/api/companies/:id/files/:fileId", requireAuth, async (req, res) => {
+    try {
+      const success = await storage.deleteCompanyFile(req.params.fileId);
+      if (!success) {
+        return res.status(404).json({ message: "الملف غير موجود" });
+      }
+      res.json({ message: "تم حذف الملف بنجاح" });
+    } catch (error) {
+      console.error("Error deleting file:", error);
+      res.status(500).json({ message: "حدث خطأ في حذف الملف" });
+    }
+  });
+
+  // =================
+  // Company Reports
+  // =================
+
+  app.get("/api/companies/:id/reports", requireAuth, async (req, res) => {
+    try {
+      const reports = await storage.getCompanyReports(req.params.id);
+      res.json(reports);
+    } catch (error) {
+      console.error("Error fetching company reports:", error);
+      res.status(500).json({ message: "حدث خطأ في جلب التقارير" });
+    }
+  });
+
+  app.post("/api/companies/:id/reports", requireAuth, async (req, res) => {
+    try {
+      const validationResult = insertCompanyReportSchema.safeParse({
+        companyId: req.params.id,
+        uploadedBy: req.user!.id,
+        ...req.body,
+        reportDate: req.body.reportDate ? new Date(req.body.reportDate) : new Date(),
+      });
+
+      if (!validationResult.success) {
+        return res.status(400).json({ 
+          message: "بيانات غير صالحة",
+          errors: validationResult.error.errors 
+        });
+      }
+
+      const report = await storage.createCompanyReport(validationResult.data);
+      res.status(201).json(report);
+    } catch (error) {
+      console.error("Error creating report:", error);
+      res.status(500).json({ message: "حدث خطأ في إنشاء التقرير" });
+    }
+  });
+
+  app.put("/api/companies/:id/reports/:reportId", requireAuth, async (req, res) => {
+    try {
+      const updateData = {
+        ...req.body,
+        reportDate: req.body.reportDate ? new Date(req.body.reportDate) : undefined,
+      };
+
+      const report = await storage.updateCompanyReport(req.params.reportId, updateData);
+      if (!report) {
+        return res.status(404).json({ message: "التقرير غير موجود" });
+      }
+      res.json(report);
+    } catch (error) {
+      console.error("Error updating report:", error);
+      res.status(500).json({ message: "حدث خطأ في تحديث التقرير" });
+    }
+  });
+
+  app.delete("/api/companies/:id/reports/:reportId", requireAuth, async (req, res) => {
+    try {
+      const success = await storage.deleteCompanyReport(req.params.reportId);
+      if (!success) {
+        return res.status(404).json({ message: "التقرير غير موجود" });
+      }
+      res.json({ message: "تم حذف التقرير بنجاح" });
+    } catch (error) {
+      console.error("Error deleting report:", error);
+      res.status(500).json({ message: "حدث خطأ في حذف التقرير" });
+    }
+  });
+
+  // =================
+  // Company Comments
+  // =================
+
+  app.get("/api/companies/:id/comments", requireAuth, async (req, res) => {
+    try {
+      const comments = await storage.getCompanyComments(req.params.id);
+      res.json(comments);
+    } catch (error) {
+      console.error("Error fetching company comments:", error);
+      res.status(500).json({ message: "حدث خطأ في جلب التعليقات" });
+    }
+  });
+
+  app.post("/api/companies/:id/comments", requireAuth, async (req, res) => {
+    try {
+      const validationResult = insertCompanyCommentSchema.safeParse({
+        companyId: req.params.id,
+        userId: req.user!.id,
+        content: req.body.content,
+      });
+
+      if (!validationResult.success) {
+        return res.status(400).json({ 
+          message: "بيانات غير صالحة",
+          errors: validationResult.error.errors 
+        });
+      }
+
+      const comment = await storage.createCompanyComment(validationResult.data);
+      res.status(201).json(comment);
+    } catch (error) {
+      console.error("Error creating comment:", error);
+      res.status(500).json({ message: "حدث خطأ في إضافة التعليق" });
+    }
+  });
+
+  app.put("/api/companies/:id/comments/:commentId", requireAuth, async (req, res) => {
+    try {
+      const comment = await storage.updateCompanyComment(req.params.commentId, req.body.content);
+      if (!comment) {
+        return res.status(404).json({ message: "التعليق غير موجود" });
+      }
+      res.json(comment);
+    } catch (error) {
+      console.error("Error updating comment:", error);
+      res.status(500).json({ message: "حدث خطأ في تحديث التعليق" });
+    }
+  });
+
+  app.delete("/api/companies/:id/comments/:commentId", requireAuth, async (req, res) => {
+    try {
+      const success = await storage.deleteCompanyComment(req.params.commentId);
+      if (!success) {
+        return res.status(404).json({ message: "التعليق غير موجود" });
+      }
+      res.json({ message: "تم حذف التعليق بنجاح" });
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+      res.status(500).json({ message: "حدث خطأ في حذف التعليق" });
+    }
+  });
+
+  // =================
+  // Company Team Members
+  // =================
+
+  app.get("/api/companies/:id/team", requireAuth, async (req, res) => {
+    try {
+      const team = await storage.getCompanyTeamMembers(req.params.id);
+      res.json(team);
+    } catch (error) {
+      console.error("Error fetching company team:", error);
+      res.status(500).json({ message: "حدث خطأ في جلب أعضاء الفريق" });
+    }
+  });
+
+  app.post("/api/companies/:id/team", requireAuth, requireRole(['admin', 'sub-admin']), async (req, res) => {
+    try {
+      const member = await storage.addCompanyTeamMember(
+        req.params.id,
+        req.body.userId,
+        req.body.role
+      );
+      res.status(201).json(member);
+    } catch (error) {
+      console.error("Error adding team member:", error);
+      res.status(500).json({ message: "حدث خطأ في إضافة عضو الفريق" });
+    }
+  });
+
+  app.delete("/api/companies/:id/team/:userId", requireAuth, requireRole(['admin', 'sub-admin']), async (req, res) => {
+    try {
+      const success = await storage.removeCompanyTeamMember(req.params.id, req.params.userId);
+      if (!success) {
+        return res.status(404).json({ message: "عضو الفريق غير موجود" });
+      }
+      res.json({ message: "تم إزالة عضو الفريق بنجاح" });
+    } catch (error) {
+      console.error("Error removing team member:", error);
+      res.status(500).json({ message: "حدث خطأ في إزالة عضو الفريق" });
     }
   });
 
