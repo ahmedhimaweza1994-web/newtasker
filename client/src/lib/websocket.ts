@@ -83,6 +83,7 @@ function initializeSocketHandlers(socket: Socket, userId: string) {
     dispatchToAllCallbacks(message);
   });
 
+  // Event-specific listeners for typed events emitted directly from server
   EVENT_TYPES.forEach(eventType => {
     socket.on(eventType, (data: any) => {
       dispatchToAllCallbacks({ type: eventType, data });

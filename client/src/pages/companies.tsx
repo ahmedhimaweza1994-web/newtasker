@@ -296,14 +296,14 @@ export default function Companies() {
                         <div className="space-y-2">
                           <Label htmlFor="company-manager">مدير الحساب</Label>
                           <Select
-                            value={newCompany.managerId}
-                            onValueChange={(value) => setNewCompany({ ...newCompany, managerId: value })}
+                            value={newCompany.managerId || "unassigned"}
+                            onValueChange={(value) => setNewCompany({ ...newCompany, managerId: value === "unassigned" ? "" : value })}
                           >
                             <SelectTrigger id="company-manager" data-testid="select-company-manager">
                               <SelectValue placeholder="اختر المدير" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="">غير محدد</SelectItem>
+                              <SelectItem value="unassigned">غير محدد</SelectItem>
                               {users.map(u => (
                                 <SelectItem key={u.id} value={u.id}>{u.fullName}</SelectItem>
                               ))}
@@ -570,14 +570,14 @@ export default function Companies() {
                 <div className="space-y-2">
                   <Label htmlFor="edit-company-manager">مدير الحساب</Label>
                   <Select
-                    value={editingCompany.managerId || ""}
-                    onValueChange={(value) => setEditingCompany({ ...editingCompany, managerId: value || null })}
+                    value={editingCompany.managerId || "unassigned"}
+                    onValueChange={(value) => setEditingCompany({ ...editingCompany, managerId: value === "unassigned" ? null : value })}
                   >
                     <SelectTrigger id="edit-company-manager" data-testid="select-edit-manager">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">غير محدد</SelectItem>
+                      <SelectItem value="unassigned">غير محدد</SelectItem>
                       {users.map(u => (
                         <SelectItem key={u.id} value={u.id}>{u.fullName}</SelectItem>
                       ))}

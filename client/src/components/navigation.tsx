@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Bell, Search, Moon, Sun, LogOut, User, Settings, FileText, Users as UsersIcon, CheckSquare, Menu } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -38,6 +38,7 @@ export default function Navigation() {
   const [isDark, setIsDark] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showSearchResults, setShowSearchResults] = useState(false);
+  const processedNotificationIds = useRef<Set<string>>(new Set());
   const { lastMessage } = useWebSocket({ userId: user?.id });
   const { toast } = useToast();
   const { handleNotification, ensureBrowserNotificationPermission, permission } = useEnhancedNotifications();
@@ -110,11 +111,20 @@ export default function Navigation() {
     }
   }, [searchTerm]);
 
+  // Clear processed notification IDs when user changes
+  useEffect(() => {
+    processedNotificationIds.current.clear();
+  }, [user?.id]);
+
   useEffect(() => {
     if (lastMessage) {
       if (lastMessage.type === 'new_notification' && lastMessage.data) {
         const notification = lastMessage.data as Notification;
-        if (notification.userId === user?.id) {
+        
+        // Prevent duplicate notifications by tracking processed IDs in a ref
+        if (notification.userId === user?.id && notification.id && !processedNotificationIds.current.has(notification.id)) {
+          processedNotificationIds.current.add(notification.id);
+          
           toast({
             title: notification.title,
             description: notification.message,
@@ -123,6 +133,11 @@ export default function Navigation() {
           queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
           
           handleNotification(notification);
+          
+          // Clean up old IDs after 5 minutes to prevent memory leak
+          setTimeout(() => {
+            processedNotificationIds.current.delete(notification.id);
+          }, 300000);
         }
       } else if (lastMessage.type === 'new_message' && lastMessage.data) {
         queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });

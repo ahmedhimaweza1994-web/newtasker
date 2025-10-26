@@ -96,6 +96,8 @@ export default function HRManagement() {
   const [isAddEmployeeDialogOpen, setIsAddEmployeeDialogOpen] = useState(false);
   const [isEditEmployeeDialogOpen, setIsEditEmployeeDialogOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
+  const [processingLeaveId, setProcessingLeaveId] = useState<string | null>(null);
+  const [processingAdvanceId, setProcessingAdvanceId] = useState<string | null>(null);
   
   const [newLeaveRequest, setNewLeaveRequest] = useState({
     userId: user.id,
@@ -211,6 +213,7 @@ export default function HRManagement() {
 
   const updateLeaveMutation = useMutation({
     mutationFn: async (data: { id: string; status: string; rejectionReason?: string }) => {
+      setProcessingLeaveId(data.id);
       const res = await apiRequest("PUT", `/api/leaves/${data.id}`, {
         status: data.status,
         rejectionReason: data.rejectionReason,
@@ -219,15 +222,20 @@ export default function HRManagement() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/leaves/pending"] });
+      setProcessingLeaveId(null);
       toast({
         title: "تم تحديث طلب الإجازة",
         description: "تم تحديث حالة طلب الإجازة بنجاح",
       });
     },
+    onError: () => {
+      setProcessingLeaveId(null);
+    },
   });
 
   const updateSalaryAdvanceMutation = useMutation({
     mutationFn: async (data: { id: string; status: string; rejectionReason?: string }) => {
+      setProcessingAdvanceId(data.id);
       const res = await apiRequest("PUT", `/api/salary-advances/${data.id}`, {
         status: data.status,
         rejectionReason: data.rejectionReason,
@@ -236,10 +244,14 @@ export default function HRManagement() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/salary-advances/pending"] });
+      setProcessingAdvanceId(null);
       toast({
         title: "تم تحديث طلب السلفة",
         description: "تم تحديث حالة طلب السلفة بنجاح",
       });
+    },
+    onError: () => {
+      setProcessingAdvanceId(null);
     },
   });
 
@@ -843,22 +855,22 @@ export default function HRManagement() {
                               size="sm"
                               className="flex-1 sm:flex-none"
                               onClick={() => handleApproveLeave(request.id)}
-                              disabled={updateLeaveMutation.isPending}
+                              disabled={processingLeaveId === request.id}
                               data-testid={`button-approve-leave-${request.id}`}
                             >
                               <CheckCircle className="w-4 h-4 ml-1" />
-                              موافقة
+                              {processingLeaveId === request.id ? "جاري المعالجة..." : "موافقة"}
                             </Button>
                             <Button
                               size="sm"
                               variant="destructive"
                               className="flex-1 sm:flex-none"
                               onClick={() => handleRejectLeave(request.id, "تم الرفض من قبل الإدارة")}
-                              disabled={updateLeaveMutation.isPending}
+                              disabled={processingLeaveId === request.id}
                               data-testid={`button-reject-leave-${request.id}`}
                             >
                               <XCircle className="w-4 h-4 ml-1" />
-                              رفض
+                              {processingLeaveId === request.id ? "جاري المعالجة..." : "رفض"}
                             </Button>
                           </div>
                         </motion.div>
@@ -922,22 +934,22 @@ export default function HRManagement() {
                               size="sm"
                               className="flex-1 sm:flex-none"
                               onClick={() => handleApproveSalaryAdvance(request.id)}
-                              disabled={updateSalaryAdvanceMutation.isPending}
+                              disabled={processingAdvanceId === request.id}
                               data-testid={`button-approve-advance-${request.id}`}
                             >
                               <CheckCircle className="w-4 h-4 ml-1" />
-                              موافقة
+                              {processingAdvanceId === request.id ? "جاري المعالجة..." : "موافقة"}
                             </Button>
                             <Button
                               size="sm"
                               variant="destructive"
                               className="flex-1 sm:flex-none"
                               onClick={() => handleRejectSalaryAdvance(request.id, "تم الرفض من قبل الإدارة")}
-                              disabled={updateSalaryAdvanceMutation.isPending}
+                              disabled={processingAdvanceId === request.id}
                               data-testid={`button-reject-advance-${request.id}`}
                             >
                               <XCircle className="w-4 h-4 ml-1" />
-                              رفض
+                              {processingAdvanceId === request.id ? "جاري المعالجة..." : "رفض"}
                             </Button>
                           </div>
                         </motion.div>

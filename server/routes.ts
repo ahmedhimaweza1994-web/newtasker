@@ -1386,6 +1386,11 @@ export function registerRoutes(app: Express): Server {
     }
   }
 
+  // Helper function to broadcast message to all connected clients
+  function broadcast(message: any) {
+    io.emit('message', message);
+  }
+
   // Helper function to send message to all members of a chat room
   async function sendToRoomMembers(roomId: string, message: any, excludeUserId?: string) {
     try {
