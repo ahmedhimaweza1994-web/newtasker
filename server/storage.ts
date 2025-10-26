@@ -843,6 +843,14 @@ export class MemStorage implements IStorage {
       .orderBy(desc(salaryAdvanceRequests.createdAt));
   }
 
+  async getPendingSalaryAdvanceRequests(): Promise<SalaryAdvanceRequest[]> {
+    return await db
+      .select()
+      .from(salaryAdvanceRequests)
+      .where(eq(salaryAdvanceRequests.status, 'pending'))
+      .orderBy(desc(salaryAdvanceRequests.createdAt));
+  }
+
   async updateSalaryAdvanceRequest(
     id: string,
     status: 'approved' | 'rejected',

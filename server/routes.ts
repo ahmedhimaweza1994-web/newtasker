@@ -758,13 +758,19 @@ export function registerRoutes(app: Express): Server {
 
   app.put("/api/leaves/:id", requireAuth, requireRole(['admin', 'sub-admin']), async (req, res) => {
     try {
-      const updates = {
-        ...req.body,
-        approvedBy: req.user!.id,
-        approvedAt: new Date(),
-      };
+      const { status, rejectionReason } = req.body;
       
-      const leaveRequest = await storage.updateLeaveRequest(req.params.id, updates);
+      if (!status || (status !== 'approved' && status !== 'rejected')) {
+        return res.status(400).json({ message: "حالة غير صالحة" });
+      }
+      
+      const leaveRequest = await storage.updateLeaveRequest(
+        req.params.id,
+        status,
+        req.user!.id,
+        rejectionReason
+      );
+      
       if (!leaveRequest) {
         return res.status(404).json({ message: "طلب الإجازة غير موجود" });
       }
@@ -778,16 +784,17 @@ export function registerRoutes(app: Express): Server {
         type: leaveRequest.status === 'approved' ? 'success' : 'error',
         category: "system",
         metadata: {
+          resourceId: req.params.id,
           userId: req.user!.id,
           userName: req.user!.fullName
         }
       });
       
       // Send notification via WebSocket to specific user
-        sendToUser(notification.userId, {
-          type: 'new_notification',
-          data: notification
-        });
+      sendToUser(notification.userId, {
+        type: 'new_notification',
+        data: notification
+      });
       
       res.json(leaveRequest);
     } catch (error) {
@@ -808,6 +815,31 @@ export function registerRoutes(app: Express): Server {
         reason: req.body.reason,
         repaymentDate: req.body.repaymentDate ? new Date(req.body.repaymentDate) : null,
       });
+      
+      // Notify admins
+      const admins = await storage.getUsers();
+      const adminUsers = admins.filter(u => u.role === 'admin' || u.role === 'sub-admin');
+      
+      for (const admin of adminUsers) {
+        const notification = await storage.createNotification({
+          userId: admin.id,
+          title: "طلب سلفة جديد",
+          message: `${req.user!.fullName} قدم طلب سلفة جديد بمبلغ ${advanceRequest.amount}`,
+          type: "info",
+          category: "system",
+          metadata: {
+            resourceId: advanceRequest.id,
+            userId: req.user!.id,
+            userName: req.user!.fullName
+          }
+        });
+        
+        // Send notification via WebSocket to specific user
+        sendToUser(notification.userId, {
+          type: 'new_notification',
+          data: notification
+        });
+      }
       
       res.status(201).json(advanceRequest);
     } catch (error) {
@@ -914,6 +946,7 @@ export function registerRoutes(app: Express): Server {
       });
 
       if (!validationResult.success) {
+        console.error("Validation error:", validationResult.error.errors);
         return res.status(400).json({ 
           message: "بيانات غير صالحة",
           errors: validationResult.error.errors 
@@ -955,7 +988,13 @@ export function registerRoutes(app: Express): Server {
       res.status(201).json(deductionWithUser || deduction);
     } catch (error) {
       console.error("Error creating deduction:", error);
-      res.status(500).json({ message: "حدث خطأ في إضافة الخصم" });
+      if (error instanceof Error) {
+        console.error("Error details:", error.message, error.stack);
+      }
+      res.status(500).json({ 
+        message: "حدث خطأ في إضافة الخصم",
+        error: error instanceof Error ? error.message : String(error)
+      });
     }
   });
 
@@ -985,6 +1024,7 @@ export function registerRoutes(app: Express): Server {
       const validationResult = updateSalaryDeductionSchema.safeParse(req.body);
 
       if (!validationResult.success) {
+        console.error("Validation error:", validationResult.error.errors);
         return res.status(400).json({ 
           message: "بيانات غير صالحة",
           errors: validationResult.error.errors 
@@ -1026,7 +1066,13 @@ export function registerRoutes(app: Express): Server {
       res.json(deduction);
     } catch (error) {
       console.error("Error updating deduction:", error);
-      res.status(500).json({ message: "حدث خطأ في تحديث الخصم" });
+      if (error instanceof Error) {
+        console.error("Error details:", error.message, error.stack);
+      }
+      res.status(500).json({ 
+        message: "حدث خطأ في تحديث الخصم",
+        error: error instanceof Error ? error.message : String(error)
+      });
     }
   });
 
@@ -1070,7 +1116,13 @@ export function registerRoutes(app: Express): Server {
       res.json({ message: "تم حذف الخصم بنجاح" });
     } catch (error) {
       console.error("Error deleting deduction:", error);
-      res.status(500).json({ message: "حدث خطأ في حذف الخصم" });
+      if (error instanceof Error) {
+        console.error("Error details:", error.message, error.stack);
+      }
+      res.status(500).json({ 
+        message: "حدث خطأ في حذف الخصم",
+        error: error instanceof Error ? error.message : String(error)
+      });
     }
   });
 
@@ -1965,7 +2017,11 @@ export function registerRoutes(app: Express): Server {
           }
         });
         
-        io.emit('new_notification', notification);
+        // Send notification to specific user only, not broadcast to all
+        sendToUser(participantId, {
+          type: 'new_notification',
+          data: notification
+        });
       }
       
       io.emit('new_message', message);
@@ -2008,7 +2064,24 @@ export function registerRoutes(app: Express): Server {
           messageType: "meeting_link",
           attachments: [{ name: title, url: meetingLink, type: "meeting" }],
         });
-        await storage.createNotification(participantId, "اجتماع جديد", `${req.user!.fullName} قام بجدولة اجتماع: ${title}`, "info");
+        
+        // Create and send notification
+        const notification = await storage.createNotification({
+          userId: participantId,
+          title: "اجتماع جديد",
+          message: `${req.user!.fullName} قام بجدولة اجتماع: ${title}`,
+          type: "info",
+          category: "system",
+          metadata: {
+            userId: req.user!.id,
+            userName: req.user!.fullName
+          }
+        });
+        
+        sendToUser(participantId, {
+          type: 'new_notification',
+          data: notification
+        });
       }
       
       res.status(201).json({ ...meeting, meetingLink });
@@ -2046,16 +2119,31 @@ export function registerRoutes(app: Express): Server {
             }],
           });
           
-          await storage.createNotification(
-            participantId,
-            "اجتماع جديد",
-            `تم جدولة اجتماع: ${meeting.title}`,
-            "info"
-          );
+          // Create and send notification
+          const notification = await storage.createNotification({
+            userId: participantId,
+            title: "اجتماع جديد",
+            message: `تم جدولة اجتماع: ${meeting.title}`,
+            type: "info",
+            category: "system",
+            metadata: {
+              userId: req.user!.id,
+              userName: req.user!.fullName
+            }
+          });
+          
+          sendToUser(participantId, {
+            type: 'new_notification',
+            data: notification
+          });
         }
       }
       
-      io.emit('new_meeting', meeting);
+      // Broadcast meeting creation to all users
+      broadcast({
+        type: 'new_meeting',
+        data: meeting
+      });
       
       res.status(201).json(meeting);
     } catch (error) {
@@ -2230,6 +2318,7 @@ export function registerRoutes(app: Express): Server {
       });
 
       if (!validationResult.success) {
+        console.error("Company validation error:", validationResult.error.errors);
         return res.status(400).json({ 
           message: "بيانات غير صالحة",
           errors: validationResult.error.errors 
@@ -2240,7 +2329,13 @@ export function registerRoutes(app: Express): Server {
       res.status(201).json(company);
     } catch (error) {
       console.error("Error creating company:", error);
-      res.status(500).json({ message: "حدث خطأ في إنشاء الشركة" });
+      if (error instanceof Error) {
+        console.error("Error details:", error.message, error.stack);
+      }
+      res.status(500).json({ 
+        message: "حدث خطأ في إنشاء الشركة",
+        error: error instanceof Error ? error.message : String(error)
+      });
     }
   });
 
