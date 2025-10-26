@@ -42,7 +42,7 @@ import { Separator } from "@/components/ui/separator";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
-import { Task, User as UserType } from "@shared/schema";
+import type { Task, User as UserType, SelectCompany } from "@shared/schema";
 import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { formatArabicDate } from "@/lib/arabic-date";
@@ -87,6 +87,16 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
     queryKey: ["/api/users"],
   });
 
+  const { data: companies = [] } = useQuery<SelectCompany[]>({
+    queryKey: ["/api/companies"],
+  });
+
+  const getCompanyName = (companyId: string | null) => {
+    if (!companyId) return null;
+    const company = companies.find(c => c.id === companyId);
+    return company ? company.name : null;
+  };
+
   const updateTaskMutation = useMutation({
     mutationFn: async (data: { taskId: string; status: string }) => {
       const res = await apiRequest("PUT", `/api/tasks/${data.taskId}`, { status: data.status });
@@ -96,6 +106,7 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       queryClient.invalidateQueries({ queryKey: ["/api/tasks/my"] });
       queryClient.invalidateQueries({ queryKey: ["/api/tasks/assigned"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/companies"] });
       toast({
         title: "تم تحديث المهمة",
         description: "تم تغيير حالة المهمة بنجاح",
@@ -119,6 +130,7 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       queryClient.invalidateQueries({ queryKey: ["/api/tasks/my"] });
       queryClient.invalidateQueries({ queryKey: ["/api/tasks/assigned"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/companies"] });
       toast({
         title: "تمت الموافقة على المهمة",
         description: "تم إكمال المهمة بنجاح",
@@ -142,6 +154,7 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       queryClient.invalidateQueries({ queryKey: ["/api/tasks/my"] });
       queryClient.invalidateQueries({ queryKey: ["/api/tasks/assigned"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/companies"] });
       setTaskDetailsDialog({ open: false, taskId: null });
       toast({
         title: "تم حذف المهمة",
@@ -167,6 +180,7 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
       queryClient.invalidateQueries({ queryKey: ["/api/tasks/my"] });
       queryClient.invalidateQueries({ queryKey: ["/api/tasks/assigned"] });
       queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/companies"] });
       setAssignPointsDialog({ open: false, taskId: null });
       setRewardPoints("");
       toast({
@@ -291,10 +305,10 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
               <h4 className="font-semibold text-base sm:text-sm truncate" data-testid={`task-title-${task.id}`}>
                 {task.title}
               </h4>
-              {task.companyName && (
+              {task.companyId && getCompanyName(task.companyId) && (
                 <p className="text-sm sm:text-xs text-muted-foreground mt-1 flex items-center gap-1" data-testid={`task-company-${task.id}`}>
                   <Building2 className="w-4 h-4 sm:w-3 sm:h-3" />
-                  {task.companyName}
+                  {getCompanyName(task.companyId)}
                 </p>
               )}
             </div>
@@ -648,6 +662,7 @@ function TaskDetailsDialog({
       queryClient.invalidateQueries({ queryKey: ["/api/tasks/my"] });
       queryClient.invalidateQueries({ queryKey: ["/api/tasks/assigned"] });
       queryClient.invalidateQueries({ queryKey: ["/api/tasks", taskId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/companies"] });
       setEditMode(false);
       toast({
         title: "تم تحديث المهمة",
@@ -714,7 +729,7 @@ function TaskDetailsDialog({
       priority: task.priority,
       assignedTo: task.assignedTo || "",
       dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : "",
-      companyName: task.companyName || "",
+      companyId: task.companyId || "",
     });
     setEditMode(true);
   };
@@ -834,13 +849,18 @@ function TaskDetailsDialog({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="edit-company">اسم الشركة</Label>
-                  <Input
-                    id="edit-company"
-                    value={editedTask.companyName}
-                    onChange={(e) => setEditedTask({ ...editedTask, companyName: e.target.value })}
-                    data-testid="input-edit-company"
-                  />
+                  <Label htmlFor="edit-company">الشركة</Label>
+                  <Select value={editedTask.companyId} onValueChange={(value) => setEditedTask({ ...editedTask, companyId: value })}>
+                    <SelectTrigger id="edit-company" data-testid="select-edit-company">
+                      <SelectValue placeholder="اختر الشركة" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">بدون شركة</SelectItem>
+                      {companies.map((company) => (
+                        <SelectItem key={company.id} value={company.id}>{company.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
@@ -932,7 +952,7 @@ function TaskDetailsDialog({
                 </div>
               </div>
 
-              {(task.dueDate || task.companyName) && (
+              {(task.dueDate || (task.companyId && getCompanyName(task.companyId))) && (
                 <div className="grid grid-cols-2 gap-4">
                   {task.dueDate && (
                     <div>
@@ -943,13 +963,13 @@ function TaskDetailsDialog({
                       <p className="font-medium mt-1" data-testid="text-task-due-date">{formatArabicDate(task.dueDate)}</p>
                     </div>
                   )}
-                  {task.companyName && (
+                  {task.companyId && getCompanyName(task.companyId) && (
                     <div>
                       <Label className="text-muted-foreground flex items-center gap-1">
                         <Building2 className="w-4 h-4" />
-                        اسم الشركة
+                        الشركة
                       </Label>
-                      <p className="font-medium mt-1" data-testid="text-task-company">{task.companyName}</p>
+                      <p className="font-medium mt-1" data-testid="text-task-company">{getCompanyName(task.companyId)}</p>
                     </div>
                   )}
                 </div>

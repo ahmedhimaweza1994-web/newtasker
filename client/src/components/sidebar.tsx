@@ -32,7 +32,7 @@ import { useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import type { Task, LeaveRequest, User, Notification } from "@shared/schema";
+import type { Task, LeaveRequest, User, Notification, SelectCompany } from "@shared/schema";
 import {
   Dialog,
   DialogContent,
@@ -64,7 +64,7 @@ export default function Sidebar() {
     priority: "medium",
     assignedTo: "",
     dueDate: "",
-    companyName: "",
+    companyId: "",
   });
   const { toast } = useToast();
 
@@ -288,6 +288,10 @@ export default function Sidebar() {
     queryKey: ["/api/users"],
   });
 
+  const { data: companies = [] } = useQuery<SelectCompany[]>({
+    queryKey: ["/api/companies"],
+  });
+
   const createTaskMutation = useMutation({
     mutationFn: async (taskData: any) => {
       const res = await apiRequest("POST", "/api/tasks", taskData);
@@ -297,6 +301,7 @@ export default function Sidebar() {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       queryClient.invalidateQueries({ queryKey: ["/api/tasks/my"] });
       queryClient.invalidateQueries({ queryKey: ["/api/tasks/assigned"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/companies"] });
       setShowTaskDialog(false);
       setNewTask({
         title: "",
@@ -304,7 +309,7 @@ export default function Sidebar() {
         priority: "medium",
         assignedTo: "",
         dueDate: "",
-        companyName: "",
+        companyId: "",
       });
       toast({
         title: "تم إنشاء المهمة بنجاح",
@@ -326,7 +331,7 @@ export default function Sidebar() {
       ...newTask,
       dueDate: newTask.dueDate ? new Date(newTask.dueDate) : undefined,
       assignedTo: newTask.assignedTo || undefined,
-      companyName: newTask.companyName || undefined,
+      companyId: newTask.companyId || undefined,
     });
   };
 
@@ -649,14 +654,23 @@ export default function Sidebar() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="task-company">اسم الشركة</Label>
-              <Input
-                id="task-company"
-                placeholder="أدخل اسم الشركة (اختياري)"
-                value={newTask.companyName}
-                onChange={(e) => setNewTask({ ...newTask, companyName: e.target.value })}
-                data-testid="input-task-company"
-              />
+              <Label htmlFor="task-company">الشركة</Label>
+              <Select
+                value={newTask.companyId}
+                onValueChange={(value) => setNewTask({ ...newTask, companyId: value })}
+              >
+                <SelectTrigger id="task-company" data-testid="select-task-company">
+                  <SelectValue placeholder="اختر الشركة (اختياري)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">بدون شركة</SelectItem>
+                  {companies.map((company) => (
+                    <SelectItem key={company.id} value={company.id}>
+                      {company.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">

@@ -18,7 +18,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Plus, Search, Filter, ListTodo, Zap, CheckCircle2, Clock } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Task, User } from "@shared/schema";
+import type { Task, User, SelectCompany } from "@shared/schema";
 import { motion } from "framer-motion";
 
 export default function TaskManagement() {
@@ -34,7 +34,7 @@ export default function TaskManagement() {
     createdFor: "",
     assignedTo: "",
     dueDate: "",
-    companyName: "",
+    companyId: "",
   });
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -57,8 +57,11 @@ export default function TaskManagement() {
   const { data: users = [], isLoading: usersLoading } = useQuery<User[]>({
     queryKey: ["/api/users"],
   });
+  const { data: companies = [], isLoading: companiesLoading } = useQuery<SelectCompany[]>({
+    queryKey: ["/api/companies"],
+  });
 
-  const isLoading = tasksLoading || myTasksLoading || assignedTasksLoading || usersLoading;
+  const isLoading = tasksLoading || myTasksLoading || assignedTasksLoading || usersLoading || companiesLoading;
 
   const createTaskMutation = useMutation({
     mutationFn: async (taskData: any) => {
@@ -69,6 +72,7 @@ export default function TaskManagement() {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       queryClient.invalidateQueries({ queryKey: ["/api/tasks/my"] });
       queryClient.invalidateQueries({ queryKey: ["/api/tasks/assigned"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/companies"] });
       setIsCreateDialogOpen(false);
       setNewTask({
         title: "",
@@ -77,7 +81,7 @@ export default function TaskManagement() {
         createdFor: "",
         assignedTo: "",
         dueDate: "",
-        companyName: "",
+        companyId: "",
       });
       toast({
         title: "تم إنشاء المهمة بنجاح",
@@ -102,6 +106,7 @@ export default function TaskManagement() {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       queryClient.invalidateQueries({ queryKey: ["/api/tasks/my"] });
       queryClient.invalidateQueries({ queryKey: ["/api/tasks/assigned"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/companies"] });
       toast({
         title: "تم حذف المهمة",
         description: "تم حذف المهمة بنجاح",
@@ -132,7 +137,7 @@ export default function TaskManagement() {
       ...newTask,
       createdFor: newTask.createdFor,
       assignedTo: newTask.assignedTo || undefined,
-      companyName: newTask.companyName || undefined,
+      companyId: newTask.companyId || undefined,
     };
     
     if (newTask.dueDate) {
@@ -148,9 +153,10 @@ export default function TaskManagement() {
     : Array.from(new Map([...myTasks, ...assignedTasks].map(task => [task.id, task])).values());
   
   const filteredTasks = allUserTasks.filter(task => {
+    const companyName = task.companyId ? companies.find(c => c.id === task.companyId)?.name || "" : "";
     const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           task.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          task.companyName?.toLowerCase().includes(searchTerm.toLowerCase());
+                          companyName.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === "all" || task.status === statusFilter;
     const matchesPriority = priorityFilter === "all" || task.priority === priorityFilter;
     const matchesUser = userFilter === "all" ||
@@ -245,15 +251,23 @@ export default function TaskManagement() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="task-company" className="text-sm sm:text-base font-medium">اسم الشركة</Label>
-                      <Input
-                        id="task-company"
-                        placeholder="أدخل اسم الشركة (اختياري)"
-                        value={newTask.companyName}
-                        onChange={(e) => setNewTask({ ...newTask, companyName: e.target.value })}
-                        data-testid="input-task-company"
-                        className="text-base h-11 sm:h-10"
-                      />
+                      <Label htmlFor="task-company" className="text-sm sm:text-base font-medium">الشركة</Label>
+                      <Select
+                        value={newTask.companyId}
+                        onValueChange={(value) => setNewTask({ ...newTask, companyId: value })}
+                      >
+                        <SelectTrigger id="task-company" data-testid="select-task-company" className="h-11 sm:h-10">
+                          <SelectValue placeholder="اختر الشركة (اختياري)" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">بدون شركة</SelectItem>
+                          {companies.map((company) => (
+                            <SelectItem key={company.id} value={company.id}>
+                              {company.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-2">

@@ -28,7 +28,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useEnhancedNotifications } from "@/hooks/use-enhanced-notifications";
 import { useAutoMarkRead } from "@/hooks/use-auto-mark-read";
 import { motion, AnimatePresence } from "framer-motion";
-import type { Notification, Task, User as UserType } from "@shared/schema";
+import type { Notification, Task, User as UserType, SelectCompany } from "@shared/schema";
 import { formatArabicDate } from "@/lib/arabic-date";
 
 export default function Navigation() {
@@ -66,11 +66,22 @@ export default function Navigation() {
     enabled: !!user && !!searchTerm,
   });
 
+  const { data: companies = [] } = useQuery<SelectCompany[]>({
+    queryKey: ["/api/companies"],
+    enabled: !!user && !!searchTerm,
+  });
+
+  const getCompanyName = (companyId: string | null) => {
+    if (!companyId) return "";
+    const company = companies.find(c => c.id === companyId);
+    return company ? company.name : "";
+  };
+
   const searchResults = {
     tasks: tasks.filter(task => 
       task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       task.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      task.companyName?.toLowerCase().includes(searchTerm.toLowerCase())
+      getCompanyName(task.companyId).toLowerCase().includes(searchTerm.toLowerCase())
     ).slice(0, 5),
     users: users.filter(u => 
       u.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -269,8 +280,8 @@ export default function Navigation() {
                                     <CheckSquare className="w-4 h-4 mt-0.5 flex-shrink-0" />
                                     <div className="flex-1 min-w-0">
                                       <p className="font-medium text-sm truncate">{task.title}</p>
-                                      {task.companyName && (
-                                        <p className="text-xs text-muted-foreground truncate">{task.companyName}</p>
+                                      {task.companyId && getCompanyName(task.companyId) && (
+                                        <p className="text-xs text-muted-foreground truncate">{getCompanyName(task.companyId)}</p>
                                       )}
                                     </div>
                                   </div>

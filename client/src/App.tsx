@@ -26,6 +26,8 @@ import AIVideoGenerator from "@/pages/ai-video-generator";
 import AIMarketingSEO from "@/pages/ai-marketing-seo";
 import AITextChat from "@/pages/ai-text-chat";
 import AICodeAssistant from "@/pages/ai-code-assistant";
+import Companies from "@/pages/companies";
+import CompanyProfile from "@/pages/company-profile";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -54,6 +56,8 @@ function Router() {
       <ProtectedRoute path="/ai/marketing-seo" component={AIMarketingSEO} />
       <ProtectedRoute path="/ai/text-chat" component={AITextChat} />
       <ProtectedRoute path="/ai/code-assistant" component={AICodeAssistant} />
+      <ProtectedRoute path="/companies" component={Companies} />
+      <ProtectedRoute path="/companies/:id" component={CompanyProfile} />
       <ProtectedRoute path="/settings" component={Dashboard} />
       <Route component={NotFound} />
     </Switch>
