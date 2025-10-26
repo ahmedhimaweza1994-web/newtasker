@@ -254,13 +254,13 @@ export default function TaskManagement() {
                       <Label htmlFor="task-company" className="text-sm sm:text-base font-medium">الشركة</Label>
                       <Select
                         value={newTask.companyId}
-                        onValueChange={(value) => setNewTask({ ...newTask, companyId: value })}
+                        onValueChange={(value) => setNewTask({ ...newTask, companyId: value === "none" ? "" : value })}
                       >
                         <SelectTrigger id="task-company" data-testid="select-task-company" className="h-11 sm:h-10">
                           <SelectValue placeholder="اختر الشركة (اختياري)" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">بدون شركة</SelectItem>
+                          <SelectItem value="none">بدون شركة</SelectItem>
                           {companies.map((company) => (
                             <SelectItem key={company.id} value={company.id}>
                               {company.name}

@@ -380,14 +380,14 @@ export function registerRoutes(app: Express): Server {
 
       const task = await storage.updateTask(req.params.id, { rewardPoints });
 
-      if (task.assignedTo) {
-        const assignedUser = await storage.getUser(task.assignedTo);
-        if (assignedUser) {
-          const newTotalPoints = (assignedUser.totalPoints || 0) + rewardPoints;
-          await storage.updateUser(task.assignedTo, { totalPoints: newTotalPoints });
+      if (task.createdFor) {
+        const taskAssignee = await storage.getUser(task.createdFor);
+        if (taskAssignee) {
+          const newTotalPoints = (taskAssignee.totalPoints || 0) + rewardPoints;
+          await storage.updateUser(task.createdFor, { totalPoints: newTotalPoints });
 
           await storage.createNotification({
-            userId: task.assignedTo,
+            userId: task.createdFor,
             title: "نقاط مكافأة جديدة",
             message: `تم منحك ${rewardPoints} نقطة مكافأة للمهمة "${task.title}"`,
             type: "success",
