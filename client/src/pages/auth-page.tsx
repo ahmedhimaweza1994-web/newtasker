@@ -192,6 +192,7 @@ export default function AuthPage() {
                           value={loginForm.email}
                           onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
                           required
+                          autoComplete="username"
                           className="h-12 bg-background/50 dark:bg-gray-900/50 border-border dark:border-gray-600 text-foreground dark:text-white placeholder:text-muted-foreground dark:placeholder:text-gray-500"
                           data-testid="login-email-input"
                         />
