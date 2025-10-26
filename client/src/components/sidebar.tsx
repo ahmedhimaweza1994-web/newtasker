@@ -146,6 +146,12 @@ export default function Sidebar() {
       badge: null,
     },
     {
+      name: "الشركات",
+      href: "/companies",
+      icon: Building,
+      badge: null,
+    },
+    {
       name: "الملف الشخصي",
       href: `/profile/${user?.id}`,
       icon: Users,
