@@ -42,6 +42,12 @@ export default function Sidebar({ isOpen = true, onClose, className }: SidebarPr
       badge: "8",
     },
     {
+      name: "الشركات",
+      href: "/companies",
+      icon: Building,
+      badge: null,
+    },
+    {
       name: "التقارير",
       href: "/reports",
       icon: BarChart3,

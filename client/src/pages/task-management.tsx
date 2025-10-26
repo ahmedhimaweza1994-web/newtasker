@@ -299,7 +299,6 @@ export default function TaskManagement() {
                       </div>
                     </div>
                     <div className="space-y-2">
-                    <div className="space-y-2">
                       <Label htmlFor="task-created-for" className="text-sm sm:text-base font-medium">المُنشأة لـ <span className="text-destructive">*</span></Label>
                       <Select
                         value={newTask.createdFor}
@@ -317,6 +316,7 @@ export default function TaskManagement() {
                         </SelectContent>
                       </Select>
                     </div>
+                    <div className="space-y-2">
                       <Label htmlFor="task-assignee" className="text-sm sm:text-base font-medium">المراجع</Label>
                       <Select
                         value={newTask.assignedTo}
