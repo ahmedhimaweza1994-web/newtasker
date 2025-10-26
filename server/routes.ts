@@ -735,6 +735,10 @@ export function registerRoutes(app: Express): Server {
       const requests = await storage.getUserLeaveRequests(req.user!.id);
       res.json(requests);
     } catch (error) {
+      console.error('Error fetching user leave requests:', error);
+      if (error instanceof Error) {
+        console.error('Error details:', error.message, error.stack);
+      }
       res.status(500).json({ message: "حدث خطأ في جلب طلبات الإجازات" });
     }
   });
@@ -744,6 +748,10 @@ export function registerRoutes(app: Express): Server {
       const requests = await storage.getPendingLeaveRequests();
       res.json(requests);
     } catch (error) {
+      console.error('Error fetching pending leave requests:', error);
+      if (error instanceof Error) {
+        console.error('Error details:', error.message, error.stack);
+      }
       res.status(500).json({ message: "حدث خطأ في جلب طلبات الإجازات" });
     }
   });
@@ -783,6 +791,10 @@ export function registerRoutes(app: Express): Server {
       
       res.json(leaveRequest);
     } catch (error) {
+      console.error('Error updating leave request:', error);
+      if (error instanceof Error) {
+        console.error('Error details:', error.message, error.stack);
+      }
       res.status(500).json({ message: "حدث خطأ في تحديث طلب الإجازة" });
     }
   });
@@ -799,6 +811,10 @@ export function registerRoutes(app: Express): Server {
       
       res.status(201).json(advanceRequest);
     } catch (error) {
+      console.error('Error creating salary advance request:', error);
+      if (error instanceof Error) {
+        console.error('Error details:', error.message, error.stack);
+      }
       res.status(500).json({ message: "حدث خطأ في إنشاء طلب السلفة" });
     }
   });
@@ -808,6 +824,10 @@ export function registerRoutes(app: Express): Server {
       const requests = await storage.getPendingSalaryAdvanceRequests();
       res.json(requests);
     } catch (error) {
+      console.error('Error fetching pending salary advance requests:', error);
+      if (error instanceof Error) {
+        console.error('Error details:', error.message, error.stack);
+      }
       res.status(500).json({ message: "حدث خطأ في جلب طلبات السلف" });
     }
   });
@@ -817,6 +837,10 @@ export function registerRoutes(app: Express): Server {
       const requests = await storage.getUserSalaryAdvanceRequests(req.user!.id);
       res.json(requests);
     } catch (error) {
+      console.error('Error fetching user salary advance requests:', error);
+      if (error instanceof Error) {
+        console.error('Error details:', error.message, error.stack);
+      }
       res.status(500).json({ message: "حدث خطأ في جلب طلبات السلف" });
     }
   });
@@ -1056,6 +1080,10 @@ export function registerRoutes(app: Express): Server {
       const notifications = await storage.getUserNotifications(req.user!.id);
       res.json(notifications);
     } catch (error) {
+      console.error('Error fetching notifications:', error);
+      if (error instanceof Error) {
+        console.error('Error details:', error.message, error.stack);
+      }
       res.status(500).json({ message: "حدث خطأ في جلب الإشعارات" });
     }
   });
@@ -1065,6 +1093,10 @@ export function registerRoutes(app: Express): Server {
       await storage.markNotificationAsRead(req.params.id);
       res.json({ message: "تم تحديث الإشعار" });
     } catch (error) {
+      console.error('Error marking notification as read:', error);
+      if (error instanceof Error) {
+        console.error('Error details:', error.message, error.stack);
+      }
       res.status(500).json({ message: "حدث خطأ في تحديث الإشعار" });
     }
   });

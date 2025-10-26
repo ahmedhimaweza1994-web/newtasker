@@ -1,0 +1,277 @@
+Urgent: Investigate & Fix — Multiple 500 Errors, Service Worker MIME, Requests & Notifications
+Summary (what’s happening)
+
+From the browser logs you pasted, the app is hitting many server errors and client-side problems:
+
+Multiple API endpoints are returning 500 Internal Server Error (tasks, assigned tasks, leaves, salary advances, hr reports, deductions).
+
+PUT to /api/leaves/{id} returns 500 when approving/declining a leave.
+
+Admin cannot see or approve salary-advance (سلفة) requests — admin panel shows empty.
+
+Creating deductions returns a 500 with message: {"message":"حدث خطأ في إضافة الخصم"}.
+
+Service Worker registration fails with unsupported MIME type 'text/html' for /service-worker.js.
+
+Some accessibility warnings for DialogContent missing Description/DialogTitle (Radix).
+
+Socket polling request for Socket.IO appears to succeed, but notifications/remotes are not delivered to admin.
+
+These indicate both server-side failures (500s) and some client-side configuration bugs (service worker, dialog warnings, possibly request payload/headers).
+
+Immediate priorities (order to work through)
+
+Investigate and fix server 500s for API endpoints:
+
+/api/tasks/my, /api/tasks/assigned
+
+/api/leaves/* (create, update/PUT)
+
+/api/salary-advances/pending
+
+/api/hr/reports
+
+/api/deductions
+
+Fix Service Worker registration — it's being served with text/html instead of application/javascript.
+
+Restore admin visibility & actions for salary-advance and leave requests.
+
+Ensure real-time events & notifications deliver to admin (socket/notifications).
+
+Triage UI accessibility warnings (DialogTitle) — lower priority but fix while touching dialogs.
+
+Likely root causes & what to check (by area)
+A. Server-side (backend) — 500 errors
+
+Check server logs immediately (app server / API logs). For each 500 endpoint, inspect these:
+
+Validation / Payload errors — requests might be missing required fields or backend is throwing on validation. Confirm client sends correct JSON schema.
+
+Example: POST/PUT /api/leaves and /api/leaves/{id} — check required fields, date formats, user IDs.
+
+Database errors — constraints, missing relations (e.g., assigned user or company not found), FK violations.
+
+Authentication / authorization — 500 may be masking 403/401 flows if exception handling is poor.
+
+Unhandled exceptions — wrap handlers with try/catch and return descriptive error JSON (for dev).
+
+Service dependencies — if the server calls external services (email, storage, notifications) and they fail, they may bubble up 500.
+
+Action items (backend):
+
+Tail the error logs while reproducing the failing requests (use the request IDs or timestamps from the browser).
+
+Add structured logging for each endpoint with the incoming payload and user id.
+
+Fix thrown exceptions and return proper 4xx on validation errors and 500 only for server faults.
+
+Add unit/integration tests covering leave/advance/deduction flows.
+
+B. Service Worker MIME type error
+
+Log message:
+
+Registration failed: SecurityError: ... service-worker.js: The script has an unsupported MIME type ('text/html').
+
+
+This means /service-worker.js is returning an HTML page (likely the app shell / index.html) instead of the JS file.
+
+Action items:
+
+Ensure static hosting serves the service-worker.js file with Content-Type: application/javascript.
+
+If using a SPA catch-all route, make an exception so the real service-worker.js file is served (not index.html).
+
+Verify file exists at https://hub.greenweb-tech.com/service-worker.js and fetch it in the browser — expect JS content, not HTML.
+
+C. Admin not seeing salary-advance / request approval failing
+
+Symptoms:
+
+Salary advance requests are created but do not show up in admin HR page.
+
+Approve/Decline actions either do nothing or trigger 500s.
+
+What to check:
+
+Database: are salary-advance records being created? Check status field and assigned_to or department filters.
+
+Backend: ensure admin endpoint uses correct filters (e.g., pending status) and that the admin user has permission to view them.
+
+Frontend: the admin page might be calling /api/salary-advances/pending which returns 500 — fix backend first.
+
+Approve/Decline flow: validate request payload (id, action, admin id). The PUT/POST might be malformed.
+
+D. Deductions creation returns server error
+
+Log:
+
+Deduction creation error: Error: 500: {"message":"حدث خطأ في إضافة الخصم"}
+
+
+Check:
+
+Backend code where deduction is created — validations, required fields, casting for amount, user_id.
+
+Are you sending user_id that exists? Are required numeric fields parsed correctly?
+
+Return stack trace and fix exception.
+
+E. Real-time events / sockets
+
+Socket polling call completed but notifications not delivered — check:
+
+Are call/leave/advance events being emitted to the correct socket rooms/users?
+
+Does the server broadcast to admin role or to user ids? Maybe the filter is wrong.
+
+Is Socket.IO connected and authenticated for admin sessions? (session cookie vs token)
+
+F. Accessibility warning (DialogContent)
+
+Warning:
+
+Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+
+
+Fix: provide a DialogTitle or wrap hidden title with VisuallyHidden per Radix docs.
+
+Concrete step-by-step debugging & fixes (dev tasks)
+1) Reproduce & gather logs
+
+Reproduce failing flows (create leave, approve leave, create deduction, view pending advances).
+
+Capture:
+
+Exact request payloads (use browser network tab or curl).
+
+Timestamps and correlated server log entries.
+
+Stack traces from server logs.
+
+2) Fix server errors
+
+For each endpoint returning 500:
+
+Identify thrown exception and root cause.
+
+Add validation guards and return helpful 4xx responses where appropriate.
+
+If DB constraint, update schema or code to handle missing relations.
+
+Add tests to reproduce and prevent regression.
+
+3) Fix service worker issue
+
+Ensure service-worker file is present at root and served with Content-Type: application/javascript.
+
+If using express/nginx, add route to serve /service-worker.js statically (exclude from SPA fallback).
+
+Rebuild and redeploy service-worker if needed.
+
+4) Restore admin flows & notification delivery
+
+After endpoints are healthy, verify admin API calls (/api/salary-advances/pending) return data.
+
+Ensure approve/decline endpoints return 200 and update DB status.
+
+Wire real-time notifications: on status change, emit socket event to affected users and admin role channels.
+
+Test with two browser sessions (admin + user).
+
+5) Fix deduction creation flow
+
+Validate inputs on frontend before sending.
+
+On backend, handle potential parsing errors and return proper messages.
+
+If error message is in Arabic, include dev stack trace for debugging then replace with localized friendly message after fix.
+
+6) Accessibility fixes
+
+Add DialogTitle to dialogs or wrap with VisuallyHidden and ensure aria-describedby is set.
+
+Example reproducer & quick tests (curl)
+
+Use these to reproduce endpoints and capture backend logs:
+
+Create leave (example):
+
+curl -i -X POST "https://hub.greenweb-tech.com/api/leaves" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "user_id":"<USER_ID>",
+    "start_date":"2025-11-01",
+    "end_date":"2025-11-03",
+    "type":"annual",
+    "reason":"test leave"
+  }'
+
+
+Approve leave (example):
+
+curl -i -X PUT "https://hub.greenweb-tech.com/api/leaves/<LEAVE_ID>" \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"status":"approved", "admin_comment":"ok"}'
+
+
+Check server logs for the timestamp and stack trace after each test.
+
+Acceptance criteria (how to know it’s fixed)
+
+API health
+
+GET /api/tasks/my and /api/tasks/assigned return 200 + JSON.
+
+POST /api/leaves returns 201; PUT /api/leaves/{id} returns 200 on approve/reject.
+
+GET /api/salary-advances/pending returns list for admin (200).
+
+Admin flows
+
+Admin sees salary-advance requests in HR page.
+
+Admin can approve/decline salary advances and leaves; status changes are saved.
+
+Deductions
+
+Creating deduction returns 201 and the item is visible in list.
+
+Service worker
+
+https://hub.greenweb-tech.com/service-worker.js returns JS with Content-Type: application/javascript; registration no longer throws MIME error.
+
+Notifications
+
+When a leave/advance/deduction is created or status changed, related users and admins receive real-time notifications; admin notification list shows new request.
+
+UI/E2E
+
+Frontend shows no 500 errors on network tab for these routes.
+
+Dialog accessibility warnings resolved.
+
+Suggested tickets (ready-to-assign)
+
+BE-101: Investigate and fix 500s for /api/leaves/* (create & update). (High)
+
+BE-102: Investigate and fix 500s for tasks endpoints (/api/tasks/my, /api/tasks/assigned). (High)
+
+BE-103: Fix /api/salary-advances/pending — ensure admin can retrieve pending requests. (High)
+
+BE-104: Fix deduction creation (500) — validate input & handle DB constraints. (High)
+
+BE-105: Service worker — serve service-worker.js with correct MIME and update static routing. (Medium)
+
+FE-201: Ensure approve/decline UI calls correct payloads and handle error messages gracefully. (High)
+
+FE-202: Add client logging to capture payloads on failing requests. (Medium)
+
+INFRA-301: Add structured server-side logging and correlation IDs for incoming requests. (Medium)
+
+FE-203: Add DialogTitle / VisuallyHidden to DialogContent to remove accessibility warning. (Low)
+
+QA-401: End-to-end tests for leave/advance/deduction create & approve flow. (High)

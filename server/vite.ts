@@ -6,7 +6,6 @@ import { type Server } from "http";
 import viteConfig from "../vite.config";
 import { nanoid } from "nanoid";
 
-// إضافة polyfill لـ __dirname في ESM
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
@@ -42,16 +41,23 @@ export async function setupVite(app: Express, server: Server) {
     appType: "custom",
   });
   app.use(vite.middlewares);
+  
+  app.get("/service-worker.js", async (_req, res) => {
+    const swPath = path.resolve(__dirname, "..", "public", "service-worker.js");
+    res.setHeader("Content-Type", "application/javascript");
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.sendFile(swPath);
+  });
+  
   app.use("*", async (req, res, next) => {
     const url = req.originalUrl;
     try {
       const clientTemplate = path.resolve(
-        __dirname,  // غيرنا import.meta.dirname إلى __dirname
+        __dirname,
         "..",
         "client",
         "index.html",
       );
-      // always reload the index.html file from disk incase it changes
       let template = await fs.promises.readFile(clientTemplate, "utf-8");
       template = template.replace(
         `src="/src/main.tsx"`,
@@ -71,14 +77,13 @@ export async function setupVite(app: Express, server: Server) {
   });
 }
 export function serveStatic(app: Express) {
-  const distPath = path.resolve(__dirname, "public");  // غيرنا import.meta.dirname إلى __dirname
+  const distPath = path.resolve(__dirname, "public");
   if (!fs.existsSync(distPath)) {
     throw new Error(
       `Could not find the build directory: ${distPath}, make sure to build the client first`,
     );
   }
   app.use(express.static(distPath));
-  // fall through to index.html if the file doesn't exist
   app.use("*", (_req, res) => {
     res.sendFile(path.resolve(distPath, "index.html"));
   });
