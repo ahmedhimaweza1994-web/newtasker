@@ -1,0 +1,108 @@
+use-service-worker.ts:43 [Service Worker] Registration failed: SecurityError: Failed to register a ServiceWorker for scope ('https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/') with script ('https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/service-worker.js'): The script has an unsupported MIME type ('text/html').
+(anonymous) @ use-service-worker.ts:43Understand this error
+websocket.ts:68 [WebSocket] Connected: boDafLxV5O5ZI3JeAAAL for user: e5a7cce5-c2fb-4da9-9aae-0e0983ababc5
+companies:1 Unchecked runtime.lastError: The message port closed before a response was received.Understand this error
+companies:1 Unchecked runtime.lastError: The message port closed before a response was received.Understand this error
+content.js:1552 Content script received message: Object
+use-service-worker.ts:43 [Service Worker] Registration failed: SecurityError: Failed to register a ServiceWorker for scope ('https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/') with script ('https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/service-worker.js'): The script has an unsupported MIME type ('text/html').
+(anonymous) @ use-service-worker.ts:43Understand this error
+chunk-U5TPAYXZ.js?v=c04ed996:339 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+(anonymous) @ chunk-U5TPAYXZ.js?v=c04ed996:339Understand this warning
+2@radix-ui_react-select.js?v=332a31a0:873 Uncaught Error: A <Select.Item /> must have a value prop that is not an empty string. This is because the Select value can be set to an empty string to clear the selection and show the placeholder.
+    at @radix-ui_react-select.js?v=332a31a0:873:13
+    at renderWithHooks (chunk-XQLYTHWV.js?v=c04ed996:11548:26)
+    at updateForwardRef (chunk-XQLYTHWV.js?v=c04ed996:14325:28)
+    at beginWork (chunk-XQLYTHWV.js?v=c04ed996:15946:22)
+    at HTMLUnknownElement.callCallback2 (chunk-XQLYTHWV.js?v=c04ed996:3674:22)
+    at Object.invokeGuardedCallbackDev (chunk-XQLYTHWV.js?v=c04ed996:3699:24)
+    at invokeGuardedCallback (chunk-XQLYTHWV.js?v=c04ed996:3733:39)
+    at beginWork$1 (chunk-XQLYTHWV.js?v=c04ed996:19765:15)
+    at performUnitOfWork (chunk-XQLYTHWV.js?v=c04ed996:19198:20)
+    at workLoopSync (chunk-XQLYTHWV.js?v=c04ed996:19137:13)Understand this error
+chunk-XQLYTHWV.js?v=c04ed996:14032 The above error occurred in the <SelectItem> component:
+
+    at https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-select.js?v=332a31a0:846:7
+    at _c1 (https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/src/components/ui/select.tsx:196:12)
+    at div
+    at https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-KREND35G.js?v=c04ed996:42:13
+    at https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-T5ONMTIY.js?v=c04ed996:79:13
+    at https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-T5ONMTIY.js?v=c04ed996:56:13
+    at https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-YENB44SV.js?v=c04ed996:39:15
+    at https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-select.js?v=332a31a0:757:13
+    at div
+    at https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-T5ONMTIY.js?v=c04ed996:79:13
+    at https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-T5ONMTIY.js?v=c04ed996:56:13
+    at https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-YENB44SV.js?v=c04ed996:39:15
+    at Provider (https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-2M7HY3UG.js?v=c04ed996:38:15)
+    at https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-select.js?v=332a31a0:300:58
+    at https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-T5ONMTIY.js?v=c04ed996:79:13
+    at https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-T5ONMTIY.js?v=c04ed996:56:13
+    at https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-KREND35G.js?v=c04ed996:42:13
+    at https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-HHS75KZB.js?v=c04ed996:260:22
+    at SelectPortal
+    at _c7 (https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/src/components/ui/select.tsx:117:12)
+    at Provider (https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-2M7HY3UG.js?v=c04ed996:38:15)
+    at Provider (https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-2M7HY3UG.js?v=c04ed996:38:15)
+    at CollectionProvider (https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-YENB44SV.js?v=c04ed996:29:13)
+    at Provider (https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-2M7HY3UG.js?v=c04ed996:38:15)
+    at Provider (https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-2M7HY3UG.js?v=c04ed996:38:15)
+    at Popper (https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-WYTMMWJM.js?v=c04ed996:1921:11)
+    at Select (https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-select.js?v=332a31a0:88:5)
+    at div
+    at form
+    at div
+    at https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-KREND35G.js?v=c04ed996:42:13
+    at https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-HHS75KZB.js?v=c04ed996:61:7
+    at https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-T5ONMTIY.js?v=c04ed996:79:13
+    at https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-T5ONMTIY.js?v=c04ed996:56:13
+    at https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-KREND35G.js?v=c04ed996:42:13
+    at https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-O4HVZWBM.js?v=c04ed996:29:5
+    at https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-U5TPAYXZ.js?v=c04ed996:235:13
+    at https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-U5TPAYXZ.js?v=c04ed996:158:58
+    at Presence (https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-3RGQFZIF.js?v=c04ed996:24:11)
+    at https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-U5TPAYXZ.js?v=c04ed996:149:64
+    at https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-T5ONMTIY.js?v=c04ed996:79:13
+    at https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-T5ONMTIY.js?v=c04ed996:56:13
+    at https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-KREND35G.js?v=c04ed996:42:13
+    at https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-HHS75KZB.js?v=c04ed996:260:22
+    at Presence (https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-3RGQFZIF.js?v=c04ed996:24:11)
+    at Provider (https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-2M7HY3UG.js?v=c04ed996:38:15)
+    at DialogPortal (https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-U5TPAYXZ.js?v=c04ed996:111:11)
+    at _c3 (https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/src/components/ui/dialog.tsx:50:12)
+    at Provider (https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-2M7HY3UG.js?v=c04ed996:38:15)
+    at Dialog (https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-U5TPAYXZ.js?v=c04ed996:52:5)
+    at div
+    at div
+    at MotionComponent (https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/framer-motion.js?v=695c0c00:6536:40)
+    at MotionSection (https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/src/components/ui/motion-wrappers.tsx:43:33)
+    at main
+    at div
+    at div
+    at MotionComponent (https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/framer-motion.js?v=695c0c00:6536:40)
+    at MotionPageShell (https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/src/components/ui/motion-wrappers.tsx:21:35)
+    at TaskManagement (https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/src/pages/task-management.tsx?t=1761449589758:41:20)
+    at Route (https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=fc965875:323:16)
+    at ProtectedRoute (https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/src/lib/protected-route.tsx:22:3)
+    at Switch (https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=fc965875:379:17)
+    at Router
+    at div
+    at SidebarProvider (https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/src/contexts/sidebar-context.tsx:20:35)
+    at AuthProvider (https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/src/hooks/use-auth.tsx:26:32)
+    at QueryClientProvider (https://be58b7e1-a25d-4c57-9084-efb9ca994246-00-f46jbv1kta9y.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=731e7010:2805:3)
+    at App
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+logCapturedError @ chunk-XQLYTHWV.js?v=c04ed996:14032Understand this error
+chunk-XQLYTHWV.js?v=c04ed996:9129 Uncaught Error: A <Select.Item /> must have a value prop that is not an empty string. This is because the Select value can be set to an empty string to clear the selection and show the placeholder.
+    at @radix-ui_react-select.js?v=332a31a0:873:13
+    at renderWithHooks (chunk-XQLYTHWV.js?v=c04ed996:11548:26)
+    at updateForwardRef (chunk-XQLYTHWV.js?v=c04ed996:14325:28)
+    at beginWork (chunk-XQLYTHWV.js?v=c04ed996:15946:22)
+    at beginWork$1 (chunk-XQLYTHWV.js?v=c04ed996:19753:22)
+    at performUnitOfWork (chunk-XQLYTHWV.js?v=c04ed996:19198:20)
+    at workLoopSync (chunk-XQLYTHWV.js?v=c04ed996:19137:13)
+    at renderRootSync (chunk-XQLYTHWV.js?v=c04ed996:19116:15)
+    at recoverFromConcurrentError (chunk-XQLYTHWV.js?v=c04ed996:18736:28)
+    at performSyncWorkOnRoot (chunk-XQLYTHWV.js?v=c04ed996:18879:28)Understand this error
+websocket.ts:165 [WebSocket] Last connection closed, disconnecting socket
