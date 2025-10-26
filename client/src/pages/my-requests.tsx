@@ -80,10 +80,11 @@ export default function MyRequests() {
         description: "تم إرسال طلب الإجازة بنجاح",
       });
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error('Leave request error:', error);
       toast({
         title: "خطأ",
-        description: "حدث خطأ في إرسال الطلب",
+        description: error?.message || "حدث خطأ في إرسال الطلب",
         variant: "destructive",
       });
     },

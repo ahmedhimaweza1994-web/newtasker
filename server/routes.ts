@@ -181,10 +181,10 @@ export function registerRoutes(app: Express): Server {
             status: 'under_review'
           });
 
-          // Notify the task creator
-          if (existingTask.createdBy) {
+          // Notify the reviewer (assignedTo) if exists and not the current user
+          if (existingTask.assignedTo && existingTask.assignedTo !== req.user!.id) {
             await storage.createNotification({
-              userId: existingTask.createdBy,
+              userId: existingTask.assignedTo,
               title: "مهمة جاهزة للمراجعة",
               message: `المهمة "${existingTask.title}" جاهزة للمراجعة`,
               type: "info",
@@ -271,9 +271,9 @@ export function registerRoutes(app: Express): Server {
       
       const updatedTask = await storage.updateTask(req.params.id, { status: 'under_review' });
       
-      if (task.createdBy && task.createdBy !== req.user!.id) {
+      if (task.assignedTo && task.assignedTo !== req.user!.id) {
         await storage.createNotification({
-          userId: task.createdBy,
+          userId: task.assignedTo,
           title: "مهمة جاهزة للمراجعة",
           message: `المهمة "${task.title}" جاهزة للمراجعة`,
           type: "info",
@@ -301,9 +301,9 @@ export function registerRoutes(app: Express): Server {
         return res.status(404).json({ message: "المهمة غير موجودة" });
       }
       
-      if (task.assignedTo) {
+      if (task.createdFor && task.createdFor !== req.user!.id) {
         await storage.createNotification({
-          userId: task.assignedTo,
+          userId: task.createdFor,
           title: "تمت الموافقة على المهمة",
           message: `تمت الموافقة على مهمتك "${task.title}" وتم إكمالها بنجاح`,
           type: "success",
@@ -342,9 +342,9 @@ export function registerRoutes(app: Express): Server {
       
       const task = await storage.rateTask(req.params.id, rating, req.user!.id);
       
-      if (task.assignedTo) {
+      if (task.createdFor && task.createdFor !== req.user!.id) {
         await storage.createNotification({
-          userId: task.assignedTo,
+          userId: task.createdFor,
           title: "تم تقييم مهمتك",
           message: `تم تقييم مهمتك "${task.title}" بـ ${rating} نقاط`,
           type: "info",
@@ -720,7 +720,13 @@ export function registerRoutes(app: Express): Server {
       res.status(201).json(leaveRequest);
     } catch (error) {
       console.error('Error creating leave request:', error);
-      res.status(500).json({ message: "حدث خطأ في تقديم طلب الإجازة" });
+      if (error instanceof Error) {
+        console.error('Error details:', error.message, error.stack);
+      }
+      res.status(500).json({ 
+        message: "حدث خطأ في تقديم طلب الإجازة",
+        error: error instanceof Error ? error.message : String(error)
+      });
     }
   });
 
@@ -817,20 +823,27 @@ export function registerRoutes(app: Express): Server {
 
   app.put("/api/salary-advances/:id", requireAuth, requireRole(['admin', 'sub-admin']), async (req, res) => {
     try {
-      const updates = {
-        ...req.body,
-        approvedBy: req.user!.id,
-        approvedAt: new Date(),
-      };
+      const { status, rejectionReason, repaymentDate } = req.body;
       
-      const advanceRequest = await storage.updateSalaryAdvanceRequest(req.params.id, updates);
+      if (!status || (status !== 'approved' && status !== 'rejected')) {
+        return res.status(400).json({ message: "حالة غير صالحة" });
+      }
+      
+      const advanceRequest = await storage.updateSalaryAdvanceRequest(
+        req.params.id,
+        status,
+        req.user!.id,
+        rejectionReason,
+        repaymentDate ? new Date(repaymentDate) : undefined
+      );
+      
       if (!advanceRequest) {
         return res.status(404).json({ message: "طلب السلفة غير موجود" });
       }
       
       // Notify employee
       const statusText = advanceRequest.status === 'approved' ? 'تمت الموافقة على' : 'تم رفض';
-      await storage.createNotification({
+      const notification = await storage.createNotification({
         userId: advanceRequest.userId,
         title: "تحديث طلب السلفة",
         message: `${statusText} طلب السلفة الخاص بك`,
@@ -843,8 +856,15 @@ export function registerRoutes(app: Express): Server {
         }
       });
       
+      // Send notification via WebSocket
+      sendToUser(notification.userId, {
+        type: 'new_notification',
+        data: notification
+      });
+      
       res.json(advanceRequest);
     } catch (error) {
+      console.error("Error updating salary advance request:", error);
       res.status(500).json({ message: "حدث خطأ في تحديث طلب السلفة" });
     }
   });

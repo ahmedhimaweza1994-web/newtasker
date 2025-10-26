@@ -89,10 +89,14 @@ export default function AdminDeductions() {
         description: "تم إضافة الخصم بنجاح",
       });
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error('Deduction creation error:', error);
+      const errorMessage = error?.errors 
+        ? error.errors.map((e: any) => `${e.path?.join('.')}: ${e.message}`).join(', ')
+        : error?.message || "حدث خطأ في إضافة الخصم";
       toast({
         title: "خطأ",
-        description: "حدث خطأ في إضافة الخصم",
+        description: errorMessage,
         variant: "destructive",
       });
     },

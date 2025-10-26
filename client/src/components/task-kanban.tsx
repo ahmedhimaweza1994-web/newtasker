@@ -453,7 +453,7 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
     });
 
     return (
-      <div className="flex-1 min-w-[250px] md:min-w-[280px] w-full md:w-auto" ref={setNodeRef}>
+      <div className="flex-1 min-w-[250px] md:min-w-[240px] lg:min-w-[260px] w-full md:w-auto" ref={setNodeRef}>
         <Card className={cn(
           "h-full border-t-4 transition-all", 
           color,
@@ -503,7 +503,7 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
         onDragEnd={handleDragEnd}
       >
         <div className="w-full overflow-x-auto pb-4" data-testid="kanban-board-trello-style">
-          <div className="flex flex-col md:flex-row gap-4 min-w-min">
+          <div className="flex flex-col md:flex-row gap-4">
             <DroppableColumn
               id="pending"
               title="قيد الانتظار"

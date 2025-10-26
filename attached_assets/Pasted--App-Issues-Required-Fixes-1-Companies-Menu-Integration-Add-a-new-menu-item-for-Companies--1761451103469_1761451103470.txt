@@ -1,0 +1,90 @@
+🧩 App Issues & Required Fixes
+🗂️ 1. Companies Menu Integration
+
+Add a new menu item for Companies in the sidebar navigation so users can access the Companies module directly.
+
+🔔 2. Task Notifications Logic Fix
+
+Current Issue:
+
+All users currently receive notifications for new or updated tasks, including the task creator.
+
+Required Behavior:
+
+Only the following users should receive notifications related to a task:
+
+المكلف به (Assigned User)
+
+المراجع (Reviewer)
+
+The creator of the task should not receive any notification unless they are also the assigned user (مكلف به).
+
+The same filtering rule should apply to the task notification counter in the sidebar menu.
+
+📩 3. Requests System (إجارات - سلفة - خصومات)
+
+Several issues exist across different request types.
+
+🟠 Leave Requests (إجارات)
+
+Issue:
+
+When creating a leave request, an error occurs:
+
+POST /api/leaves 400 (Bad Request)
+
+
+Fix:
+
+Resolve backend and validation issues so leave requests are successfully submitted.
+
+Ensure admins can receive, view, and approve/reject leave requests properly.
+
+🔵 Loan Requests (سلفة)
+
+Issue:
+
+Request creation works, but when the admin clicks “Approve” or “Decline,” nothing happens.
+
+Fix:
+
+Ensure loan requests can be successfully updated (approved/rejected) by admin.
+
+Trigger appropriate notifications upon status changes.
+
+🔴 Deduction Requests (خصومات)
+
+Issue:
+
+Admin encounters multiple errors when creating a deduction request.
+
+Fix:
+
+Debug and fix all issues with deduction creation and update flow.
+
+Confirm that all validations, database saves, and UI refreshes work correctly.
+
+🧭 4. Task Page Layout Problem (Arabic Description)
+
+في صفحة المهام، جزء كبير من المحتوى في ناحية الشمال مش بيبقى باين لأن الصفحة عريضة جدًا، وده بيخلي بعض التفاصيل والبيانات تختفي.
+
+English for the AI developer:
+
+The Tasks page layout has horizontal overflow issues — part of the content (especially on the left side) gets cut off or hidden because the page width is too large.
+
+Fix the responsive layout so all task details and UI elements are fully visible across all screen sizes.
+
+📱 5. Mobile Browser Notifications
+
+Issue:
+
+Push notifications work correctly inside the app, but browser notifications on mobile devices (iPhone and Android) do not appear at all.
+
+Fix:
+
+Investigate and fix mobile browser notification support (service workers, permissions, or HTTPS restrictions).
+
+Ensure that notifications work seamlessly across all platforms (desktop & mobile browsers, as well as in-app).
+
+✅ Final Goal:
+All listed issues must be fully debugged and tested to ensure stable functionality across desktop and mobile environments — with no broken features, layout problems, or missing notifications.
