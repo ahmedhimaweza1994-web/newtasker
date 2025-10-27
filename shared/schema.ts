@@ -21,6 +21,7 @@ export const suggestionStatusEnum = pgEnum('suggestion_status', ['pending', 'und
 export const suggestionCategoryEnum = pgEnum('suggestion_category', ['improvement', 'bug', 'feature', 'other']);
 export const companyStatusEnum = pgEnum('company_status', ['active', 'pending', 'inactive']);
 export const milestoneStatusEnum = pgEnum('milestone_status', ['pending', 'in_progress', 'completed']);
+export const aiModelTypeEnum = pgEnum('ai_model_type', ['chat', 'code', 'marketing', 'image', 'video', 'summarizer']);
 
 // Notification types
 export type NotificationCategory = 'task' | 'message' | 'call' | 'system' | 'reward';
@@ -357,6 +358,58 @@ export const companyTeamMembers = pgTable("company_team_members", {
   assignedAt: timestamp("assigned_at").notNull().defaultNow(),
 });
 
+// AI Model Settings
+export const aiModelSettings = pgTable("ai_model_settings", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  modelType: aiModelTypeEnum("model_type").notNull().unique(),
+  modelId: text("model_id").notNull(),
+  apiKey: text("api_key"),
+  systemPrompt: text("system_prompt"),
+  temperature: decimal("temperature", { precision: 3, scale: 2 }).default("0.7"),
+  topP: decimal("top_p", { precision: 3, scale: 2 }).default("1.0"),
+  maxTokens: integer("max_tokens").default(2000),
+  presencePenalty: decimal("presence_penalty", { precision: 3, scale: 2 }).default("0.0"),
+  frequencyPenalty: decimal("frequency_penalty", { precision: 3, scale: 2 }).default("0.0"),
+  customParams: jsonb("custom_params").$type<Record<string, any>>(),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// AI Conversations
+export const aiConversations = pgTable("ai_conversations", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  modelType: aiModelTypeEnum("model_type").notNull(),
+  title: text("title").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// AI Messages
+export const aiMessages = pgTable("ai_messages", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  conversationId: uuid("conversation_id").notNull().references(() => aiConversations.id, { onDelete: "cascade" }),
+  role: text("role").notNull(),
+  content: text("content").notNull(),
+  code: jsonb("code").$type<{ language: string; code: string }>(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// AI Usage Logs
+export const aiUsageLogs = pgTable("ai_usage_logs", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  modelType: aiModelTypeEnum("model_type").notNull(),
+  modelId: text("model_id").notNull(),
+  promptTokens: integer("prompt_tokens").default(0),
+  completionTokens: integer("completion_tokens").default(0),
+  totalTokens: integer("total_tokens").default(0),
+  success: boolean("success").notNull().default(true),
+  error: text("error"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 
 // Relations
 export const usersRelations = relations(users, ({ many, one }) => ({
@@ -511,6 +564,19 @@ export const companyCommentsRelations = relations(companyComments, ({ one }) => 
 export const companyTeamMembersRelations = relations(companyTeamMembers, ({ one }) => ({
   company: one(companies, { fields: [companyTeamMembers.companyId], references: [companies.id] }),
   user: one(users, { fields: [companyTeamMembers.userId], references: [users.id] }),
+}));
+
+export const aiConversationsRelations = relations(aiConversations, ({ one, many }) => ({
+  user: one(users, { fields: [aiConversations.userId], references: [users.id] }),
+  messages: many(aiMessages),
+}));
+
+export const aiMessagesRelations = relations(aiMessages, ({ one }) => ({
+  conversation: one(aiConversations, { fields: [aiMessages.conversationId], references: [aiConversations.id] }),
+}));
+
+export const aiUsageLogsRelations = relations(aiUsageLogs, ({ one }) => ({
+  user: one(users, { fields: [aiUsageLogs.userId], references: [users.id] }),
 }));
 
 // Insert schemas
@@ -781,3 +847,68 @@ export type InsertCompanyComment = z.infer<typeof insertCompanyCommentSchema>;
 export type SelectCompanyTeamMember = typeof companyTeamMembers.$inferSelect;
 export type CompanyTeamMember = typeof companyTeamMembers.$inferSelect;
 export type InsertCompanyTeamMember = z.infer<typeof insertCompanyTeamMemberSchema>;
+
+// AI Model insert schemas
+export const insertAiModelSettingsSchema = createInsertSchema(aiModelSettings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertAiConversationSchema = createInsertSchema(aiConversations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertAiMessageSchema = createInsertSchema(aiMessages).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertAiUsageLogSchema = createInsertSchema(aiUsageLogs).omit({
+  id: true,
+  createdAt: true,
+});
+
+// AI Model types
+export type AiModelSettings = typeof aiModelSettings.$inferSelect;
+export type InsertAiModelSettings = z.infer<typeof insertAiModelSettingsSchema>;
+export type AiConversation = typeof aiConversations.$inferSelect;
+export type InsertAiConversation = z.infer<typeof insertAiConversationSchema>;
+export type AiMessage = typeof aiMessages.$inferSelect;
+export type InsertAiMessage = z.infer<typeof insertAiMessageSchema>;
+export type AiUsageLog = typeof aiUsageLogs.$inferSelect;
+export type InsertAiUsageLog = z.infer<typeof insertAiUsageLogSchema>;
+
+// AI Request Validation Schemas
+export const aiChatRequestSchema = z.object({
+  conversationId: z.string().uuid(),
+  message: z.string().min(1).max(10000),
+  modelType: z.enum(['chat', 'code', 'marketing', 'image', 'video', 'summarizer']),
+});
+
+export const aiConversationCreateSchema = z.object({
+  modelType: z.enum(['chat', 'code', 'marketing', 'image', 'video', 'summarizer']),
+  title: z.string().min(1).max(200).optional(),
+});
+
+export const aiModelSettingsCreateSchema = insertAiModelSettingsSchema.extend({
+  modelType: z.enum(['chat', 'code', 'marketing', 'image', 'video', 'summarizer']),
+  modelId: z.string().min(1),
+  apiKey: z.string().min(1).optional(),
+  systemPrompt: z.string().optional(),
+  temperature: z.string().or(z.number()).optional(),
+  topP: z.string().or(z.number()).optional(),
+  maxTokens: z.number().int().positive().optional(),
+  presencePenalty: z.string().or(z.number()).optional(),
+  frequencyPenalty: z.string().or(z.number()).optional(),
+  isActive: z.boolean().optional(),
+});
+
+export const aiModelSettingsUpdateSchema = aiModelSettingsCreateSchema.partial();
+
+export type AiChatRequest = z.infer<typeof aiChatRequestSchema>;
+export type AiConversationCreate = z.infer<typeof aiConversationCreateSchema>;
+export type AiModelSettingsCreate = z.infer<typeof aiModelSettingsCreateSchema>;
+export type AiModelSettingsUpdate = z.infer<typeof aiModelSettingsUpdateSchema>;

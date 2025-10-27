@@ -68,7 +68,19 @@ import {
   type InsertCompanyComment,
   type CompanyTeamMember,
   type InsertCompanyTeamMember,
-  advanceStatusEnum
+  advanceStatusEnum,
+  aiModelSettings,
+  aiConversations,
+  aiMessages,
+  aiUsageLogs,
+  type AiModelSettings,
+  type InsertAiModelSettings,
+  type AiConversation,
+  type InsertAiConversation,
+  type AiMessage,
+  type InsertAiMessage,
+  type AiUsageLog,
+  type InsertAiUsageLog
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, isNull, count, sql, gte, lte } from "drizzle-orm";
@@ -273,6 +285,30 @@ export interface IStorage {
   getUserProductivityStats(userId: string, startDate: Date, endDate: Date): Promise<any>;
   getSystemStats(): Promise<any>;
   getDepartmentStats(): Promise<any[]>;
+
+  // AI Model Settings
+  getAiModelSettings(modelType: string): Promise<AiModelSettings | undefined>;
+  getAllAiModelSettings(): Promise<AiModelSettings[]>;
+  createAiModelSettings(settings: InsertAiModelSettings): Promise<AiModelSettings>;
+  updateAiModelSettings(modelType: string, updates: Partial<AiModelSettings>): Promise<AiModelSettings | undefined>;
+  deleteAiModelSettings(modelType: string): Promise<boolean>;
+
+  // AI Conversations
+  createAiConversation(conversation: InsertAiConversation): Promise<AiConversation>;
+  getAiConversation(id: string): Promise<AiConversation | undefined>;
+  getUserAiConversations(userId: string, modelType?: string): Promise<AiConversation[]>;
+  updateAiConversation(id: string, updates: Partial<AiConversation>): Promise<AiConversation | undefined>;
+  deleteAiConversation(id: string): Promise<boolean>;
+
+  // AI Messages
+  createAiMessage(message: InsertAiMessage): Promise<AiMessage>;
+  getAiMessages(conversationId: string): Promise<AiMessage[]>;
+  deleteAiMessage(id: string): Promise<boolean>;
+
+  // AI Usage Logs
+  createAiUsageLog(log: InsertAiUsageLog): Promise<AiUsageLog>;
+  getUserAiUsageLogs(userId: string, startDate?: Date, endDate?: Date): Promise<AiUsageLog[]>;
+  getAiUsageStats(modelType?: string): Promise<any>;
 
   sessionStore: session.Store;
 }
@@ -2054,6 +2090,172 @@ export class MemStorage implements IStorage {
         )
       );
     return result.rowCount! > 0;
+  }
+
+  // AI Model Settings
+  async getAiModelSettings(modelType: string): Promise<AiModelSettings | undefined> {
+    const [settings] = await db
+      .select()
+      .from(aiModelSettings)
+      .where(eq(aiModelSettings.modelType, modelType as any));
+    return settings || undefined;
+  }
+
+  async getAllAiModelSettings(): Promise<AiModelSettings[]> {
+    return await db.select().from(aiModelSettings);
+  }
+
+  async createAiModelSettings(settings: InsertAiModelSettings): Promise<AiModelSettings> {
+    const [newSettings] = await db
+      .insert(aiModelSettings)
+      .values(settings)
+      .returning();
+    return newSettings;
+  }
+
+  async updateAiModelSettings(modelType: string, updates: Partial<AiModelSettings>): Promise<AiModelSettings | undefined> {
+    const [settings] = await db
+      .update(aiModelSettings)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(aiModelSettings.modelType, modelType as any))
+      .returning();
+    return settings || undefined;
+  }
+
+  async deleteAiModelSettings(modelType: string): Promise<boolean> {
+    const result = await db
+      .delete(aiModelSettings)
+      .where(eq(aiModelSettings.modelType, modelType as any));
+    return result.rowCount! > 0;
+  }
+
+  // AI Conversations
+  async createAiConversation(conversation: InsertAiConversation): Promise<AiConversation> {
+    const [newConversation] = await db
+      .insert(aiConversations)
+      .values(conversation)
+      .returning();
+    return newConversation;
+  }
+
+  async getAiConversation(id: string): Promise<AiConversation | undefined> {
+    const [conversation] = await db
+      .select()
+      .from(aiConversations)
+      .where(eq(aiConversations.id, id));
+    return conversation || undefined;
+  }
+
+  async getUserAiConversations(userId: string, modelType?: string): Promise<AiConversation[]> {
+    if (modelType) {
+      return await db
+        .select()
+        .from(aiConversations)
+        .where(
+          and(
+            eq(aiConversations.userId, userId),
+            eq(aiConversations.modelType, modelType as any)
+          )
+        )
+        .orderBy(desc(aiConversations.updatedAt));
+    }
+    return await db
+      .select()
+      .from(aiConversations)
+      .where(eq(aiConversations.userId, userId))
+      .orderBy(desc(aiConversations.updatedAt));
+  }
+
+  async updateAiConversation(id: string, updates: Partial<AiConversation>): Promise<AiConversation | undefined> {
+    const [conversation] = await db
+      .update(aiConversations)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(aiConversations.id, id))
+      .returning();
+    return conversation || undefined;
+  }
+
+  async deleteAiConversation(id: string): Promise<boolean> {
+    const result = await db
+      .delete(aiConversations)
+      .where(eq(aiConversations.id, id));
+    return result.rowCount! > 0;
+  }
+
+  // AI Messages
+  async createAiMessage(message: InsertAiMessage): Promise<AiMessage> {
+    const [newMessage] = await db
+      .insert(aiMessages)
+      .values(message)
+      .returning();
+    return newMessage;
+  }
+
+  async getAiMessages(conversationId: string): Promise<AiMessage[]> {
+    return await db
+      .select()
+      .from(aiMessages)
+      .where(eq(aiMessages.conversationId, conversationId))
+      .orderBy(aiMessages.createdAt);
+  }
+
+  async deleteAiMessage(id: string): Promise<boolean> {
+    const result = await db
+      .delete(aiMessages)
+      .where(eq(aiMessages.id, id));
+    return result.rowCount! > 0;
+  }
+
+  // AI Usage Logs
+  async createAiUsageLog(log: InsertAiUsageLog): Promise<AiUsageLog> {
+    const [newLog] = await db
+      .insert(aiUsageLogs)
+      .values(log)
+      .returning();
+    return newLog;
+  }
+
+  async getUserAiUsageLogs(userId: string, startDate?: Date, endDate?: Date): Promise<AiUsageLog[]> {
+    if (startDate && endDate) {
+      return await db
+        .select()
+        .from(aiUsageLogs)
+        .where(
+          and(
+            eq(aiUsageLogs.userId, userId),
+            gte(aiUsageLogs.createdAt, startDate),
+            lte(aiUsageLogs.createdAt, endDate)
+          )
+        )
+        .orderBy(desc(aiUsageLogs.createdAt));
+    }
+    return await db
+      .select()
+      .from(aiUsageLogs)
+      .where(eq(aiUsageLogs.userId, userId))
+      .orderBy(desc(aiUsageLogs.createdAt));
+  }
+
+  async getAiUsageStats(modelType?: string): Promise<any> {
+    const query = modelType
+      ? db
+          .select({
+            totalTokens: sql<number>`sum(${aiUsageLogs.totalTokens})`,
+            totalRequests: sql<number>`count(*)`,
+            successfulRequests: sql<number>`sum(case when ${aiUsageLogs.success} then 1 else 0 end)`,
+          })
+          .from(aiUsageLogs)
+          .where(eq(aiUsageLogs.modelType, modelType as any))
+      : db
+          .select({
+            totalTokens: sql<number>`sum(${aiUsageLogs.totalTokens})`,
+            totalRequests: sql<number>`count(*)`,
+            successfulRequests: sql<number>`sum(case when ${aiUsageLogs.success} then 1 else 0 end)`,
+          })
+          .from(aiUsageLogs);
+
+    const [stats] = await query;
+    return stats || { totalTokens: 0, totalRequests: 0, successfulRequests: 0 };
   }
 }
 

@@ -11,7 +11,11 @@ import {
   insertCompanyMilestoneSchema,
   insertCompanyFileSchema,
   insertCompanyReportSchema,
-  insertCompanyCommentSchema
+  insertCompanyCommentSchema,
+  aiChatRequestSchema,
+  aiConversationCreateSchema,
+  aiModelSettingsCreateSchema,
+  aiModelSettingsUpdateSchema
 } from "@shared/schema";
 import { z } from "zod";
 import multer from 'multer';
@@ -2690,6 +2694,252 @@ export function registerRoutes(app: Express): Server {
     } catch (error) {
       console.error("Error removing team member:", error);
       res.status(500).json({ message: "حدث خطأ في إزالة عضو الفريق" });
+    }
+  });
+
+  // =================
+  // AI Routes
+  // =================
+  const { getOpenRouterService } = await import('./openrouter-service');
+
+  // AI Model Settings (Admin only)
+  app.get("/api/ai/settings", requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const settings = await storage.getAllAiModelSettings();
+      res.json(settings);
+    } catch (error) {
+      console.error("Error fetching AI settings:", error);
+      res.status(500).json({ message: "حدث خطأ في جلب إعدادات AI" });
+    }
+  });
+
+  app.get("/api/ai/settings/:modelType", requireAuth, async (req, res) => {
+    try {
+      const settings = await storage.getAiModelSettings(req.params.modelType);
+      if (!settings) {
+        return res.status(404).json({ message: "إعدادات النموذج غير موجودة" });
+      }
+      const { apiKey, ...publicSettings } = settings;
+      res.json(req.user!.role === 'admin' ? settings : publicSettings);
+    } catch (error) {
+      console.error("Error fetching AI settings:", error);
+      res.status(500).json({ message: "حدث خطأ في جلب إعدادات AI" });
+    }
+  });
+
+  app.post("/api/ai/settings", requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const validatedData = aiModelSettingsCreateSchema.parse(req.body);
+      if (validatedData.apiKey) {
+        const service = getOpenRouterService(validatedData.apiKey);
+        const isValid = await service.validateApiKey();
+        if (!isValid) {
+          return res.status(400).json({ message: "API key غير صالح" });
+        }
+      }
+      const settings = await storage.createAiModelSettings(validatedData);
+      res.status(201).json(settings);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "بيانات غير صالحة", errors: error.errors });
+      }
+      console.error("Error creating AI settings:", error);
+      res.status(500).json({ message: "حدث خطأ في إنشاء إعدادات AI" });
+    }
+  });
+
+  app.put("/api/ai/settings/:modelType", requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const validatedData = aiModelSettingsUpdateSchema.parse(req.body);
+      if (validatedData.apiKey) {
+        const service = getOpenRouterService(validatedData.apiKey);
+        const isValid = await service.validateApiKey();
+        if (!isValid) {
+          return res.status(400).json({ message: "API key غير صالح" });
+        }
+      }
+      const settings = await storage.updateAiModelSettings(req.params.modelType, validatedData);
+      if (!settings) {
+        return res.status(404).json({ message: "إعدادات النموذج غير موجودة" });
+      }
+      res.json(settings);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "بيانات غير صالحة", errors: error.errors });
+      }
+      console.error("Error updating AI settings:", error);
+      res.status(500).json({ message: "حدث خطأ في تحديث إعدادات AI" });
+    }
+  });
+
+  // List OpenRouter Models
+  app.post("/api/ai/models/list", requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const apiKey = req.body.apiKey || process.env.OPENROUTER_API_KEY;
+      if (!apiKey) {
+        return res.status(400).json({ message: "API key مطلوب" });
+      }
+      const service = getOpenRouterService(apiKey);
+      const models = await service.listModels();
+      res.json(models);
+    } catch (error) {
+      console.error("Error listing models:", error);
+      res.status(500).json({ message: "حدث خطأ في جلب النماذج" });
+    }
+  });
+
+  // AI Conversations
+  app.get("/api/ai/conversations", requireAuth, async (req, res) => {
+    try {
+      const modelType = req.query.modelType as string | undefined;
+      const conversations = await storage.getUserAiConversations(req.user!.id, modelType);
+      res.json(conversations);
+    } catch (error) {
+      console.error("Error fetching conversations:", error);
+      res.status(500).json({ message: "حدث خطأ في جلب المحادثات" });
+    }
+  });
+
+  app.post("/api/ai/conversations", requireAuth, async (req, res) => {
+    try {
+      const validatedData = aiConversationCreateSchema.parse(req.body);
+      const conversation = await storage.createAiConversation({
+        userId: req.user!.id,
+        modelType: validatedData.modelType,
+        title: validatedData.title || 'محادثة جديدة',
+      });
+      res.status(201).json(conversation);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "بيانات غير صالحة", errors: error.errors });
+      }
+      console.error("Error creating conversation:", error);
+      res.status(500).json({ message: "حدث خطأ في إنشاء المحادثة" });
+    }
+  });
+
+  app.get("/api/ai/conversations/:id/messages", requireAuth, async (req, res) => {
+    try {
+      const messages = await storage.getAiMessages(req.params.id);
+      res.json(messages);
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+      res.status(500).json({ message: "حدث خطأ في جلب الرسائل" });
+    }
+  });
+
+  app.delete("/api/ai/conversations/:id", requireAuth, async (req, res) => {
+    try {
+      const conversation = await storage.getAiConversation(req.params.id);
+      if (!conversation) {
+        return res.status(404).json({ message: "المحادثة غير موجودة" });
+      }
+      if (conversation.userId !== req.user!.id) {
+        return res.status(403).json({ message: "غير مصرح لك بحذف هذه المحادثة" });
+      }
+      await storage.deleteAiConversation(req.params.id);
+      res.json({ message: "تم حذف المحادثة بنجاح" });
+    } catch (error) {
+      console.error("Error deleting conversation:", error);
+      res.status(500).json({ message: "حدث خطأ في حذف المحادثة" });
+    }
+  });
+
+  // AI Chat
+  app.post("/api/ai/chat", requireAuth, async (req, res) => {
+    try {
+      const validatedData = aiChatRequestSchema.parse(req.body);
+      const { conversationId, message, modelType } = validatedData;
+      const settings = await storage.getAiModelSettings(modelType);
+      
+      if (!settings || !settings.isActive) {
+        return res.status(400).json({ message: "النموذج غير متاح" });
+      }
+
+      const apiKey = settings.apiKey || process.env.OPENROUTER_API_KEY;
+      if (!apiKey) {
+        return res.status(400).json({ message: "API key غير متوفر" });
+      }
+
+      await storage.createAiMessage({
+        conversationId,
+        role: 'user',
+        content: message,
+      });
+
+      const messages = await storage.getAiMessages(conversationId);
+      const openRouterMessages = [
+        { role: 'system' as const, content: settings.systemPrompt || 'You are a helpful assistant.' },
+        ...messages.map(m => ({ role: m.role as 'user' | 'assistant', content: m.content }))
+      ];
+
+      const service = getOpenRouterService(apiKey);
+      
+      let fullContent = '';
+      const usage = await service.streamChat(
+        {
+          model: settings.modelId,
+          messages: openRouterMessages,
+          temperature: parseFloat(settings.temperature || '0.7'),
+          top_p: parseFloat(settings.topP || '1.0'),
+          max_tokens: settings.maxTokens || 2000,
+          presence_penalty: parseFloat(settings.presencePenalty || '0.0'),
+          frequency_penalty: parseFloat(settings.frequencyPenalty || '0.0'),
+        },
+        res,
+        (token) => {
+          fullContent += token;
+        }
+      );
+
+      await storage.createAiMessage({
+        conversationId,
+        role: 'assistant',
+        content: fullContent,
+      });
+
+      await storage.createAiUsageLog({
+        userId: req.user!.id,
+        modelType,
+        modelId: settings.modelId,
+        promptTokens: usage.promptTokens,
+        completionTokens: usage.completionTokens,
+        totalTokens: usage.totalTokens,
+        success: true,
+      });
+
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "بيانات غير صالحة", errors: error.errors });
+      }
+      
+      console.error("Error in AI chat:", error);
+      
+      if (req.body.modelType) {
+        await storage.createAiUsageLog({
+          userId: req.user!.id,
+          modelType: req.body.modelType,
+          modelId: req.body.modelType,
+          success: false,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+
+      if (!res.headersSent) {
+        res.status(500).json({ message: "حدث خطأ في الدردشة" });
+      }
+    }
+  });
+
+  // AI Usage Stats
+  app.get("/api/ai/usage-stats", requireAuth, async (req, res) => {
+    try {
+      const modelType = req.query.modelType as string | undefined;
+      const stats = await storage.getAiUsageStats(modelType);
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching usage stats:", error);
+      res.status(500).json({ message: "حدث خطأ في جلب إحصائيات الاستخدام" });
     }
   });
 
