@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSidebar } from "@/contexts/sidebar-context";
 import { cn } from "@/lib/utils";
@@ -8,31 +9,14 @@ import { MotionPageShell } from "@/components/ui/motion-wrappers";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Code, Send, Copy, Maximize2, Bot, User, BookOpen, Save, ArrowRight } from "lucide-react";
+import { Code, Send, Copy, Plus, Bot, User, ArrowRight } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Link } from "wouter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-
-interface Message {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  code?: {
-    language: string;
-    code: string;
-  };
-  timestamp: Date;
-}
-
-interface Snippet {
-  id: string;
-  title: string;
-  language: string;
-  code: string;
-  description: string;
-}
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import type { AiConversation, AiMessage } from "@shared/schema";
 
 const languages = [
   { value: "javascript", label: "JavaScript" },
@@ -47,78 +31,108 @@ const languages = [
   { value: "sql", label: "SQL" },
 ];
 
-const sampleSnippets: Snippet[] = [
-  {
-    id: "1",
-    title: "دالة فرز مصفوفة",
-    language: "javascript",
-    code: `function sortArray(arr) {
-  return arr.sort((a, b) => a - b);
-}`,
-    description: "دالة بسيطة لفرز المصفوفات",
-  },
-  {
-    id: "2",
-    title: "اتصال بقاعدة البيانات",
-    language: "python",
-    code: `import sqlite3
-
-def connect_db():
-    conn = sqlite3.connect('database.db')
-    return conn`,
-    description: "كود للاتصال بقاعدة بيانات SQLite",
-  },
-];
-
 export default function AICodeAssistant() {
   const { isCollapsed } = useSidebar();
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState("javascript");
-  const [snippets, setSnippets] = useState<Snippet[]>(sampleSnippets);
   const { toast } = useToast();
+  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
+  const [input, setInput] = useState("");
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [streamingContent, setStreamingContent] = useState("");
+  const [selectedLanguage, setSelectedLanguage] = useState("javascript");
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const { data: conversations = [] } = useQuery<AiConversation[]>({
+    queryKey: ["/api/ai/conversations", "code"],
+    queryFn: () => fetch("/api/ai/conversations?modelType=code").then(res => res.json()),
+  });
+
+  const { data: messages = [], refetch: refetchMessages } = useQuery<AiMessage[]>({
+    queryKey: ["/api/ai/conversations", currentConversationId, "messages"],
+    enabled: !!currentConversationId,
+  });
+
+  const createConversationMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest("/api/ai/conversations", {
+        method: "POST",
+        body: JSON.stringify({ modelType: "code", title: `مشروع ${selectedLanguage}` }),
+      });
+    },
+    onSuccess: (data: AiConversation) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/ai/conversations"] });
+      setCurrentConversationId(data.id);
+    },
+  });
+
+  const handleNewChat = () => {
+    createConversationMutation.mutate();
+  };
 
   const handleSend = async () => {
-    if (!input.trim()) return;
+    if (!input.trim() || !currentConversationId || isStreaming) return;
 
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      role: "user",
-      content: input,
-      timestamp: new Date(),
-    };
-
-    setMessages([...messages, userMessage]);
+    const userMessage = input;
     setInput("");
-    setIsTyping(true);
+    setIsStreaming(true);
+    setStreamingContent("");
 
-    setTimeout(() => {
-      const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: `بالتأكيد! سأساعدك في كتابة الكود. إليك مثال باستخدام ${
-          languages.find((l) => l.value === selectedLanguage)?.label || "JavaScript"
-        }:`,
-        code: {
-          language: selectedLanguage,
-          code: `// مثال على الكود ${selectedLanguage === "javascript" ? "JavaScript" : selectedLanguage}
-function example() {
-  // هذا نموذج توضيحي
-  const result = "مرحباً بك في مساعد البرمجة";
-  console.log(result);
-  return result;
-}
-
-// استدعاء الدالة
-example();`,
+    try {
+      const response = await fetch("/api/ai/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-        timestamp: new Date(),
-      };
+        body: JSON.stringify({
+          conversationId: currentConversationId,
+          message: `اللغة المستخدمة: ${selectedLanguage}\n\n${userMessage}`,
+          modelType: "code",
+        }),
+      });
 
-      setMessages((prev) => [...prev, aiMessage]);
-      setIsTyping(false);
-    }, 2000);
+      if (!response.ok) {
+        throw new Error("فشل في الحصول على الرد");
+      }
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+
+      if (reader) {
+        let fullContent = "";
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value);
+          const lines = chunk.split("\n");
+
+          for (const line of lines) {
+            if (line.startsWith("data: ")) {
+              const data = line.slice(6);
+              if (data === "[DONE]") {
+                break;
+              }
+              fullContent += data;
+              setStreamingContent(fullContent);
+
+              if (scrollRef.current) {
+                scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+              }
+            }
+          }
+        }
+      }
+
+      await refetchMessages();
+      setStreamingContent("");
+    } catch (error: any) {
+      toast({
+        title: "خطأ",
+        description: error.message || "حدث خطأ أثناء الإرسال",
+        variant: "destructive",
+      });
+    } finally {
+      setIsStreaming(false);
+    }
   };
 
   const handleCopyCode = (code: string) => {
@@ -129,20 +143,19 @@ example();`,
     });
   };
 
-  const handleSaveSnippet = (code: string, language: string) => {
-    const newSnippet: Snippet = {
-      id: Date.now().toString(),
-      title: `مقتطف ${language} جديد`,
-      language,
-      code,
-      description: "تم الحفظ من المحادثة",
-    };
-    setSnippets([newSnippet, ...snippets]);
-    toast({
-      title: "تم الحفظ!",
-      description: "تم حفظ المقتطف في المكتبة",
-    });
-  };
+  useEffect(() => {
+    if (conversations.length > 0 && !currentConversationId) {
+      setCurrentConversationId(conversations[0].id);
+    }
+  }, [conversations, currentConversationId]);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages, streamingContent]);
+
+  const currentConversation = conversations.find((c) => c.id === currentConversationId);
 
   return (
     <MotionPageShell>
@@ -185,249 +198,252 @@ example();`,
             </motion.div>
 
             <Tabs defaultValue="chat" className="h-[calc(100%-8rem)]">
-              <TabsList className="grid w-full max-w-md mx-auto grid-cols-3 mb-4">
+              <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-4">
                 <TabsTrigger value="chat" data-testid="tab-chat">المحادثة</TabsTrigger>
-                <TabsTrigger value="snippets" data-testid="tab-snippets">مكتبة الأكواد</TabsTrigger>
                 <TabsTrigger value="projects" data-testid="tab-projects">المشاريع</TabsTrigger>
               </TabsList>
 
               <TabsContent value="chat" className="h-[calc(100%-3rem)]">
-                <Card className="h-full flex flex-col dark:bg-gray-900">
-                  <CardContent className="p-6 flex-1 flex flex-col overflow-hidden">
-                    <div className="flex justify-between items-center mb-4">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">لغة البرمجة:</span>
-                        <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
-                          <SelectTrigger className="w-[180px]" data-testid="select-language">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {languages.map((lang) => (
-                              <SelectItem key={lang.value} value={lang.value}>
-                                {lang.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
-                    <ScrollArea className="flex-1 mb-4" data-testid="chat-messages">
-                      {messages.length === 0 ? (
-                        <div className="flex items-center justify-center h-full">
-                          <div className="text-center">
-                            <Code className="w-20 h-20 text-muted-foreground/30 mx-auto mb-4" />
-                            <p className="text-muted-foreground text-lg mb-2">
-                              مرحباً! كيف يمكنني مساعدتك في البرمجة؟
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              اطلب مني كتابة أو شرح أي كود برمجي
-                            </p>
-                          </div>
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 h-full">
+                  <div className="lg:col-span-1">
+                    <Card className="h-full dark:bg-gray-900">
+                      <CardContent className="p-4">
+                        <div className="mb-4">
+                          <label className="text-sm mb-2 block">لغة البرمجة:</label>
+                          <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
+                            <SelectTrigger data-testid="select-language">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {languages.map((lang) => (
+                                <SelectItem key={lang.value} value={lang.value}>
+                                  {lang.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
-                      ) : (
-                        <div className="space-y-4 pb-4">
-                          {messages.map((message, index) => (
-                            <motion.div
-                              key={message.id}
-                              initial={{ opacity: 0, y: 10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ delay: index * 0.05 }}
-                              className={cn(
-                                "flex gap-3",
-                                message.role === "user" ? "justify-end" : "justify-start"
-                              )}
-                            >
-                              {message.role === "assistant" && (
-                                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center justify-center flex-shrink-0">
-                                  <Bot className="w-5 h-5 text-white" />
-                                </div>
-                              )}
-                              <div className="max-w-[85%]">
-                                <div
+
+                        <Button
+                          onClick={handleNewChat}
+                          disabled={createConversationMutation.isPending}
+                          className="w-full mb-4 bg-gradient-to-r from-indigo-500 to-purple-500"
+                          data-testid="button-new-chat"
+                        >
+                          <Plus className="ml-2 h-5 w-5" />
+                          مشروع جديد
+                        </Button>
+
+                        <h3 className="font-bold mb-3 text-sm">المشاريع السابقة</h3>
+                        <ScrollArea className="h-[calc(100%-12rem)]">
+                          <div className="space-y-2">
+                            {conversations.map((conversation) => (
+                              <motion.button
+                                key={conversation.id}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => setCurrentConversationId(conversation.id)}
+                                className={cn(
+                                  "w-full p-3 rounded-lg text-right transition-colors",
+                                  currentConversationId === conversation.id
+                                    ? "bg-indigo-500/10 border-2 border-indigo-500"
+                                    : "bg-muted hover:bg-muted/80 border-2 border-transparent"
+                                )}
+                                data-testid={`project-${conversation.id}`}
+                              >
+                                <p className="font-semibold text-sm truncate">{conversation.title}</p>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {new Date(conversation.createdAt).toLocaleDateString("ar-SA")}
+                                </p>
+                              </motion.button>
+                            ))}
+                          </div>
+                        </ScrollArea>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  <div className="lg:col-span-3">
+                    <Card className="h-full flex flex-col dark:bg-gray-900">
+                      <CardContent className="p-6 flex-1 flex flex-col overflow-hidden">
+                        <div className="flex justify-between items-center mb-4">
+                          <h2 className="font-bold text-lg">{currentConversation?.title || "مشروع جديد"}</h2>
+                        </div>
+
+                        <ScrollArea className="flex-1 mb-4" ref={scrollRef} data-testid="chat-messages">
+                          {!currentConversationId ? (
+                            <div className="flex items-center justify-center h-full">
+                              <div className="text-center">
+                                <Code className="w-20 h-20 text-muted-foreground/30 mx-auto mb-4" />
+                                <p className="text-muted-foreground text-lg mb-2">
+                                  مرحباً! انقر على "مشروع جديد" للبدء
+                                </p>
+                              </div>
+                            </div>
+                          ) : messages.length === 0 && !streamingContent ? (
+                            <div className="flex items-center justify-center h-full">
+                              <div className="text-center">
+                                <Code className="w-20 h-20 text-muted-foreground/30 mx-auto mb-4" />
+                                <p className="text-muted-foreground text-lg mb-2">
+                                  مرحباً! كيف يمكنني مساعدتك في البرمجة؟
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                  اطلب مني كتابة أو شرح أي كود برمجي
+                                </p>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="space-y-4 pb-4">
+                              {messages.map((message, index) => (
+                                <motion.div
+                                  key={message.id}
+                                  initial={{ opacity: 0, y: 10 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{ delay: index * 0.02 }}
                                   className={cn(
-                                    "rounded-lg p-4 mb-2",
-                                    message.role === "user"
-                                      ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white"
-                                      : "bg-muted dark:bg-gray-800"
+                                    "flex gap-3",
+                                    message.role === "user" ? "justify-end" : "justify-start"
                                   )}
                                 >
-                                  <p className="text-sm whitespace-pre-wrap text-right">
-                                    {message.content}
-                                  </p>
-                                </div>
-
-                                {message.code && (
-                                  <Card className="mt-2 dark:bg-gray-950">
-                                    <CardContent className="p-0">
-                                      <div className="flex items-center justify-between bg-muted dark:bg-gray-800 px-4 py-2 rounded-t-lg border-b dark:border-gray-700">
-                                        <span className="text-xs font-mono text-muted-foreground">
-                                          {message.code.language}
-                                        </span>
-                                        <div className="flex gap-2">
-                                          <Button
-                                            size="sm"
-                                            variant="ghost"
-                                            onClick={() => handleCopyCode(message.code!.code)}
-                                            data-testid="button-copy-code"
-                                          >
-                                            <Copy className="h-4 w-4" />
-                                          </Button>
-                                          <Button
-                                            size="sm"
-                                            variant="ghost"
-                                            onClick={() =>
-                                              handleSaveSnippet(
-                                                message.code!.code,
-                                                message.code!.language
-                                              )
-                                            }
-                                            data-testid="button-save-snippet"
-                                          >
-                                            <Save className="h-4 w-4" />
-                                          </Button>
-                                        </div>
+                                  {message.role === "assistant" && (
+                                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center justify-center flex-shrink-0">
+                                      <Bot className="w-5 h-5 text-white" />
+                                    </div>
+                                  )}
+                                  <div
+                                    className={cn(
+                                      "max-w-[75%] rounded-lg p-4 relative group",
+                                      message.role === "user"
+                                        ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white"
+                                        : "bg-muted dark:bg-gray-800"
+                                    )}
+                                  >
+                                    {message.content.includes("```") ? (
+                                      <div className="space-y-2">
+                                        {message.content.split("```").map((part, idx) => {
+                                          if (idx % 2 === 1) {
+                                            return (
+                                              <div key={idx} className="relative">
+                                                <pre className="bg-black/20 p-3 rounded overflow-x-auto text-sm">
+                                                  <code className="text-right block">{part.trim()}</code>
+                                                </pre>
+                                                <Button
+                                                  size="sm"
+                                                  variant="ghost"
+                                                  onClick={() => handleCopyCode(part.trim())}
+                                                  className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                >
+                                                  <Copy className="h-4 w-4" />
+                                                </Button>
+                                              </div>
+                                            );
+                                          }
+                                          return part.trim() && (
+                                            <p key={idx} className="text-sm whitespace-pre-wrap text-right">
+                                              {part.trim()}
+                                            </p>
+                                          );
+                                        })}
                                       </div>
-                                      <pre className="p-4 overflow-x-auto bg-gray-950 text-gray-100 rounded-b-lg">
-                                        <code className="text-sm font-mono">{message.code.code}</code>
-                                      </pre>
-                                    </CardContent>
-                                  </Card>
-                                )}
-                              </div>
-                              {message.role === "user" && (
-                                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                                  <User className="w-5 h-5 text-white" />
-                                </div>
-                              )}
-                            </motion.div>
-                          ))}
-
-                          <AnimatePresence>
-                            {isTyping && (
-                              <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                className="flex gap-3"
-                              >
-                                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center justify-center flex-shrink-0">
-                                  <Bot className="w-5 h-5 text-white" />
-                                </div>
-                                <div className="bg-muted dark:bg-gray-800 rounded-lg p-4">
-                                  <div className="flex gap-1">
-                                    <motion.div
-                                      animate={{ y: [0, -5, 0] }}
-                                      transition={{ duration: 0.6, repeat: Infinity }}
-                                      className="w-2 h-2 bg-indigo-500 rounded-full"
-                                    />
-                                    <motion.div
-                                      animate={{ y: [0, -5, 0] }}
-                                      transition={{ duration: 0.6, repeat: Infinity, delay: 0.2 }}
-                                      className="w-2 h-2 bg-indigo-500 rounded-full"
-                                    />
-                                    <motion.div
-                                      animate={{ y: [0, -5, 0] }}
-                                      transition={{ duration: 0.6, repeat: Infinity, delay: 0.4 }}
-                                      className="w-2 h-2 bg-indigo-500 rounded-full"
-                                    />
+                                    ) : (
+                                      <p className="text-sm whitespace-pre-wrap text-right">
+                                        {message.content}
+                                      </p>
+                                    )}
                                   </div>
-                                </div>
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                        </div>
-                      )}
-                    </ScrollArea>
+                                  {message.role === "user" && (
+                                    <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                                      <User className="w-5 h-5 text-white" />
+                                    </div>
+                                  )}
+                                </motion.div>
+                              ))}
 
-                    <div className="flex gap-2">
-                      <Textarea
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" && !e.shiftKey) {
-                            e.preventDefault();
-                            handleSend();
-                          }
-                        }}
-                        placeholder="اطلب مني كتابة أو شرح أي كود..."
-                        className="text-right resize-none font-mono dark:bg-gray-800"
-                        rows={3}
-                        disabled={isTyping}
-                        data-testid="input-message"
-                      />
-                      <Button
-                        onClick={handleSend}
-                        disabled={!input.trim() || isTyping}
-                        className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 h-auto"
-                        data-testid="button-send"
-                      >
-                        <Send className="h-5 w-5" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="snippets" className="h-[calc(100%-3rem)]">
-                <Card className="h-full dark:bg-gray-900">
-                  <CardContent className="p-6">
-                    <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                      <BookOpen className="w-6 h-6 text-indigo-500" />
-                      مكتبة المقتطفات البرمجية
-                    </h2>
-                    <ScrollArea className="h-[calc(100%-4rem)]">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {snippets.map((snippet) => (
-                          <motion.div
-                            key={snippet.id}
-                            whileHover={{ scale: 1.02 }}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                          >
-                            <Card className="dark:bg-gray-800 hover:border-indigo-500 transition-colors">
-                              <CardContent className="p-4">
-                                <div className="flex justify-between items-start mb-2">
-                                  <h3 className="font-bold">{snippet.title}</h3>
-                                  <span className="text-xs bg-indigo-500/10 text-indigo-500 px-2 py-1 rounded">
-                                    {snippet.language}
-                                  </span>
-                                </div>
-                                <p className="text-sm text-muted-foreground mb-3">
-                                  {snippet.description}
-                                </p>
-                                <pre className="bg-gray-950 text-gray-100 p-3 rounded text-xs overflow-x-auto">
-                                  <code className="font-mono">{snippet.code}</code>
-                                </pre>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="mt-2 w-full"
-                                  onClick={() => handleCopyCode(snippet.code)}
+                              {streamingContent && (
+                                <motion.div
+                                  initial={{ opacity: 0 }}
+                                  animate={{ opacity: 1 }}
+                                  className="flex gap-3"
                                 >
-                                  <Copy className="ml-2 h-4 w-4" />
-                                  نسخ الكود
-                                </Button>
-                              </CardContent>
-                            </Card>
-                          </motion.div>
-                        ))}
-                      </div>
-                    </ScrollArea>
-                  </CardContent>
-                </Card>
+                                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center justify-center flex-shrink-0">
+                                    <Bot className="w-5 h-5 text-white" />
+                                  </div>
+                                  <div className="max-w-[75%] bg-muted dark:bg-gray-800 rounded-lg p-4">
+                                    <p className="text-sm whitespace-pre-wrap text-right">
+                                      {streamingContent}
+                                    </p>
+                                  </div>
+                                </motion.div>
+                              )}
+
+                              <AnimatePresence>
+                                {isStreaming && !streamingContent && (
+                                  <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    className="flex gap-3"
+                                  >
+                                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center justify-center flex-shrink-0">
+                                      <Bot className="w-5 h-5 text-white" />
+                                    </div>
+                                    <div className="bg-muted dark:bg-gray-800 rounded-lg p-4">
+                                      <div className="flex gap-1">
+                                        {[0, 1, 2].map((i) => (
+                                          <motion.div
+                                            key={i}
+                                            animate={{ y: [0, -5, 0] }}
+                                            transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.2 }}
+                                            className="w-2 h-2 bg-indigo-500 rounded-full"
+                                          />
+                                        ))}
+                                      </div>
+                                    </div>
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                            </div>
+                          )}
+                        </ScrollArea>
+
+                        <div className="flex gap-2">
+                          <Textarea
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" && !e.shiftKey) {
+                                e.preventDefault();
+                                handleSend();
+                              }
+                            }}
+                            placeholder="اطلب مني كتابة كود، شرح مفهوم، أو مراجعة الكود..."
+                            className="text-right resize-none"
+                            rows={3}
+                            disabled={isStreaming || !currentConversationId}
+                            data-testid="input-message"
+                          />
+                          <Button
+                            onClick={handleSend}
+                            disabled={!input.trim() || isStreaming || !currentConversationId}
+                            className="bg-gradient-to-r from-indigo-500 to-purple-500 h-auto"
+                            data-testid="button-send"
+                          >
+                            <Send className="h-5 w-5" />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
               </TabsContent>
 
-              <TabsContent value="projects" className="h-[calc(100%-3rem)]">
-                <Card className="h-full dark:bg-gray-900">
-                  <CardContent className="p-6 flex items-center justify-center h-full">
-                    <div className="text-center">
-                      <Code className="w-20 h-20 text-muted-foreground/30 mx-auto mb-4" />
-                      <p className="text-muted-foreground text-lg mb-2">المشاريع المحفوظة</p>
-                      <p className="text-sm text-muted-foreground">
-                        سيتم إضافة هذه الميزة قريباً
-                      </p>
-                    </div>
+              <TabsContent value="projects">
+                <Card className="dark:bg-gray-900">
+                  <CardContent className="p-6">
+                    <h3 className="text-lg font-bold mb-4">مشاريعك البرمجية</h3>
+                    <p className="text-muted-foreground">
+                      سيتم عرض جميع مشاريعك البرمجية هنا
+                    </p>
                   </CardContent>
                 </Card>
               </TabsContent>

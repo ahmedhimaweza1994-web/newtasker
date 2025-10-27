@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSidebar } from "@/contexts/sidebar-context";
 import { cn } from "@/lib/utils";
@@ -8,124 +9,151 @@ import { MotionPageShell } from "@/components/ui/motion-wrappers";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { FileText, Send, Trash2, Plus, Sparkles, User, Bot, ArrowRight } from "lucide-react";
+import { FileText, Send, Trash2, Plus, Bot, User, ArrowRight } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Link } from "wouter";
-
-interface Message {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  timestamp: Date;
-}
-
-interface Chat {
-  id: string;
-  title: string;
-  messages: Message[];
-  createdAt: Date;
-}
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import type { AiConversation, AiMessage } from "@shared/schema";
 
 export default function AITextChat() {
   const { isCollapsed } = useSidebar();
-  const [chats, setChats] = useState<Chat[]>([]);
-  const [currentChatId, setCurrentChatId] = useState<string | null>(null);
+  const { toast } = useToast();
+  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const [input, setInput] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [streamingContent, setStreamingContent] = useState("");
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-  const currentChat = chats.find((c) => c.id === currentChatId);
+  const { data: conversations = [], isLoading: conversationsLoading } = useQuery<AiConversation[]>({
+    queryKey: ["/api/ai/conversations", "chat"],
+    queryFn: () => fetch("/api/ai/conversations?modelType=chat").then(res => res.json()),
+  });
+
+  const { data: messages = [], refetch: refetchMessages } = useQuery<AiMessage[]>({
+    queryKey: ["/api/ai/conversations", currentConversationId, "messages"],
+    enabled: !!currentConversationId,
+  });
+
+  const createConversationMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest("/api/ai/conversations", {
+        method: "POST",
+        body: JSON.stringify({ modelType: "chat" }),
+      });
+    },
+    onSuccess: (data: AiConversation) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/ai/conversations"] });
+      setCurrentConversationId(data.id);
+    },
+  });
+
+  const deleteConversationMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return await apiRequest(`/api/ai/conversations/${id}`, {
+        method: "DELETE",
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/ai/conversations"] });
+      setCurrentConversationId(null);
+      toast({
+        title: "تم الحذف",
+        description: "تم حذف المحادثة بنجاح",
+      });
+    },
+  });
 
   const handleNewChat = () => {
-    const newChat: Chat = {
-      id: Date.now().toString(),
-      title: "محادثة جديدة",
-      messages: [],
-      createdAt: new Date(),
-    };
-    setChats([newChat, ...chats]);
-    setCurrentChatId(newChat.id);
+    createConversationMutation.mutate();
   };
 
   const handleSend = async () => {
-    if (!input.trim() || !currentChatId) return;
+    if (!input.trim() || !currentConversationId || isStreaming) return;
 
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      role: "user",
-      content: input,
-      timestamp: new Date(),
-    };
-
-    setChats(
-      chats.map((chat) =>
-        chat.id === currentChatId
-          ? {
-              ...chat,
-              messages: [...chat.messages, userMessage],
-              title: chat.messages.length === 0 ? input.slice(0, 30) + "..." : chat.title,
-            }
-          : chat
-      )
-    );
-
+    const userMessage = input;
     setInput("");
-    setIsTyping(true);
+    setIsStreaming(true);
+    setStreamingContent("");
 
-    setTimeout(() => {
-      const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: `شكراً على رسالتك! أنا مساعد ذكي يمكنني مساعدتك في مجموعة واسعة من المهام:
+    try {
+      const response = await fetch("/api/ai/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          conversationId: currentConversationId,
+          message: userMessage,
+          modelType: "chat",
+        }),
+      });
 
-📝 **الكتابة والتحرير**: يمكنني مساعدتك في كتابة المقالات، الرسائل، والمحتوى الإبداعي.
+      if (!response.ok) {
+        throw new Error("فشل في الحصول على الرد");
+      }
 
-💡 **الأفكار والإبداع**: أقدم أفكاراً جديدة وحلولاً إبداعية لمشاريعك.
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
 
-📚 **التعلم والشرح**: أشرح المفاهيم المعقدة بطريقة بسيطة ومفهومة.
+      if (reader) {
+        let fullContent = "";
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
 
-✅ **المراجعة والتصحيح**: أراجع النصوص وأصحح الأخطاء اللغوية والنحوية.
+          const chunk = decoder.decode(value);
+          const lines = chunk.split("\n");
 
-سؤالك: "${input}"
+          for (const line of lines) {
+            if (line.startsWith("data: ")) {
+              const data = line.slice(6);
+              if (data === "[DONE]") {
+                break;
+              }
+              fullContent += data;
+              setStreamingContent(fullContent);
 
-الإجابة: هذا نموذج توضيحي للمحادثة. في التطبيق الفعلي، سيتم الاتصال بنموذج الذكاء الاصطناعي لتقديم إجابات دقيقة ومفيدة. يمكنك استخدام هذه الواجهة للتفاعل مع المساعد الذكي والحصول على المساعدة في مختلف المهام.
+              if (scrollRef.current) {
+                scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+              }
+            }
+          }
+        }
+      }
 
-كيف يمكنني مساعدتك اليوم؟`,
-        timestamp: new Date(),
-      };
-
-      setChats((prev) =>
-        prev.map((chat) =>
-          chat.id === currentChatId
-            ? { ...chat, messages: [...chat.messages, aiMessage] }
-            : chat
-        )
-      );
-      setIsTyping(false);
-    }, 2000);
+      await refetchMessages();
+      setStreamingContent("");
+    } catch (error: any) {
+      toast({
+        title: "خطأ",
+        description: error.message || "حدث خطأ أثناء الإرسال",
+        variant: "destructive",
+      });
+    } finally {
+      setIsStreaming(false);
+    }
   };
 
-  const handleClearChat = () => {
-    if (currentChatId) {
-      setChats(
-        chats.map((chat) =>
-          chat.id === currentChatId ? { ...chat, messages: [] } : chat
-        )
-      );
+  const handleDeleteChat = () => {
+    if (currentConversationId) {
+      deleteConversationMutation.mutate(currentConversationId);
     }
   };
 
   useEffect(() => {
-    if (chats.length === 0) {
-      const newChat: Chat = {
-        id: Date.now().toString(),
-        title: "محادثة جديدة",
-        messages: [],
-        createdAt: new Date(),
-      };
-      setChats([newChat]);
-      setCurrentChatId(newChat.id);
+    if (conversations.length > 0 && !currentConversationId) {
+      setCurrentConversationId(conversations[0].id);
     }
-  }, []);
+  }, [conversations, currentConversationId]);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages, streamingContent]);
+
+  const currentConversation = conversations.find((c) => c.id === currentConversationId);
 
   return (
     <MotionPageShell>
@@ -172,6 +200,7 @@ export default function AITextChat() {
                   <CardContent className="p-4">
                     <Button
                       onClick={handleNewChat}
+                      disabled={createConversationMutation.isPending}
                       className="w-full mb-4 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
                       data-testid="button-new-chat"
                     >
@@ -182,26 +211,32 @@ export default function AITextChat() {
                     <h3 className="font-bold mb-3 text-sm">المحادثات السابقة</h3>
                     <ScrollArea className="h-[calc(100%-7rem)]">
                       <div className="space-y-2">
-                        {chats.map((chat) => (
-                          <motion.button
-                            key={chat.id}
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            onClick={() => setCurrentChatId(chat.id)}
-                            className={cn(
-                              "w-full p-3 rounded-lg text-right transition-colors",
-                              currentChatId === chat.id
-                                ? "bg-orange-500/10 border-2 border-orange-500"
-                                : "bg-muted hover:bg-muted/80 border-2 border-transparent"
-                            )}
-                            data-testid={`chat-${chat.id}`}
-                          >
-                            <p className="font-semibold text-sm truncate">{chat.title}</p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {chat.messages.length} رسالة
-                            </p>
-                          </motion.button>
-                        ))}
+                        {conversationsLoading ? (
+                          <p className="text-sm text-muted-foreground">جاري التحميل...</p>
+                        ) : conversations.length === 0 ? (
+                          <p className="text-sm text-muted-foreground">لا توجد محادثات</p>
+                        ) : (
+                          conversations.map((conversation) => (
+                            <motion.button
+                              key={conversation.id}
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              onClick={() => setCurrentConversationId(conversation.id)}
+                              className={cn(
+                                "w-full p-3 rounded-lg text-right transition-colors",
+                                currentConversationId === conversation.id
+                                  ? "bg-orange-500/10 border-2 border-orange-500"
+                                  : "bg-muted hover:bg-muted/80 border-2 border-transparent"
+                              )}
+                              data-testid={`chat-${conversation.id}`}
+                            >
+                              <p className="font-semibold text-sm truncate">{conversation.title}</p>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {new Date(conversation.createdAt).toLocaleDateString("ar-SA")}
+                              </p>
+                            </motion.button>
+                          ))
+                        )}
                       </div>
                     </ScrollArea>
                   </CardContent>
@@ -212,20 +247,30 @@ export default function AITextChat() {
                 <Card className="h-full flex flex-col">
                   <CardContent className="p-6 flex-1 flex flex-col overflow-hidden">
                     <div className="flex justify-between items-center mb-4">
-                      <h2 className="font-bold text-lg">{currentChat?.title || "محادثة جديدة"}</h2>
+                      <h2 className="font-bold text-lg">{currentConversation?.title || "محادثة جديدة"}</h2>
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={handleClearChat}
+                        onClick={handleDeleteChat}
+                        disabled={!currentConversationId || deleteConversationMutation.isPending}
                         data-testid="button-clear-chat"
                       >
                         <Trash2 className="ml-2 h-4 w-4" />
-                        مسح المحادثة
+                        حذف المحادثة
                       </Button>
                     </div>
 
-                    <ScrollArea className="flex-1 mb-4" data-testid="chat-messages">
-                      {currentChat?.messages.length === 0 ? (
+                    <ScrollArea className="flex-1 mb-4" ref={scrollRef} data-testid="chat-messages">
+                      {!currentConversationId ? (
+                        <div className="flex items-center justify-center h-full">
+                          <div className="text-center">
+                            <Bot className="w-20 h-20 text-muted-foreground/30 mx-auto mb-4" />
+                            <p className="text-muted-foreground text-lg mb-2">
+                              مرحباً! انقر على "محادثة جديدة" للبدء
+                            </p>
+                          </div>
+                        </div>
+                      ) : messages.length === 0 && !streamingContent ? (
                         <div className="flex items-center justify-center h-full">
                           <div className="text-center">
                             <Bot className="w-20 h-20 text-muted-foreground/30 mx-auto mb-4" />
@@ -239,12 +284,12 @@ export default function AITextChat() {
                         </div>
                       ) : (
                         <div className="space-y-4 pb-4">
-                          {currentChat?.messages.map((message, index) => (
+                          {messages.map((message, index) => (
                             <motion.div
                               key={message.id}
                               initial={{ opacity: 0, y: 10 }}
                               animate={{ opacity: 1, y: 0 }}
-                              transition={{ delay: index * 0.05 }}
+                              transition={{ delay: index * 0.02 }}
                               className={cn(
                                 "flex gap-3",
                                 message.role === "user" ? "justify-end" : "justify-start"
@@ -266,12 +311,6 @@ export default function AITextChat() {
                                 <p className="text-sm whitespace-pre-wrap text-right">
                                   {message.content}
                                 </p>
-                                <p className="text-xs opacity-70 mt-2">
-                                  {message.timestamp.toLocaleTimeString("ar-SA", {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  })}
-                                </p>
                               </div>
                               {message.role === "user" && (
                                 <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
@@ -281,8 +320,25 @@ export default function AITextChat() {
                             </motion.div>
                           ))}
 
+                          {streamingContent && (
+                            <motion.div
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              className="flex gap-3"
+                            >
+                              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-orange-500 to-red-500 flex items-center justify-center flex-shrink-0">
+                                <Bot className="w-5 h-5 text-white" />
+                              </div>
+                              <div className="max-w-[75%] bg-muted rounded-lg p-4">
+                                <p className="text-sm whitespace-pre-wrap text-right">
+                                  {streamingContent}
+                                </p>
+                              </div>
+                            </motion.div>
+                          )}
+
                           <AnimatePresence>
-                            {isTyping && (
+                            {isStreaming && !streamingContent && (
                               <motion.div
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
@@ -331,12 +387,12 @@ export default function AITextChat() {
                         placeholder="اكتب رسالتك هنا..."
                         className="text-right resize-none"
                         rows={3}
-                        disabled={isTyping}
+                        disabled={isStreaming || !currentConversationId}
                         data-testid="input-message"
                       />
                       <Button
                         onClick={handleSend}
-                        disabled={!input.trim() || isTyping}
+                        disabled={!input.trim() || isStreaming || !currentConversationId}
                         className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 h-auto"
                         data-testid="button-send"
                       >

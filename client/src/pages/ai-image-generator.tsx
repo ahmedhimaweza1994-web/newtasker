@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSidebar } from "@/contexts/sidebar-context";
 import { cn } from "@/lib/utils";
@@ -8,43 +9,129 @@ import { MotionPageShell } from "@/components/ui/motion-wrappers";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Download, Maximize2, ImageIcon, Sparkles, ArrowRight } from "lucide-react";
-import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { ImageIcon, Send, Plus, Bot, User, ArrowRight } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Link } from "wouter";
-
-interface GeneratedImage {
-  id: string;
-  url: string;
-  prompt: string;
-}
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import type { AiConversation, AiMessage } from "@shared/schema";
 
 export default function AIImageGenerator() {
   const { isCollapsed } = useSidebar();
-  const [prompt, setPrompt] = useState("");
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [images, setImages] = useState<GeneratedImage[]>([]);
-  const [imageSize, setImageSize] = useState("1024x1024");
-  const [imageStyle, setImageStyle] = useState("realistic");
-  const [imageQuality, setImageQuality] = useState("standard");
+  const { toast } = useToast();
+  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
+  const [input, setInput] = useState("");
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [streamingContent, setStreamingContent] = useState("");
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-  const handleGenerate = async () => {
-    if (!prompt.trim()) return;
-    
-    setIsGenerating(true);
-    
-    setTimeout(() => {
-      const newImage: GeneratedImage = {
-        id: Date.now().toString(),
-        url: `https://picsum.photos/seed/${Date.now()}/1024/1024`,
-        prompt: prompt,
-      };
-      setImages([newImage, ...images]);
-      setIsGenerating(false);
-      setPrompt("");
-    }, 3000);
+  const { data: conversations = [] } = useQuery<AiConversation[]>({
+    queryKey: ["/api/ai/conversations", "image"],
+    queryFn: () => fetch("/api/ai/conversations?modelType=image").then(res => res.json()),
+  });
+
+  const { data: messages = [], refetch: refetchMessages } = useQuery<AiMessage[]>({
+    queryKey: ["/api/ai/conversations", currentConversationId, "messages"],
+    enabled: !!currentConversationId,
+  });
+
+  const createConversationMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest("/api/ai/conversations", {
+        method: "POST",
+        body: JSON.stringify({ modelType: "image" }),
+      });
+    },
+    onSuccess: (data: AiConversation) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/ai/conversations"] });
+      setCurrentConversationId(data.id);
+    },
+  });
+
+  const handleNewChat = () => {
+    createConversationMutation.mutate();
   };
+
+  const handleSend = async () => {
+    if (!input.trim() || !currentConversationId || isStreaming) return;
+
+    const userMessage = input;
+    setInput("");
+    setIsStreaming(true);
+    setStreamingContent("");
+
+    try {
+      const response = await fetch("/api/ai/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          conversationId: currentConversationId,
+          message: userMessage,
+          modelType: "image",
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("فشل في الحصول على الرد");
+      }
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+
+      if (reader) {
+        let fullContent = "";
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value);
+          const lines = chunk.split("\n");
+
+          for (const line of lines) {
+            if (line.startsWith("data: ")) {
+              const data = line.slice(6);
+              if (data === "[DONE]") {
+                break;
+              }
+              fullContent += data;
+              setStreamingContent(fullContent);
+
+              if (scrollRef.current) {
+                scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+              }
+            }
+          }
+        }
+      }
+
+      await refetchMessages();
+      setStreamingContent("");
+    } catch (error: any) {
+      toast({
+        title: "خطأ",
+        description: error.message || "حدث خطأ أثناء الإرسال",
+        variant: "destructive",
+      });
+    } finally {
+      setIsStreaming(false);
+    }
+  };
+
+  useEffect(() => {
+    if (conversations.length > 0 && !currentConversationId) {
+      setCurrentConversationId(conversations[0].id);
+    }
+  }, [conversations, currentConversationId]);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages, streamingContent]);
+
+  const currentConversation = conversations.find((c) => c.id === currentConversationId);
 
   return (
     <MotionPageShell>
@@ -52,7 +139,7 @@ export default function AIImageGenerator() {
       <div className="flex">
         <Sidebar />
         <main className={cn("flex-1 min-h-screen bg-gradient-to-br from-background via-background to-purple-500/5 transition-all duration-300", isCollapsed ? "md:mr-16" : "md:mr-64")}>
-          <div className="container mx-auto px-4 py-8 max-w-7xl">
+          <div className="container mx-auto px-4 py-8 max-w-7xl h-[calc(100vh-2rem)]">
             <Link href="/ai-center">
               <Button variant="ghost" className="mb-4" data-testid="button-back">
                 <ArrowRight className="ml-2 h-4 w-4" />
@@ -62,9 +149,9 @@ export default function AIImageGenerator() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-center mb-8"
+              className="text-center mb-6"
             >
-              <div className="flex items-center justify-center gap-3 mb-4">
+              <div className="flex items-center justify-center gap-3 mb-2">
                 <motion.div
                   animate={{
                     rotate: [0, 10, -10, 0],
@@ -74,218 +161,203 @@ export default function AIImageGenerator() {
                     repeat: Infinity,
                   }}
                 >
-                  <ImageIcon className="w-12 h-12 text-purple-500" />
+                  <ImageIcon className="w-10 h-10 text-purple-500" />
                 </motion.div>
                 <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">
                   مولد الصور بالذكاء الاصطناعي
                 </h1>
               </div>
-              <p className="text-sm md:text-base text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 أنشئ صوراً احترافية من النصوص باستخدام الذكاء الاصطناعي
               </p>
             </motion.div>
 
-            <Card className="mb-8">
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="prompt" className="text-base font-semibold mb-2 block">
-                      وصف الصورة
-                    </Label>
-                    <Textarea
-                      id="prompt"
-                      data-testid="input-image-prompt"
-                      placeholder="اكتب وصفاً تفصيلياً للصورة التي تريد إنشاءها..."
-                      value={prompt}
-                      onChange={(e) => setPrompt(e.target.value)}
-                      className="min-h-[100px] text-right"
-                      disabled={isGenerating}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <Label htmlFor="size" className="text-sm mb-2 block">حجم الصورة</Label>
-                      <Select value={imageSize} onValueChange={setImageSize} disabled={isGenerating}>
-                        <SelectTrigger id="size" data-testid="select-image-size">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="512x512">512×512</SelectItem>
-                          <SelectItem value="1024x1024">1024×1024</SelectItem>
-                          <SelectItem value="1792x1024">1792×1024</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="style" className="text-sm mb-2 block">النمط</Label>
-                      <Select value={imageStyle} onValueChange={setImageStyle} disabled={isGenerating}>
-                        <SelectTrigger id="style" data-testid="select-image-style">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="realistic">واقعي</SelectItem>
-                          <SelectItem value="artistic">فني</SelectItem>
-                          <SelectItem value="cartoon">كرتوني</SelectItem>
-                          <SelectItem value="3d">ثلاثي الأبعاد</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="quality" className="text-sm mb-2 block">الجودة</Label>
-                      <Select value={imageQuality} onValueChange={setImageQuality} disabled={isGenerating}>
-                        <SelectTrigger id="quality" data-testid="select-image-quality">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="standard">عادية</SelectItem>
-                          <SelectItem value="hd">عالية الدقة</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <Button
-                    onClick={handleGenerate}
-                    disabled={!prompt.trim() || isGenerating}
-                    className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-                    size="lg"
-                    data-testid="button-generate-image"
-                  >
-                    {isGenerating ? (
-                      <>
-                        <Loader2 className="ml-2 h-5 w-5 animate-spin" />
-                        جاري الإنشاء...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="ml-2 h-5 w-5" />
-                        إنشاء الصورة
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            <AnimatePresence>
-              {isGenerating && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  className="mb-8"
-                >
-                  <Card className="border-2 border-purple-500/20">
-                    <CardContent className="p-8">
-                      <div className="flex flex-col items-center gap-4">
-                        <motion.div
-                          animate={{
-                            rotate: 360,
-                          }}
-                          transition={{
-                            duration: 2,
-                            repeat: Infinity,
-                            ease: "linear",
-                          }}
-                        >
-                          <Sparkles className="w-16 h-16 text-purple-500" />
-                        </motion.div>
-                        <p className="text-lg font-semibold">جاري إنشاء صورتك المذهلة...</p>
-                        <div className="w-full max-w-xs h-2 bg-muted rounded-full overflow-hidden">
-                          <motion.div
-                            className="h-full bg-gradient-to-r from-purple-500 to-pink-500"
-                            initial={{ width: "0%" }}
-                            animate={{ width: "100%" }}
-                            transition={{ duration: 3, ease: "easeInOut" }}
-                          />
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {images.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-              >
-                <h2 className="text-xl font-bold mb-4">الصور المنشأة</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {images.map((image, index) => (
-                    <motion.div
-                      key={image.id}
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: index * 0.1 }}
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 h-[calc(100%-8rem)]">
+              <div className="lg:col-span-1">
+                <Card className="h-full">
+                  <CardContent className="p-4">
+                    <Button
+                      onClick={handleNewChat}
+                      disabled={createConversationMutation.isPending}
+                      className="w-full mb-4 bg-gradient-to-r from-purple-500 to-pink-500"
+                      data-testid="button-new-chat"
                     >
-                      <Card className="overflow-hidden group">
-                        <CardContent className="p-0 relative">
-                          <img
-                            src={image.url}
-                            alt={image.prompt}
-                            className="w-full aspect-square object-cover"
-                          />
-                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2">
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                <Button
-                                  variant="secondary"
-                                  size="icon"
-                                  data-testid={`button-view-${image.id}`}
-                                >
-                                  <Maximize2 className="h-5 w-5" />
-                                </Button>
-                              </DialogTrigger>
-                              <DialogContent className="max-w-4xl">
-                                <DialogHeader>
-                                  <DialogTitle>عرض الصورة</DialogTitle>
-                                  <DialogDescription>{image.prompt}</DialogDescription>
-                                </DialogHeader>
-                                <img src={image.url} alt={image.prompt} className="w-full" />
-                              </DialogContent>
-                            </Dialog>
-                            <Button
-                              variant="secondary"
-                              size="icon"
-                              onClick={() => {
-                                const link = document.createElement('a');
-                                link.href = image.url;
-                                link.download = `ai-image-${image.id}.jpg`;
-                                link.click();
-                              }}
-                              data-testid={`button-download-${image.id}`}
-                            >
-                              <Download className="h-5 w-5" />
-                            </Button>
-                          </div>
-                          <div className="p-3 bg-background/95 backdrop-blur">
-                            <p className="text-sm text-muted-foreground line-clamp-2 text-right">
-                              {image.prompt}
+                      <Plus className="ml-2 h-5 w-5" />
+                      مشروع جديد
+                    </Button>
+
+                    <h3 className="font-bold mb-3 text-sm">المشاريع السابقة</h3>
+                    <ScrollArea className="h-[calc(100%-7rem)]">
+                      <div className="space-y-2">
+                        {conversations.map((conversation) => (
+                          <motion.button
+                            key={conversation.id}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => setCurrentConversationId(conversation.id)}
+                            className={cn(
+                              "w-full p-3 rounded-lg text-right transition-colors",
+                              currentConversationId === conversation.id
+                                ? "bg-purple-500/10 border-2 border-purple-500"
+                                : "bg-muted hover:bg-muted/80 border-2 border-transparent"
+                            )}
+                            data-testid={`project-${conversation.id}`}
+                          >
+                            <p className="font-semibold text-sm truncate">{conversation.title}</p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {new Date(conversation.createdAt).toLocaleDateString("ar-SA")}
+                            </p>
+                          </motion.button>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="lg:col-span-3">
+                <Card className="h-full flex flex-col">
+                  <CardContent className="p-6 flex-1 flex flex-col overflow-hidden">
+                    <div className="flex justify-between items-center mb-4">
+                      <h2 className="font-bold text-lg">{currentConversation?.title || "مشروع جديد"}</h2>
+                    </div>
+
+                    <ScrollArea className="flex-1 mb-4" ref={scrollRef} data-testid="chat-messages">
+                      {!currentConversationId ? (
+                        <div className="flex items-center justify-center h-full">
+                          <div className="text-center">
+                            <ImageIcon className="w-20 h-20 text-muted-foreground/30 mx-auto mb-4" />
+                            <p className="text-muted-foreground text-lg mb-2">
+                              مرحباً! انقر على "مشروع جديد" للبدء
                             </p>
                           </div>
-                        </CardContent>
-                      </Card>
-                    </motion.div>
-                  ))}
-                </div>
-              </motion.div>
-            )}
+                        </div>
+                      ) : messages.length === 0 && !streamingContent ? (
+                        <div className="flex items-center justify-center h-full">
+                          <div className="text-center">
+                            <ImageIcon className="w-20 h-20 text-muted-foreground/30 mx-auto mb-4" />
+                            <p className="text-muted-foreground text-lg mb-2">
+                              صف الصورة التي تريد إنشاءها
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              مثال: "منظر طبيعي جميل عند غروب الشمس"
+                            </p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-4 pb-4">
+                          {messages.map((message, index) => (
+                            <motion.div
+                              key={message.id}
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: index * 0.02 }}
+                              className={cn(
+                                "flex gap-3",
+                                message.role === "user" ? "justify-end" : "justify-start"
+                              )}
+                            >
+                              {message.role === "assistant" && (
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
+                                  <Bot className="w-5 h-5 text-white" />
+                                </div>
+                              )}
+                              <div
+                                className={cn(
+                                  "max-w-[75%] rounded-lg p-4",
+                                  message.role === "user"
+                                    ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+                                    : "bg-muted"
+                                )}
+                              >
+                                <p className="text-sm whitespace-pre-wrap text-right">
+                                  {message.content}
+                                </p>
+                              </div>
+                              {message.role === "user" && (
+                                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                                  <User className="w-5 h-5 text-white" />
+                                </div>
+                              )}
+                            </motion.div>
+                          ))}
 
-            {images.length === 0 && !isGenerating && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-center py-16"
-              >
-                <ImageIcon className="w-24 h-24 text-muted-foreground/30 mx-auto mb-4" />
-                <p className="text-muted-foreground">لم يتم إنشاء أي صور بعد</p>
-              </motion.div>
-            )}
+                          {streamingContent && (
+                            <motion.div
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              className="flex gap-3"
+                            >
+                              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
+                                <Bot className="w-5 h-5 text-white" />
+                              </div>
+                              <div className="max-w-[75%] bg-muted rounded-lg p-4">
+                                <p className="text-sm whitespace-pre-wrap text-right">
+                                  {streamingContent}
+                                </p>
+                              </div>
+                            </motion.div>
+                          )}
+
+                          <AnimatePresence>
+                            {isStreaming && !streamingContent && (
+                              <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="flex gap-3"
+                              >
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
+                                  <Bot className="w-5 h-5 text-white" />
+                                </div>
+                                <div className="bg-muted rounded-lg p-4">
+                                  <div className="flex gap-1">
+                                    {[0, 1, 2].map((i) => (
+                                      <motion.div
+                                        key={i}
+                                        animate={{ y: [0, -5, 0] }}
+                                        transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.2 }}
+                                        className="w-2 h-2 bg-purple-500 rounded-full"
+                                      />
+                                    ))}
+                                  </div>
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      )}
+                    </ScrollArea>
+
+                    <div className="flex gap-2">
+                      <Textarea
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSend();
+                          }
+                        }}
+                        placeholder="صف الصورة التي تريد إنشاءها بالتفصيل..."
+                        className="text-right resize-none"
+                        rows={3}
+                        disabled={isStreaming || !currentConversationId}
+                        data-testid="input-message"
+                      />
+                      <Button
+                        onClick={handleSend}
+                        disabled={!input.trim() || isStreaming || !currentConversationId}
+                        className="bg-gradient-to-r from-purple-500 to-pink-500 h-auto"
+                        data-testid="button-send"
+                      >
+                        <Send className="h-5 w-5" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
           </div>
         </main>
       </div>
