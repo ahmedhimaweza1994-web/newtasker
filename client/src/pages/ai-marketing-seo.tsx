@@ -116,11 +116,18 @@ export default function AIMarketingSEO() {
               if (data === "[DONE]") {
                 break;
               }
-              fullContent += data;
-              setStreamingContent(fullContent);
+              try {
+                const parsed = JSON.parse(data);
+                if (parsed.content) {
+                  fullContent += parsed.content;
+                  setStreamingContent(fullContent);
 
-              if (scrollRef.current) {
-                scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+                  if (scrollRef.current) {
+                    scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+                  }
+                }
+              } catch (e) {
+                console.error("Failed to parse streaming data:", e);
               }
             }
           }
