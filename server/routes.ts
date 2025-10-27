@@ -2735,13 +2735,23 @@ export function registerRoutes(app: Express): Server {
   app.post("/api/ai/settings", requireAuth, requireRole(['admin']), async (req, res) => {
     try {
       const validatedData = aiModelSettingsCreateSchema.parse(req.body);
-      if (validatedData.apiKey) {
-        const service = getOpenRouterService(validatedData.apiKey);
-        const isValid = await service.validateApiKey();
-        if (!isValid) {
-          return res.status(400).json({ message: "API key غير صالح" });
+      
+      if (validatedData.apiKey && validatedData.apiKey.trim()) {
+        try {
+          const service = getOpenRouterService(validatedData.apiKey);
+          const isValid = await service.validateApiKey();
+          if (!isValid) {
+            return res.status(400).json({ message: "API key غير صالح - تحقق من صحة المفتاح" });
+          }
+        } catch (validationError: any) {
+          console.error("API key validation error:", validationError);
+          return res.status(400).json({ 
+            message: "فشل التحقق من API key - تأكد من أن المفتاح صحيح وأن لديك اتصال بالإنترنت",
+            error: validationError.message 
+          });
         }
       }
+      
       const settings = await storage.createAiModelSettings(validatedData);
       res.status(201).json(settings);
     } catch (error) {
@@ -2756,13 +2766,23 @@ export function registerRoutes(app: Express): Server {
   app.put("/api/ai/settings/:modelType", requireAuth, requireRole(['admin']), async (req, res) => {
     try {
       const validatedData = aiModelSettingsUpdateSchema.parse(req.body);
-      if (validatedData.apiKey) {
-        const service = getOpenRouterService(validatedData.apiKey);
-        const isValid = await service.validateApiKey();
-        if (!isValid) {
-          return res.status(400).json({ message: "API key غير صالح" });
+      
+      if (validatedData.apiKey && validatedData.apiKey.trim()) {
+        try {
+          const service = getOpenRouterService(validatedData.apiKey);
+          const isValid = await service.validateApiKey();
+          if (!isValid) {
+            return res.status(400).json({ message: "API key غير صالح - تحقق من صحة المفتاح" });
+          }
+        } catch (validationError: any) {
+          console.error("API key validation error:", validationError);
+          return res.status(400).json({ 
+            message: "فشل التحقق من API key - تأكد من أن المفتاح صحيح وأن لديك اتصال بالإنترنت",
+            error: validationError.message 
+          });
         }
       }
+      
       const settings = await storage.updateAiModelSettings(req.params.modelType, validatedData);
       if (!settings) {
         return res.status(404).json({ message: "إعدادات النموذج غير موجودة" });

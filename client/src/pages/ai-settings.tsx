@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { useSidebar } from "@/contexts/sidebar-context";
@@ -73,8 +73,25 @@ export default function AISettings() {
         frequencyPenalty: settings.frequencyPenalty || "0.0",
         isActive: settings.isActive ?? true,
       });
+      setApiKey(settings.apiKey || "");
+    } else {
+      setFormData({
+        modelId: "",
+        systemPrompt: "",
+        temperature: "0.7",
+        topP: "1.0",
+        maxTokens: 2000,
+        presencePenalty: "0.0",
+        frequencyPenalty: "0.0",
+        isActive: true,
+      });
+      setApiKey("");
     }
   };
+
+  useEffect(() => {
+    updateFormData(currentSettings);
+  }, [currentSettings]);
 
   const createSettingsMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -155,15 +172,26 @@ export default function AISettings() {
   };
 
   const handleSave = () => {
-    const data = {
+    const data: any = {
       modelType: selectedModelType,
-      apiKey: apiKey || undefined,
       ...formData,
     };
+
+    if (apiKey && apiKey.trim()) {
+      data.apiKey = apiKey.trim();
+    }
 
     if (currentSettings) {
       updateSettingsMutation.mutate(data);
     } else {
+      if (!data.apiKey) {
+        toast({
+          title: "خطأ",
+          description: "يجب إدخال API Key للنموذج الجديد",
+          variant: "destructive",
+        });
+        return;
+      }
       createSettingsMutation.mutate(data);
     }
   };

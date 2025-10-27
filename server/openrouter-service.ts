@@ -47,10 +47,16 @@ export class OpenRouterService {
   }
 
   private getHeaders() {
+    const referer = process.env.REPLIT_DOMAINS 
+      ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}` 
+      : process.env.REPL_SLUG 
+        ? `https://${process.env.REPL_SLUG}.replit.app`
+        : 'http://localhost:5000';
+    
     return {
       'Authorization': `Bearer ${this.apiKey}`,
       'Content-Type': 'application/json',
-      'HTTP-Referer': process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}` : 'https://localhost',
+      'HTTP-Referer': referer,
       'X-Title': 'GWT AI System',
     };
   }
@@ -198,7 +204,14 @@ export class OpenRouterService {
         method: 'GET',
         headers: this.getHeaders(),
       });
-      return response.ok;
+      
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Unknown error');
+        console.error('API key validation failed:', response.status, errorText);
+        return false;
+      }
+      
+      return true;
     } catch (error) {
       console.error('Error validating API key:', error);
       return false;
