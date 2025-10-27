@@ -2702,11 +2702,16 @@ export function registerRoutes(app: Express): Server {
   // AI Routes
   // =================
 
-  // AI Model Settings (Admin only)
-  app.get("/api/ai/settings", requireAuth, requireRole(['admin']), async (req, res) => {
+  // AI Model Settings (View: All, Edit: Admin only)
+  app.get("/api/ai/settings", requireAuth, async (req, res) => {
     try {
       const settings = await storage.getAllAiModelSettings();
-      res.json(settings);
+      if (req.user!.role === 'admin') {
+        res.json(settings);
+      } else {
+        const publicSettings = settings.map(({ apiKey, ...rest }) => rest);
+        res.json(publicSettings);
+      }
     } catch (error) {
       console.error("Error fetching AI settings:", error);
       res.status(500).json({ message: "حدث خطأ في جلب إعدادات AI" });

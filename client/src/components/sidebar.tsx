@@ -169,6 +169,12 @@ export default function Sidebar() {
       icon: Lightbulb,
       badge: null,
     },
+    {
+      name: "الإعدادات",
+      href: "/ai/settings",
+      icon: Settings,
+      badge: null,
+    },
   ];
 
   const adminNavigation = [

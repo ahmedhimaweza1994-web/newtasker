@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { useSidebar } from "@/contexts/sidebar-context";
+import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import Navigation from "@/components/navigation";
 import Sidebar from "@/components/sidebar";
@@ -13,10 +14,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Settings, Save, Check, AlertCircle, RefreshCw } from "lucide-react";
+import { Settings, Save, Check, AlertCircle, RefreshCw, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import type { AiModelSettings } from "@shared/schema";
 
 const MODEL_TYPES = [
@@ -29,10 +31,13 @@ const MODEL_TYPES = [
 
 export default function AISettings() {
   const { isCollapsed } = useSidebar();
+  const { user } = useAuth();
   const { toast } = useToast();
   const [selectedModelType, setSelectedModelType] = useState<string>("chat");
   const [apiKey, setApiKey] = useState("");
   const [isTestingKey, setIsTestingKey] = useState(false);
+  
+  const isAdmin = user?.role === 'admin';
 
   const { data: allSettings, isLoading } = useQuery<AiModelSettings[]>({
     queryKey: ["/api/ai/settings"],
@@ -186,6 +191,15 @@ export default function AISettings() {
               </p>
             </motion.div>
 
+            {!isAdmin && (
+              <Alert className="mb-6">
+                <Lock className="h-4 w-4" />
+                <AlertDescription>
+                  أنت تعرض الإعدادات في وضع القراءة فقط. للتعديل، يجب أن تكون مسؤولاً.
+                </AlertDescription>
+              </Alert>
+            )}
+
             <div className="grid gap-6">
               <Card>
                 <CardHeader>
@@ -211,6 +225,7 @@ export default function AISettings() {
                 </CardContent>
               </Card>
 
+              {isAdmin && (
               <Card>
                 <CardHeader>
                   <CardTitle>OpenRouter API Key</CardTitle>
@@ -257,6 +272,7 @@ export default function AISettings() {
                   </div>
                 </CardContent>
               </Card>
+              )}
 
               <Card>
                 <CardHeader>
@@ -274,6 +290,7 @@ export default function AISettings() {
                       onChange={(e) => setFormData({ ...formData, modelId: e.target.value })}
                       placeholder="openai/gpt-4"
                       data-testid="input-model-id"
+                      disabled={!isAdmin}
                     />
                     <p className="text-xs text-muted-foreground">
                       مثال: openai/gpt-4, anthropic/claude-3.5-sonnet, google/gemini-pro
@@ -289,6 +306,7 @@ export default function AISettings() {
                       placeholder="أنت مساعد ذكي يساعد المستخدمين..."
                       rows={4}
                       data-testid="input-system-prompt"
+                      disabled={!isAdmin}
                     />
                   </div>
 
@@ -304,6 +322,7 @@ export default function AISettings() {
                         value={formData.temperature}
                         onChange={(e) => setFormData({ ...formData, temperature: e.target.value })}
                         data-testid="input-temperature"
+                        disabled={!isAdmin}
                       />
                     </div>
 
@@ -318,6 +337,7 @@ export default function AISettings() {
                         value={formData.topP}
                         onChange={(e) => setFormData({ ...formData, topP: e.target.value })}
                         data-testid="input-top-p"
+                        disabled={!isAdmin}
                       />
                     </div>
 
@@ -332,6 +352,7 @@ export default function AISettings() {
                         value={formData.maxTokens}
                         onChange={(e) => setFormData({ ...formData, maxTokens: parseInt(e.target.value) })}
                         data-testid="input-max-tokens"
+                        disabled={!isAdmin}
                       />
                     </div>
 
@@ -346,6 +367,7 @@ export default function AISettings() {
                         value={formData.presencePenalty}
                         onChange={(e) => setFormData({ ...formData, presencePenalty: e.target.value })}
                         data-testid="input-presence-penalty"
+                        disabled={!isAdmin}
                       />
                     </div>
                   </div>
@@ -362,9 +384,11 @@ export default function AISettings() {
                       checked={formData.isActive}
                       onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
                       data-testid="switch-is-active"
+                      disabled={!isAdmin}
                     />
                   </div>
 
+                  {isAdmin && (
                   <Button
                     onClick={handleSave}
                     disabled={createSettingsMutation.isPending || updateSettingsMutation.isPending}
@@ -374,6 +398,7 @@ export default function AISettings() {
                     <Save className="ml-2 h-4 w-4" />
                     حفظ الإعدادات
                   </Button>
+                  )}
                 </CardContent>
               </Card>
 
