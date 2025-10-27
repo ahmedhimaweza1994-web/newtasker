@@ -1,0 +1,182 @@
+🧠 AI Models System — Full Integration via OpenRouter API
+Overview
+
+Currently, the AI models inside the app are only front-end demos (UI mockups) without real backend functionality.
+We now need to convert all AI model interfaces into fully functional, working models connected to OpenRouter’s API.
+
+Each AI model in the app (e.g., Chatbot, Code Assistant, Image Generator, Summarizer, etc.) should be properly connected to a real API endpoint and capable of generating live responses or outputs.
+
+🔌 1. Integration with OpenRouter API
+a. API Setup
+
+Use the official OpenRouter API for all AI calls:
+👉 https://openrouter.ai/docs
+
+Implement authentication using API keys stored securely (server-side).
+
+Ensure all requests and responses follow OpenRouter’s JSON schema.
+
+b. Model Selection
+
+Each AI feature/module in the app should be mapped to a specific OpenRouter model.
+Examples:
+
+Chat Assistant → gpt-4o or gpt-4o-mini
+
+Code Generator → claude-3.5-sonnet or mistral-large
+
+Summarizer → gemma-2-27b
+
+Image Generator → stability-ai/stable-diffusion-3 (via OpenRouter image models)
+
+Admins should have the ability to change which model is used for each feature from a new settings panel.
+
+c. Model Listing
+
+The settings should automatically fetch and list all available models from OpenRouter (using the /models endpoint).
+
+Display:
+
+Model name
+
+Provider (e.g., OpenAI, Anthropic, Mistral, etc.)
+
+Capabilities (text / image / embedding)
+
+Price per token if provided
+
+Max context length
+
+Version info
+
+Admins can then select which model to use for each feature in the app.
+
+⚙️ 2. AI Settings Popup (Per Model)
+
+Each AI model in the app will have its own “Settings” popup, accessible by admins.
+
+Settings include:
+
+API Key – field to set or update the OpenRouter key.
+
+Default System Prompt (Admin Prompt) – defines the AI’s base personality or instruction for that specific feature.
+
+Temperature – controls creativity (0.0–1.0).
+
+Top-p – nucleus sampling (0–1).
+
+Max Tokens – limit for response length.
+
+Presence & Frequency Penalty – optional parameters for repetition control.
+
+Model Selector Dropdown – choose which OpenRouter model this AI feature uses.
+
+Custom Parameters (if supported) – e.g., stream: true, response_format, or additional API flags.
+
+Save/Reset Settings button.
+
+These settings should be saved in the database (linked to model type).
+
+💬 3. Chat & Interface Behavior
+
+All AI chats and tools should:
+
+Display streaming responses (token by token).
+
+Support conversation history (stored locally or via DB).
+
+Show error handling for failed API calls.
+
+Allow users to regenerate last response.
+
+Support stop generation button.
+
+Optional: Add “Model Info” tooltip (show model name & version in chat UI).
+
+🧩 4. Missing Functionalities to Add
+
+Because the current implementation is frontend-only, the following must be implemented or improved:
+
+Backend endpoint for AI requests
+
+Receives the user’s input and selected model.
+
+Attaches admin prompt and parameters.
+
+Sends the full request to OpenRouter.
+
+Returns the response to the frontend.
+
+Error Handling System
+
+Handle OpenRouter rate limits, invalid keys, model not found, etc.
+
+Display user-friendly error messages.
+
+API Key Validation
+
+When admin saves a key, validate it by pinging OpenRouter once.
+
+Store securely (encrypted).
+
+Response Caching (Optional)
+
+Cache frequent AI responses to save cost and speed up replies.
+
+Usage Logs & Analytics (Optional)
+
+Log model usage, tokens used, and errors for admin reports.
+
+Streaming & Abort Control
+
+Implement SSE or WebSocket to stream OpenRouter responses in real-time.
+
+Add a “Stop” button to interrupt ongoing responses.
+
+🧰 5. Technical Recommendations
+
+Use fetch() or axios for API calls (with proper headers):
+
+{
+  "Authorization": `Bearer ${API_KEY}`,
+  "HTTP-Referer": "yourapp.com",
+  "X-Title": "Your App Name"
+}
+
+
+Ensure you follow OpenRouter’s required Referer and X-Title headers (they’re mandatory).
+
+For each AI module, use a consistent structure like:
+
+const payload = {
+  model: selectedModel,
+  messages: [
+    { role: "system", content: systemPrompt },
+    { role: "user", content: userInput }
+  ],
+  temperature: settings.temperature,
+  max_tokens: settings.maxTokens
+};
+
+🧩 6. Summary of Admin Controls
+Feature	Description
+API Key Management	Add / update / test OpenRouter key
+Model Selector	Choose which model to use for each tool
+Admin Prompt	Set default system message
+Parameters	Adjust temperature, max tokens, etc.
+Live Test	Test generation from settings popup
+Model Info	Show provider, type, cost, etc.
+Reset Defaults	Restore default config
+🔔 7. Final Deliverable Expectations
+
+By the end of this update:
+
+Every AI model in the app becomes fully functional through OpenRouter.
+
+Admins can control and configure all models easily.
+
+Users can interact with AI in real time with streaming, saving, and regeneration support.
+
+All OpenRouter capabilities (text, image, embeddings, etc.) are accessible.
+
+Browser and server-side implementations follow secure API practices.
