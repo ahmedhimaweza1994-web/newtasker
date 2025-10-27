@@ -4,6 +4,7 @@ import { Server as SocketIOServer } from "socket.io";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { createGoogleMeetEvent, isGoogleCalendarConnected } from "./google-calendar-integration";
+import { getOpenRouterService } from "./openrouter-service";
 import { 
   insertSuggestionSchema, 
   insertSalaryDeductionSchema,
@@ -2700,7 +2701,6 @@ export function registerRoutes(app: Express): Server {
   // =================
   // AI Routes
   // =================
-  const { getOpenRouterService } = await import('./openrouter-service');
 
   // AI Model Settings (Admin only)
   app.get("/api/ai/settings", requireAuth, requireRole(['admin']), async (req, res) => {
