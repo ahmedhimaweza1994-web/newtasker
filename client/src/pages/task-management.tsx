@@ -194,7 +194,7 @@ export default function TaskManagement() {
       <div className="flex">
         <Sidebar />
       
-        <main className={cn("flex-1 p-4 sm:p-6 transition-all duration-300", "md:mr-16", !isCollapsed && "md:mr-64")}>
+        <main className={cn("flex-1 p-4 sm:p-6 transition-all duration-300 max-w-full overflow-x-hidden", "md:mr-16", !isCollapsed && "md:mr-64")}>
           <MotionSection delay={0.1}>
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
               <div>
@@ -292,6 +292,7 @@ export default function TaskManagement() {
                           id="task-due-date"
                           type="datetime-local"
                           value={newTask.dueDate}
+                          min={new Date().toISOString().slice(0, 16)}
                           onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
                           data-testid="input-task-due-date"
                           className="h-11 sm:h-10"

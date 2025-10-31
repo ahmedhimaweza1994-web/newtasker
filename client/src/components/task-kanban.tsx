@@ -503,7 +503,7 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
         onDragEnd={handleDragEnd}
       >
         <div className="w-full overflow-x-auto pb-4" data-testid="kanban-board-trello-style">
-          <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex flex-col md:flex-row gap-4 max-w-full">
             <DroppableColumn
               id="pending"
               title="قيد الانتظار"

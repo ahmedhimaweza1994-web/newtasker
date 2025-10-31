@@ -58,9 +58,23 @@ export default function Navigation() {
   const unreadNotifications = notifications.filter(n => !n.isRead);
 
   const { data: tasks = [] } = useQuery<Task[]>({
-    queryKey: ["/api/tasks/all"],
-    enabled: !!user && !!searchTerm,
+    queryKey: ["/api/tasks"],
+    enabled: !!user && !!searchTerm && (user.role === 'admin' || user.role === 'sub-admin'),
   });
+  
+  const { data: myTasks = [] } = useQuery<Task[]>({
+    queryKey: ["/api/tasks/my"],
+    enabled: !!user && !!searchTerm && user.role !== 'admin' && user.role !== 'sub-admin',
+  });
+
+  const { data: assignedTasks = [] } = useQuery<Task[]>({
+    queryKey: ["/api/tasks/assigned"],
+    enabled: !!user && !!searchTerm && user.role !== 'admin' && user.role !== 'sub-admin',
+  });
+
+  const allTasks = user?.role === 'admin' || user?.role === 'sub-admin' 
+    ? tasks 
+    : [...(myTasks || []), ...(assignedTasks || [])];
 
   const { data: users = [] } = useQuery<UserType[]>({
     queryKey: ["/api/users"],
@@ -79,7 +93,7 @@ export default function Navigation() {
   };
 
   const searchResults = {
-    tasks: tasks.filter(task => 
+    tasks: allTasks.filter(task => 
       task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       task.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       getCompanyName(task.companyId).toLowerCase().includes(searchTerm.toLowerCase())
@@ -197,7 +211,14 @@ export default function Navigation() {
       setLocation(`/tasks?taskId=${metadata.taskId}`);
     } else if (notification.category === 'call') {
       setLocation(`/call-history`);
-    } else if (notification.category === 'leave_request') {
+    } else if (notification.category === 'leave' || notification.category === 'leave_request' || notification.category === 'salary_advance') {
+      setLocation(`/my-requests`);
+    } else if (notification.category === 'deduction') {
+      const isAdmin = user?.role === 'admin' || user?.role === 'sub-admin';
+      setLocation(isAdmin ? `/admin-deductions` : `/my-deductions`);
+    } else if (notification.category === 'suggestion') {
+      setLocation(`/suggestions`);
+    } else if (notification.category === 'meeting') {
       setLocation(`/hr`);
     } else {
       setLocation('/dashboard');

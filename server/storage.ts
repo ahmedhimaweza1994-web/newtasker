@@ -235,6 +235,7 @@ export interface IStorage {
   getAllSuggestions(): Promise<Suggestion[]>;
   getUserSuggestions(userId: string): Promise<Suggestion[]>;
   updateSuggestion(id: string, updates: Partial<Suggestion>): Promise<Suggestion | undefined>;
+  deleteSuggestion(id: string): Promise<boolean>;
 
   // Salary Deductions
   createSalaryDeduction(deduction: InsertSalaryDeduction): Promise<SalaryDeduction>;
@@ -1619,6 +1620,13 @@ export class MemStorage implements IStorage {
       .where(eq(suggestions.id, id))
       .returning();
     return suggestion || undefined;
+  }
+
+  async deleteSuggestion(id: string): Promise<boolean> {
+    const result = await db
+      .delete(suggestions)
+      .where(eq(suggestions.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
   }
 
   // Salary Deductions

@@ -2236,6 +2236,11 @@ export function registerRoutes(app: Express): Server {
         return res.status(404).json({ message: "المقترح غير موجود أو غير مصرح لك بتعديله" });
       }
       
+      // Only allow editing of pending suggestions
+      if (existingSuggestion.status !== 'pending') {
+        return res.status(403).json({ message: "لا يمكن تعديل المقترح بعد مراجعته من قبل الإدارة" });
+      }
+      
       const updates: any = {
         updatedAt: new Date(),
       };
@@ -2294,6 +2299,33 @@ export function registerRoutes(app: Express): Server {
     } catch (error) {
       console.error("Error updating suggestion:", error);
       res.status(500).json({ message: "حدث خطأ في تحديث المقترح" });
+    }
+  });
+
+  app.delete("/api/suggestions/:id", requireAuth, async (req, res) => {
+    try {
+      const suggestions = await storage.getUserSuggestions(req.user!.id);
+      const suggestion = suggestions.find(s => s.id === req.params.id);
+      
+      if (!suggestion) {
+        return res.status(404).json({ message: "المقترح غير موجود أو غير مصرح لك بحذفه" });
+      }
+      
+      // Only allow deletion of pending suggestions
+      if (suggestion.status !== 'pending') {
+        return res.status(403).json({ message: "لا يمكن حذف المقترح بعد مراجعته من قبل الإدارة" });
+      }
+      
+      const deleted = await storage.deleteSuggestion(req.params.id);
+      
+      if (!deleted) {
+        return res.status(404).json({ message: "المقترح غير موجود" });
+      }
+      
+      res.json({ message: "تم حذف المقترح بنجاح" });
+    } catch (error) {
+      console.error("Error deleting suggestion:", error);
+      res.status(500).json({ message: "حدث خطأ في حذف المقترح" });
     }
   });
 

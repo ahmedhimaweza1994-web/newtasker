@@ -136,7 +136,19 @@ export default function Companies() {
     };
 
     if (newCompany.startDate) {
-      companyData.startDate = new Date(newCompany.startDate).toISOString();
+      const selectedDate = new Date(newCompany.startDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      if (selectedDate < today) {
+        toast({
+          title: "خطأ في التاريخ",
+          description: "لا يمكن اختيار تاريخ في الماضي",
+          variant: "destructive",
+        });
+        return;
+      }
+      companyData.startDate = selectedDate.toISOString();
     }
 
     createCompanyMutation.mutate(companyData);

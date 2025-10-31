@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MotionPageShell, MotionSection } from "@/components/ui/motion-wrappers";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, Lightbulb, Bug, Sparkles, MessageSquare, Edit } from "lucide-react";
+import { Plus, Lightbulb, Bug, Sparkles, MessageSquare, Edit, Trash2 } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
@@ -83,6 +83,27 @@ export default function SuggestionsPage() {
     onError: (error: Error) => {
       toast({
         title: "خطأ في تحديث المقترح",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteSuggestionMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await apiRequest("DELETE", `/api/suggestions/${id}`);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/suggestions"] });
+      toast({
+        title: "تم حذف المقترح",
+        description: "تم حذف المقترح بنجاح",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "خطأ في حذف المقترح",
         description: error.message,
         variant: "destructive",
       });
@@ -339,7 +360,7 @@ export default function SuggestionsPage() {
               </div>
             ) : suggestions.length === 0 ? (
               <Card className="text-center py-12">
-                <CardContent>
+                <CardContent className="pt-6">
                   <Lightbulb className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
                   <h3 className="text-lg font-medium mb-2">لا توجد مقترحات بعد</h3>
                   <p className="text-muted-foreground mb-4">كن أول من يشارك اقتراحاته!</p>
@@ -371,16 +392,30 @@ export default function SuggestionsPage() {
                               </Badge>
                             </div>
                           </div>
-                          {suggestion.userId === user?.id && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => openEditDialog(suggestion)}
-                              data-testid={`button-edit-suggestion-${suggestion.id}`}
-                            >
-                              <Edit className="w-4 h-4 ml-2" />
-                              تعديل
-                            </Button>
+                          {suggestion.userId === user?.id && suggestion.status === 'pending' && (
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openEditDialog(suggestion)}
+                                data-testid={`button-edit-suggestion-${suggestion.id}`}
+                              >
+                                <Edit className="w-4 h-4 ml-2" />
+                                تعديل
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  if (confirm('هل أنت متأكد من حذف هذا المقترح؟')) {
+                                    deleteSuggestionMutation.mutate(suggestion.id);
+                                  }
+                                }}
+                                data-testid={`button-delete-suggestion-${suggestion.id}`}
+                              >
+                                <Trash2 className="w-4 h-4 text-destructive" />
+                              </Button>
+                            </div>
                           )}
                         </div>
                       </CardHeader>
