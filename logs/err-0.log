@@ -1,0 +1,1135 @@
+2025-10-23T06:36:30: Error: ENOENT: no such file or directory, stat '/home/greenwebtech/public_html/hub.greenweb-tech.com/dist/public/index.html'
+2025-10-23T06:36:31: Error: ENOENT: no such file or directory, stat '/home/greenwebtech/public_html/hub.greenweb-tech.com/dist/public/index.html'
+2025-10-23T06:39:29: Error creating suggestion: error: relation "suggestions" does not exist
+2025-10-23T06:39:29:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/pg-pool/index.js:45:11
+2025-10-23T06:39:29:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-23T06:39:29:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-23T06:39:29:     at async MemStorage.createSuggestion (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1476:29)
+2025-10-23T06:39:29:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:3209:26 {
+2025-10-23T06:39:29:   length: 110,
+2025-10-23T06:39:29:   severity: 'ERROR',
+2025-10-23T06:39:29:   code: '42P01',
+2025-10-23T06:39:29:   detail: undefined,
+2025-10-23T06:39:29:   hint: undefined,
+2025-10-23T06:39:29:   position: '13',
+2025-10-23T06:39:29:   internalPosition: undefined,
+2025-10-23T06:39:29:   internalQuery: undefined,
+2025-10-23T06:39:29:   where: undefined,
+2025-10-23T06:39:29:   schema: undefined,
+2025-10-23T06:39:29:   table: undefined,
+2025-10-23T06:39:29:   column: undefined,
+2025-10-23T06:39:29:   dataType: undefined,
+2025-10-23T06:39:29:   constraint: undefined,
+2025-10-23T06:39:29:   file: 'parse_relation.c',
+2025-10-23T06:39:29:   line: '1373',
+2025-10-23T06:39:29:   routine: 'parserOpenTable'
+2025-10-23T06:39:29: }
+2025-10-23T06:39:30: Error creating suggestion: error: relation "suggestions" does not exist
+2025-10-23T06:39:30:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/pg-pool/index.js:45:11
+2025-10-23T06:39:30:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-23T06:39:30:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-23T06:39:30:     at async MemStorage.createSuggestion (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1476:29)
+2025-10-23T06:39:30:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:3209:26 {
+2025-10-23T06:39:30:   length: 110,
+2025-10-23T06:39:30:   severity: 'ERROR',
+2025-10-23T06:39:30:   code: '42P01',
+2025-10-23T06:39:30:   detail: undefined,
+2025-10-23T06:39:30:   hint: undefined,
+2025-10-23T06:39:30:   position: '13',
+2025-10-23T06:39:30:   internalPosition: undefined,
+2025-10-23T06:39:30:   internalQuery: undefined,
+2025-10-23T06:39:30:   where: undefined,
+2025-10-23T06:39:30:   schema: undefined,
+2025-10-23T06:39:30:   table: undefined,
+2025-10-23T06:39:30:   column: undefined,
+2025-10-23T06:39:30:   dataType: undefined,
+2025-10-23T06:39:30:   constraint: undefined,
+2025-10-23T06:39:30:   file: 'parse_relation.c',
+2025-10-23T06:39:30:   line: '1373',
+2025-10-23T06:39:30:   routine: 'parserOpenTable'
+2025-10-23T06:39:30: }
+2025-10-23T06:41:13: error: relation "session" does not exist
+2025-10-23T06:41:13:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/pg-pool/index.js:45:11
+2025-10-23T06:41:13:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-23T06:41:13:     at async PGStore._asyncQuery (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/connect-pg-simple/index.js:322:21)
+2025-10-23T07:22:00: Error: Failed to deserialize user out of session
+2025-10-23T07:22:00:     at pass (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:359:19)
+2025-10-23T07:22:00:     at deserialized (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:364:7)
+2025-10-23T07:22:00:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1633:7
+2025-10-23T07:22:00:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-23T07:22:00: Error: Failed to deserialize user out of session
+2025-10-23T07:22:00:     at pass (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:359:19)
+2025-10-23T07:22:00:     at deserialized (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:364:7)
+2025-10-23T07:22:00:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1633:7
+2025-10-23T07:22:00:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-23T07:22:04: Error: Failed to deserialize user out of session
+2025-10-23T07:22:04:     at pass (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:359:19)
+2025-10-23T07:22:04:     at deserialized (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:364:7)
+2025-10-23T07:22:04:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1633:7
+2025-10-23T07:22:04:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-23T07:22:07: Error: Failed to deserialize user out of session
+2025-10-23T07:22:07:     at pass (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:359:19)
+2025-10-23T07:22:07:     at deserialized (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:364:7)
+2025-10-23T07:22:07:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1633:7
+2025-10-23T07:22:07:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-23T07:22:11: Error: Failed to deserialize user out of session
+2025-10-23T07:22:11:     at pass (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:359:19)
+2025-10-23T07:22:11:     at deserialized (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:364:7)
+2025-10-23T07:22:11:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1633:7
+2025-10-23T07:22:11:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-23T07:22:29: Error: Failed to deserialize user out of session
+2025-10-23T07:22:29:     at pass (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:359:19)
+2025-10-23T07:22:29:     at deserialized (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:364:7)
+2025-10-23T07:22:29:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1633:7
+2025-10-23T07:22:29:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-23T07:22:30: Error: Failed to deserialize user out of session
+2025-10-23T07:22:30:     at pass (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:359:19)
+2025-10-23T07:22:30:     at deserialized (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:364:7)
+2025-10-23T07:22:30:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1633:7
+2025-10-23T07:22:30:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-23T07:22:35: Error: Failed to deserialize user out of session
+2025-10-23T07:22:35:     at pass (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:359:19)
+2025-10-23T07:22:35:     at deserialized (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:364:7)
+2025-10-23T07:22:35:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1633:7
+2025-10-23T07:22:35:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-23T07:22:50: Error: Failed to deserialize user out of session
+2025-10-23T07:22:50:     at pass (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:359:19)
+2025-10-23T07:22:50:     at deserialized (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:364:7)
+2025-10-23T07:22:50:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1633:7
+2025-10-23T07:22:50:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-23T07:22:56: Error: Failed to deserialize user out of session
+2025-10-23T07:22:56:     at pass (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:359:19)
+2025-10-23T07:22:56:     at deserialized (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:364:7)
+2025-10-23T07:22:56:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1633:7
+2025-10-23T07:22:56:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-23T07:23:35: Error: Failed to deserialize user out of session
+2025-10-23T07:23:35:     at pass (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:359:19)
+2025-10-23T07:23:35:     at deserialized (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:364:7)
+2025-10-23T07:23:35:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1633:7
+2025-10-23T07:23:35:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-23T07:23:36: Error: Failed to deserialize user out of session
+2025-10-23T07:23:36:     at pass (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:359:19)
+2025-10-23T07:23:36:     at deserialized (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:364:7)
+2025-10-23T07:23:36:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1633:7
+2025-10-23T07:23:36:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-23T07:23:43: Error: Failed to deserialize user out of session
+2025-10-23T07:23:43:     at pass (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:359:19)
+2025-10-23T07:23:43:     at deserialized (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:364:7)
+2025-10-23T07:23:43:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1633:7
+2025-10-23T07:23:43:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-23T07:23:48: Error: Failed to deserialize user out of session
+2025-10-23T07:23:48:     at pass (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:359:19)
+2025-10-23T07:23:48:     at deserialized (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:364:7)
+2025-10-23T07:23:48:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1633:7
+2025-10-23T07:23:48:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-23T07:24:33: Error: Failed to deserialize user out of session
+2025-10-23T07:24:33:     at pass (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:359:19)
+2025-10-23T07:24:33:     at deserialized (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:364:7)
+2025-10-23T07:24:33:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1633:7
+2025-10-23T07:24:33:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-23T07:24:35: Error: Failed to deserialize user out of session
+2025-10-23T07:24:35:     at pass (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:359:19)
+2025-10-23T07:24:35:     at deserialized (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:364:7)
+2025-10-23T07:24:35:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1633:7
+2025-10-23T07:24:35:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-23T07:24:36: Error: Failed to deserialize user out of session
+2025-10-23T07:24:36:     at pass (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:359:19)
+2025-10-23T07:24:36:     at deserialized (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:364:7)
+2025-10-23T07:24:36:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1633:7
+2025-10-23T07:24:36:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-23T07:24:37: Error: Failed to deserialize user out of session
+2025-10-23T07:24:37:     at pass (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:359:19)
+2025-10-23T07:24:37:     at deserialized (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:364:7)
+2025-10-23T07:24:37:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1633:7
+2025-10-23T07:24:37:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-23T07:39:10: Error: Failed to deserialize user out of session
+2025-10-23T07:39:10:     at pass (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:359:19)
+2025-10-23T07:39:10:     at deserialized (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:364:7)
+2025-10-23T07:39:10:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1633:7
+2025-10-23T07:39:10:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-23T07:39:10: Error: Failed to deserialize user out of session
+2025-10-23T07:39:10:     at pass (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:359:19)
+2025-10-23T07:39:10:     at deserialized (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:364:7)
+2025-10-23T07:39:10:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1633:7
+2025-10-23T07:39:10:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-23T07:39:10: Error: Failed to deserialize user out of session
+2025-10-23T07:39:10:     at pass (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:359:19)
+2025-10-23T07:39:10:     at deserialized (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:364:7)
+2025-10-23T07:39:10:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1633:7
+2025-10-23T07:39:10:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-23T07:39:10: Error: Failed to deserialize user out of session
+2025-10-23T07:39:10:     at pass (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:359:19)
+2025-10-23T07:39:10:     at deserialized (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:364:7)
+2025-10-23T07:39:10:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1633:7
+2025-10-23T07:39:10:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-23T07:39:13: Error: Failed to deserialize user out of session
+2025-10-23T07:39:13:     at pass (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:359:19)
+2025-10-23T07:39:13:     at deserialized (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:364:7)
+2025-10-23T07:39:13:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1633:7
+2025-10-23T07:39:13:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-23T07:39:13: Error: Failed to deserialize user out of session
+2025-10-23T07:39:13:     at pass (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:359:19)
+2025-10-23T07:39:13:     at deserialized (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:364:7)
+2025-10-23T07:39:13:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1633:7
+2025-10-23T07:39:13:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-23T07:39:14: Error: Failed to deserialize user out of session
+2025-10-23T07:39:14:     at pass (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:359:19)
+2025-10-23T07:39:14:     at deserialized (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:364:7)
+2025-10-23T07:39:14:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1633:7
+2025-10-23T07:39:14:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-23T07:39:14: Error: Failed to deserialize user out of session
+2025-10-23T07:39:14:     at pass (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:359:19)
+2025-10-23T07:39:14:     at deserialized (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:364:7)
+2025-10-23T07:39:14:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1633:7
+2025-10-23T07:39:14:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-23T11:41:47: Error creating task: column "created_for" of relation "tasks" does not exist error: column "created_for" of relation "tasks" does not exist
+2025-10-23T11:41:47:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/pg-pool/index.js:45:11
+2025-10-23T11:41:47:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-23T11:41:47:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-23T11:41:47:     at async MemStorage.createTask (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:765:23)
+2025-10-23T11:41:47:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1887:20
+2025-10-24T10:17:19: Error: Failed to deserialize user out of session
+2025-10-24T10:17:19:     at pass (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:359:19)
+2025-10-24T10:17:19:     at deserialized (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:364:7)
+2025-10-24T10:17:19:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1724:7
+2025-10-24T10:17:19:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-24T10:17:19: Error: Failed to deserialize user out of session
+2025-10-24T10:17:19:     at pass (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:359:19)
+2025-10-24T10:17:19:     at deserialized (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:364:7)
+2025-10-24T10:17:19:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1724:7
+2025-10-24T10:17:19:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-24T10:17:19: Error: Failed to deserialize user out of session
+2025-10-24T10:17:19:     at pass (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:359:19)
+2025-10-24T10:17:19:     at deserialized (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:364:7)
+2025-10-24T10:17:19:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1724:7
+2025-10-24T10:17:19:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-24T10:17:19: Error: Failed to deserialize user out of session
+2025-10-24T10:17:19:     at pass (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:359:19)
+2025-10-24T10:17:19:     at deserialized (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:364:7)
+2025-10-24T10:17:19:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1724:7
+2025-10-24T10:17:19:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-24T10:17:19: Error: Failed to deserialize user out of session
+2025-10-24T10:17:19:     at pass (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:359:19)
+2025-10-24T10:17:19:     at deserialized (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:364:7)
+2025-10-24T10:17:19:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1724:7
+2025-10-24T10:17:19:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-24T10:17:19: Error: Failed to deserialize user out of session
+2025-10-24T10:17:19:     at pass (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:359:19)
+2025-10-24T10:17:19:     at deserialized (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:364:7)
+2025-10-24T10:17:19:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1724:7
+2025-10-24T10:17:19:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-24T10:17:19: Error: Failed to deserialize user out of session
+2025-10-24T10:17:19:     at pass (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:359:19)
+2025-10-24T10:17:19:     at deserialized (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:364:7)
+2025-10-24T10:17:19:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1724:7
+2025-10-24T10:17:19:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-24T10:17:19: Error: Failed to deserialize user out of session
+2025-10-24T10:17:19:     at pass (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:359:19)
+2025-10-24T10:17:19:     at deserialized (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/passport/lib/authenticator.js:364:7)
+2025-10-24T10:17:19:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1724:7
+2025-10-24T10:17:19:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-24T11:38:56: Error creating deduction: ReferenceError: broadcast is not defined
+2025-10-24T11:38:56:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2590:7
+2025-10-24T11:38:56:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-24T11:39:15: Error creating deduction: ReferenceError: broadcast is not defined
+2025-10-24T11:39:15:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2590:7
+2025-10-24T11:39:15:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-24T11:46:01: Error creating deduction: ReferenceError: broadcast is not defined
+2025-10-24T11:46:01:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2590:7
+2025-10-24T11:46:01:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-24T12:57:34: Error deleting deduction: ReferenceError: broadcast is not defined
+2025-10-24T12:57:34:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2730:7
+2025-10-24T12:57:34:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-24T12:57:37: Error deleting deduction: ReferenceError: broadcast is not defined
+2025-10-24T12:57:37:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2730:7
+2025-10-24T12:57:37:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-24T12:57:39: Error deleting deduction: ReferenceError: broadcast is not defined
+2025-10-24T12:57:39:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2730:7
+2025-10-24T12:57:39:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-25T05:50:33: Error creating deduction: ReferenceError: broadcast is not defined
+2025-10-25T05:50:33:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2638:7
+2025-10-25T05:50:33:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-25T05:51:12: Error deleting deduction: ReferenceError: broadcast is not defined
+2025-10-25T05:51:12:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2730:7
+2025-10-25T05:51:12:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-26T04:25:32: Error creating deduction: ReferenceError: broadcast is not defined
+2025-10-26T04:25:32:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2638:7
+2025-10-26T04:25:32:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-26T04:51:02: Error creating salary advance request: error: numeric field overflow
+2025-10-26T04:51:02:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/pg-pool/index.js:45:11
+2025-10-26T04:51:02:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-26T04:51:02:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-26T04:51:02:     at async MemStorage.createSalaryAdvanceRequest (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1293:26)
+2025-10-26T04:51:02:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2894:30 {
+2025-10-26T04:51:02:   length: 165,
+2025-10-26T04:51:02:   severity: 'ERROR',
+2025-10-26T04:51:02:   code: '22003',
+2025-10-26T04:51:02:   detail: 'A field with precision 10, scale 2 must round to an absolute value less than 10^8.',
+2025-10-26T04:51:02:   hint: undefined,
+2025-10-26T04:51:02:   position: undefined,
+2025-10-26T04:51:02:   internalPosition: undefined,
+2025-10-26T04:51:02:   internalQuery: undefined,
+2025-10-26T04:51:02:   where: undefined,
+2025-10-26T04:51:02:   schema: undefined,
+2025-10-26T04:51:02:   table: undefined,
+2025-10-26T04:51:02:   column: undefined,
+2025-10-26T04:51:02:   dataType: undefined,
+2025-10-26T04:51:02:   constraint: undefined,
+2025-10-26T04:51:02:   file: 'numeric.c',
+2025-10-26T04:51:02:   line: '6604',
+2025-10-26T04:51:02:   routine: 'apply_typmod'
+2025-10-26T04:51:02: }
+2025-10-26T04:51:02: Error details: numeric field overflow error: numeric field overflow
+2025-10-26T04:51:02:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/pg-pool/index.js:45:11
+2025-10-26T04:51:02:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-26T04:51:02:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-26T04:51:02:     at async MemStorage.createSalaryAdvanceRequest (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1293:26)
+2025-10-26T04:51:02:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2894:30
+2025-10-26T04:51:08: Error creating salary advance request: error: numeric field overflow
+2025-10-26T04:51:08:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/pg-pool/index.js:45:11
+2025-10-26T04:51:08:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-26T04:51:08:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-26T04:51:08:     at async MemStorage.createSalaryAdvanceRequest (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1293:26)
+2025-10-26T04:51:08:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2894:30 {
+2025-10-26T04:51:08:   length: 165,
+2025-10-26T04:51:08:   severity: 'ERROR',
+2025-10-26T04:51:08:   code: '22003',
+2025-10-26T04:51:08:   detail: 'A field with precision 10, scale 2 must round to an absolute value less than 10^8.',
+2025-10-26T04:51:08:   hint: undefined,
+2025-10-26T04:51:08:   position: undefined,
+2025-10-26T04:51:08:   internalPosition: undefined,
+2025-10-26T04:51:08:   internalQuery: undefined,
+2025-10-26T04:51:08:   where: undefined,
+2025-10-26T04:51:08:   schema: undefined,
+2025-10-26T04:51:08:   table: undefined,
+2025-10-26T04:51:08:   column: undefined,
+2025-10-26T04:51:08:   dataType: undefined,
+2025-10-26T04:51:08:   constraint: undefined,
+2025-10-26T04:51:08:   file: 'numeric.c',
+2025-10-26T04:51:08:   line: '6604',
+2025-10-26T04:51:08:   routine: 'apply_typmod'
+2025-10-26T04:51:08: }
+2025-10-26T04:51:08: Error details: numeric field overflow error: numeric field overflow
+2025-10-26T04:51:08:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/pg-pool/index.js:45:11
+2025-10-26T04:51:08:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-26T04:51:08:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-26T04:51:08:     at async MemStorage.createSalaryAdvanceRequest (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1293:26)
+2025-10-26T04:51:08:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2894:30
+2025-10-26T04:51:27: Error fetching pending salary advance requests: TypeError: storage.getPendingSalaryAdvanceRequests is not a function
+2025-10-26T04:51:27:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2911:38
+2025-10-26T04:51:27:     at Layer.handle [as handle_request] (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/layer.js:95:5)
+2025-10-26T04:51:27:     at next (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:149:13)
+2025-10-26T04:51:27:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2260:5
+2025-10-26T04:51:27:     at Layer.handle [as handle_request] (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/layer.js:95:5)
+2025-10-26T04:51:27:     at next (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:149:13)
+2025-10-26T04:51:27:     at requireAuth (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2253:3)
+2025-10-26T04:51:27:     at Layer.handle [as handle_request] (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/layer.js:95:5)
+2025-10-26T04:51:27:     at next (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:149:13)
+2025-10-26T04:51:27:     at Route.dispatch (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:119:3)
+2025-10-26T04:51:27: Error details: storage.getPendingSalaryAdvanceRequests is not a function TypeError: storage.getPendingSalaryAdvanceRequests is not a function
+2025-10-26T04:51:27:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2911:38
+2025-10-26T04:51:27:     at Layer.handle [as handle_request] (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/layer.js:95:5)
+2025-10-26T04:51:27:     at next (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:149:13)
+2025-10-26T04:51:27:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2260:5
+2025-10-26T04:51:27:     at Layer.handle [as handle_request] (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/layer.js:95:5)
+2025-10-26T04:51:27:     at next (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:149:13)
+2025-10-26T04:51:27:     at requireAuth (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2253:3)
+2025-10-26T04:51:27:     at Layer.handle [as handle_request] (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/layer.js:95:5)
+2025-10-26T04:51:27:     at next (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:149:13)
+2025-10-26T04:51:27:     at Route.dispatch (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:119:3)
+2025-10-26T04:51:28: Error fetching pending salary advance requests: TypeError: storage.getPendingSalaryAdvanceRequests is not a function
+2025-10-26T04:51:28:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2911:38
+2025-10-26T04:51:28:     at Layer.handle [as handle_request] (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/layer.js:95:5)
+2025-10-26T04:51:28:     at next (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:149:13)
+2025-10-26T04:51:28:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2260:5
+2025-10-26T04:51:28:     at Layer.handle [as handle_request] (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/layer.js:95:5)
+2025-10-26T04:51:28:     at next (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:149:13)
+2025-10-26T04:51:28:     at requireAuth (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2253:3)
+2025-10-26T04:51:28:     at Layer.handle [as handle_request] (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/layer.js:95:5)
+2025-10-26T04:51:28:     at next (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:149:13)
+2025-10-26T04:51:28:     at Route.dispatch (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:119:3)
+2025-10-26T04:51:28: Error details: storage.getPendingSalaryAdvanceRequests is not a function TypeError: storage.getPendingSalaryAdvanceRequests is not a function
+2025-10-26T04:51:28:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2911:38
+2025-10-26T04:51:28:     at Layer.handle [as handle_request] (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/layer.js:95:5)
+2025-10-26T04:51:28:     at next (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:149:13)
+2025-10-26T04:51:28:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2260:5
+2025-10-26T04:51:28:     at Layer.handle [as handle_request] (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/layer.js:95:5)
+2025-10-26T04:51:28:     at next (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:149:13)
+2025-10-26T04:51:28:     at requireAuth (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2253:3)
+2025-10-26T04:51:28:     at Layer.handle [as handle_request] (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/layer.js:95:5)
+2025-10-26T04:51:28:     at next (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:149:13)
+2025-10-26T04:51:28:     at Route.dispatch (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:119:3)
+2025-10-26T04:51:30: Error updating leave request: error: invalid input value for enum leave_status: "{"status":"approved","approvedBy":"b6ae5548-cdfc-4256-b252-98d253306bb7","approvedAt":"2025-10-26T04:51:30.110Z"}"
+2025-10-26T04:51:30:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/pg-pool/index.js:45:11
+2025-10-26T04:51:30:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-26T04:51:30:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-26T04:51:30:     at async MemStorage.updateLeaveRequest (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1282:23)
+2025-10-26T04:51:30:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2863:28 {
+2025-10-26T04:51:30:   length: 208,
+2025-10-26T04:51:30:   severity: 'ERROR',
+2025-10-26T04:51:30:   code: '22P02',
+2025-10-26T04:51:30:   detail: undefined,
+2025-10-26T04:51:30:   hint: undefined,
+2025-10-26T04:51:30:   position: undefined,
+2025-10-26T04:51:30:   internalPosition: undefined,
+2025-10-26T04:51:30:   internalQuery: undefined,
+2025-10-26T04:51:30:   where: undefined,
+2025-10-26T04:51:30:   schema: undefined,
+2025-10-26T04:51:30:   table: undefined,
+2025-10-26T04:51:30:   column: undefined,
+2025-10-26T04:51:30:   dataType: undefined,
+2025-10-26T04:51:30:   constraint: undefined,
+2025-10-26T04:51:30:   file: 'enum.c',
+2025-10-26T04:51:30:   line: '119',
+2025-10-26T04:51:30:   routine: 'enum_in'
+2025-10-26T04:51:30: }
+2025-10-26T04:51:30: Error details: invalid input value for enum leave_status: "{"status":"approved","approvedBy":"b6ae5548-cdfc-4256-b252-98d253306bb7","approvedAt":"2025-10-26T04:51:30.110Z"}" error: invalid input value for enum leave_status: "{"status":"approved","approvedBy":"b6ae5548-cdfc-4256-b252-98d253306bb7","approvedAt":"2025-10-26T04:51:30.110Z"}"
+2025-10-26T04:51:30:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/pg-pool/index.js:45:11
+2025-10-26T04:51:30:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-26T04:51:30:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-26T04:51:30:     at async MemStorage.updateLeaveRequest (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1282:23)
+2025-10-26T04:51:30:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2863:28
+2025-10-26T04:51:30: Error updating leave request: error: invalid input value for enum leave_status: "{"status":"approved","approvedBy":"b6ae5548-cdfc-4256-b252-98d253306bb7","approvedAt":"2025-10-26T04:51:30.786Z"}"
+2025-10-26T04:51:30:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/pg-pool/index.js:45:11
+2025-10-26T04:51:30:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-26T04:51:30:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-26T04:51:30:     at async MemStorage.updateLeaveRequest (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1282:23)
+2025-10-26T04:51:30:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2863:28 {
+2025-10-26T04:51:30:   length: 208,
+2025-10-26T04:51:30:   severity: 'ERROR',
+2025-10-26T04:51:30:   code: '22P02',
+2025-10-26T04:51:30:   detail: undefined,
+2025-10-26T04:51:30:   hint: undefined,
+2025-10-26T04:51:30:   position: undefined,
+2025-10-26T04:51:30:   internalPosition: undefined,
+2025-10-26T04:51:30:   internalQuery: undefined,
+2025-10-26T04:51:30:   where: undefined,
+2025-10-26T04:51:30:   schema: undefined,
+2025-10-26T04:51:30:   table: undefined,
+2025-10-26T04:51:30:   column: undefined,
+2025-10-26T04:51:30:   dataType: undefined,
+2025-10-26T04:51:30:   constraint: undefined,
+2025-10-26T04:51:30:   file: 'enum.c',
+2025-10-26T04:51:30:   line: '119',
+2025-10-26T04:51:30:   routine: 'enum_in'
+2025-10-26T04:51:30: }
+2025-10-26T04:51:30: Error details: invalid input value for enum leave_status: "{"status":"approved","approvedBy":"b6ae5548-cdfc-4256-b252-98d253306bb7","approvedAt":"2025-10-26T04:51:30.786Z"}" error: invalid input value for enum leave_status: "{"status":"approved","approvedBy":"b6ae5548-cdfc-4256-b252-98d253306bb7","approvedAt":"2025-10-26T04:51:30.786Z"}"
+2025-10-26T04:51:30:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/pg-pool/index.js:45:11
+2025-10-26T04:51:30:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-26T04:51:30:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-26T04:51:30:     at async MemStorage.updateLeaveRequest (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1282:23)
+2025-10-26T04:51:30:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2863:28
+2025-10-26T04:51:31: Error updating leave request: error: invalid input value for enum leave_status: "{"status":"approved","approvedBy":"b6ae5548-cdfc-4256-b252-98d253306bb7","approvedAt":"2025-10-26T04:51:31.230Z"}"
+2025-10-26T04:51:31:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/pg-pool/index.js:45:11
+2025-10-26T04:51:31:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-26T04:51:31:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-26T04:51:31:     at async MemStorage.updateLeaveRequest (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1282:23)
+2025-10-26T04:51:31:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2863:28 {
+2025-10-26T04:51:31:   length: 208,
+2025-10-26T04:51:31:   severity: 'ERROR',
+2025-10-26T04:51:31:   code: '22P02',
+2025-10-26T04:51:31:   detail: undefined,
+2025-10-26T04:51:31:   hint: undefined,
+2025-10-26T04:51:31:   position: undefined,
+2025-10-26T04:51:31:   internalPosition: undefined,
+2025-10-26T04:51:31:   internalQuery: undefined,
+2025-10-26T04:51:31:   where: undefined,
+2025-10-26T04:51:31:   schema: undefined,
+2025-10-26T04:51:31:   table: undefined,
+2025-10-26T04:51:31:   column: undefined,
+2025-10-26T04:51:31:   dataType: undefined,
+2025-10-26T04:51:31:   constraint: undefined,
+2025-10-26T04:51:31:   file: 'enum.c',
+2025-10-26T04:51:31:   line: '119',
+2025-10-26T04:51:31:   routine: 'enum_in'
+2025-10-26T04:51:31: }
+2025-10-26T04:51:31: Error details: invalid input value for enum leave_status: "{"status":"approved","approvedBy":"b6ae5548-cdfc-4256-b252-98d253306bb7","approvedAt":"2025-10-26T04:51:31.230Z"}" error: invalid input value for enum leave_status: "{"status":"approved","approvedBy":"b6ae5548-cdfc-4256-b252-98d253306bb7","approvedAt":"2025-10-26T04:51:31.230Z"}"
+2025-10-26T04:51:31:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/pg-pool/index.js:45:11
+2025-10-26T04:51:31:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-26T04:51:31:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-26T04:51:31:     at async MemStorage.updateLeaveRequest (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1282:23)
+2025-10-26T04:51:31:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2863:28
+2025-10-26T04:51:31: Error updating leave request: error: invalid input value for enum leave_status: "{"status":"approved","approvedBy":"b6ae5548-cdfc-4256-b252-98d253306bb7","approvedAt":"2025-10-26T04:51:31.754Z"}"
+2025-10-26T04:51:31:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/pg-pool/index.js:45:11
+2025-10-26T04:51:31:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-26T04:51:31:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-26T04:51:31:     at async MemStorage.updateLeaveRequest (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1282:23)
+2025-10-26T04:51:31:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2863:28 {
+2025-10-26T04:51:31:   length: 208,
+2025-10-26T04:51:31:   severity: 'ERROR',
+2025-10-26T04:51:31:   code: '22P02',
+2025-10-26T04:51:31:   detail: undefined,
+2025-10-26T04:51:31:   hint: undefined,
+2025-10-26T04:51:31:   position: undefined,
+2025-10-26T04:51:31:   internalPosition: undefined,
+2025-10-26T04:51:31:   internalQuery: undefined,
+2025-10-26T04:51:31:   where: undefined,
+2025-10-26T04:51:31:   schema: undefined,
+2025-10-26T04:51:31:   table: undefined,
+2025-10-26T04:51:31:   column: undefined,
+2025-10-26T04:51:31:   dataType: undefined,
+2025-10-26T04:51:31:   constraint: undefined,
+2025-10-26T04:51:31:   file: 'enum.c',
+2025-10-26T04:51:31:   line: '119',
+2025-10-26T04:51:31:   routine: 'enum_in'
+2025-10-26T04:51:31: }
+2025-10-26T04:51:31: Error details: invalid input value for enum leave_status: "{"status":"approved","approvedBy":"b6ae5548-cdfc-4256-b252-98d253306bb7","approvedAt":"2025-10-26T04:51:31.754Z"}" error: invalid input value for enum leave_status: "{"status":"approved","approvedBy":"b6ae5548-cdfc-4256-b252-98d253306bb7","approvedAt":"2025-10-26T04:51:31.754Z"}"
+2025-10-26T04:51:31:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/pg-pool/index.js:45:11
+2025-10-26T04:51:31:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-26T04:51:31:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-26T04:51:31:     at async MemStorage.updateLeaveRequest (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1282:23)
+2025-10-26T04:51:31:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2863:28
+2025-10-26T04:51:32: Error updating leave request: error: invalid input value for enum leave_status: "{"status":"approved","approvedBy":"b6ae5548-cdfc-4256-b252-98d253306bb7","approvedAt":"2025-10-26T04:51:32.101Z"}"
+2025-10-26T04:51:32:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/pg-pool/index.js:45:11
+2025-10-26T04:51:32:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-26T04:51:32:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-26T04:51:32:     at async MemStorage.updateLeaveRequest (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1282:23)
+2025-10-26T04:51:32:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2863:28 {
+2025-10-26T04:51:32:   length: 208,
+2025-10-26T04:51:32:   severity: 'ERROR',
+2025-10-26T04:51:32:   code: '22P02',
+2025-10-26T04:51:32:   detail: undefined,
+2025-10-26T04:51:32:   hint: undefined,
+2025-10-26T04:51:32:   position: undefined,
+2025-10-26T04:51:32:   internalPosition: undefined,
+2025-10-26T04:51:32:   internalQuery: undefined,
+2025-10-26T04:51:32:   where: undefined,
+2025-10-26T04:51:32:   schema: undefined,
+2025-10-26T04:51:32:   table: undefined,
+2025-10-26T04:51:32:   column: undefined,
+2025-10-26T04:51:32:   dataType: undefined,
+2025-10-26T04:51:32:   constraint: undefined,
+2025-10-26T04:51:32:   file: 'enum.c',
+2025-10-26T04:51:32:   line: '119',
+2025-10-26T04:51:32:   routine: 'enum_in'
+2025-10-26T04:51:32: }
+2025-10-26T04:51:32: Error details: invalid input value for enum leave_status: "{"status":"approved","approvedBy":"b6ae5548-cdfc-4256-b252-98d253306bb7","approvedAt":"2025-10-26T04:51:32.101Z"}" error: invalid input value for enum leave_status: "{"status":"approved","approvedBy":"b6ae5548-cdfc-4256-b252-98d253306bb7","approvedAt":"2025-10-26T04:51:32.101Z"}"
+2025-10-26T04:51:32:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/pg-pool/index.js:45:11
+2025-10-26T04:51:32:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-26T04:51:32:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-26T04:51:32:     at async MemStorage.updateLeaveRequest (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1282:23)
+2025-10-26T04:51:32:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2863:28
+2025-10-26T04:51:35: Error fetching pending salary advance requests: TypeError: storage.getPendingSalaryAdvanceRequests is not a function
+2025-10-26T04:51:35:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2911:38
+2025-10-26T04:51:35:     at Layer.handle [as handle_request] (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/layer.js:95:5)
+2025-10-26T04:51:35:     at next (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:149:13)
+2025-10-26T04:51:35:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2260:5
+2025-10-26T04:51:35:     at Layer.handle [as handle_request] (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/layer.js:95:5)
+2025-10-26T04:51:35:     at next (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:149:13)
+2025-10-26T04:51:35:     at requireAuth (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2253:3)
+2025-10-26T04:51:35:     at Layer.handle [as handle_request] (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/layer.js:95:5)
+2025-10-26T04:51:35:     at next (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:149:13)
+2025-10-26T04:51:35:     at Route.dispatch (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:119:3)
+2025-10-26T04:51:35: Error details: storage.getPendingSalaryAdvanceRequests is not a function TypeError: storage.getPendingSalaryAdvanceRequests is not a function
+2025-10-26T04:51:35:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2911:38
+2025-10-26T04:51:35:     at Layer.handle [as handle_request] (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/layer.js:95:5)
+2025-10-26T04:51:35:     at next (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:149:13)
+2025-10-26T04:51:35:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2260:5
+2025-10-26T04:51:35:     at Layer.handle [as handle_request] (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/layer.js:95:5)
+2025-10-26T04:51:35:     at next (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:149:13)
+2025-10-26T04:51:35:     at requireAuth (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2253:3)
+2025-10-26T04:51:35:     at Layer.handle [as handle_request] (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/layer.js:95:5)
+2025-10-26T04:51:35:     at next (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:149:13)
+2025-10-26T04:51:35:     at Route.dispatch (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:119:3)
+2025-10-26T04:51:36: Error fetching pending salary advance requests: TypeError: storage.getPendingSalaryAdvanceRequests is not a function
+2025-10-26T04:51:36:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2911:38
+2025-10-26T04:51:36:     at Layer.handle [as handle_request] (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/layer.js:95:5)
+2025-10-26T04:51:36:     at next (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:149:13)
+2025-10-26T04:51:36:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2260:5
+2025-10-26T04:51:36:     at Layer.handle [as handle_request] (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/layer.js:95:5)
+2025-10-26T04:51:36:     at next (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:149:13)
+2025-10-26T04:51:36:     at requireAuth (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2253:3)
+2025-10-26T04:51:36:     at Layer.handle [as handle_request] (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/layer.js:95:5)
+2025-10-26T04:51:36:     at next (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:149:13)
+2025-10-26T04:51:36:     at Route.dispatch (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:119:3)
+2025-10-26T04:51:36: Error details: storage.getPendingSalaryAdvanceRequests is not a function TypeError: storage.getPendingSalaryAdvanceRequests is not a function
+2025-10-26T04:51:36:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2911:38
+2025-10-26T04:51:36:     at Layer.handle [as handle_request] (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/layer.js:95:5)
+2025-10-26T04:51:36:     at next (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:149:13)
+2025-10-26T04:51:36:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2260:5
+2025-10-26T04:51:36:     at Layer.handle [as handle_request] (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/layer.js:95:5)
+2025-10-26T04:51:36:     at next (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:149:13)
+2025-10-26T04:51:36:     at requireAuth (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2253:3)
+2025-10-26T04:51:36:     at Layer.handle [as handle_request] (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/layer.js:95:5)
+2025-10-26T04:51:36:     at next (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:149:13)
+2025-10-26T04:51:36:     at Route.dispatch (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:119:3)
+2025-10-26T04:51:37: Error updating leave request: error: invalid input value for enum leave_status: "{"status":"approved","approvedBy":"b6ae5548-cdfc-4256-b252-98d253306bb7","approvedAt":"2025-10-26T04:51:37.225Z"}"
+2025-10-26T04:51:37:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/pg-pool/index.js:45:11
+2025-10-26T04:51:37:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-26T04:51:37:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-26T04:51:37:     at async MemStorage.updateLeaveRequest (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1282:23)
+2025-10-26T04:51:37:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2863:28 {
+2025-10-26T04:51:37:   length: 208,
+2025-10-26T04:51:37:   severity: 'ERROR',
+2025-10-26T04:51:37:   code: '22P02',
+2025-10-26T04:51:37:   detail: undefined,
+2025-10-26T04:51:37:   hint: undefined,
+2025-10-26T04:51:37:   position: undefined,
+2025-10-26T04:51:37:   internalPosition: undefined,
+2025-10-26T04:51:37:   internalQuery: undefined,
+2025-10-26T04:51:37:   where: undefined,
+2025-10-26T04:51:37:   schema: undefined,
+2025-10-26T04:51:37:   table: undefined,
+2025-10-26T04:51:37:   column: undefined,
+2025-10-26T04:51:37:   dataType: undefined,
+2025-10-26T04:51:37:   constraint: undefined,
+2025-10-26T04:51:37:   file: 'enum.c',
+2025-10-26T04:51:37:   line: '119',
+2025-10-26T04:51:37:   routine: 'enum_in'
+2025-10-26T04:51:37: }
+2025-10-26T04:51:37: Error details: invalid input value for enum leave_status: "{"status":"approved","approvedBy":"b6ae5548-cdfc-4256-b252-98d253306bb7","approvedAt":"2025-10-26T04:51:37.225Z"}" error: invalid input value for enum leave_status: "{"status":"approved","approvedBy":"b6ae5548-cdfc-4256-b252-98d253306bb7","approvedAt":"2025-10-26T04:51:37.225Z"}"
+2025-10-26T04:51:37:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/pg-pool/index.js:45:11
+2025-10-26T04:51:37:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-26T04:51:37:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-26T04:51:37:     at async MemStorage.updateLeaveRequest (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1282:23)
+2025-10-26T04:51:37:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2863:28
+2025-10-26T04:51:37: Error updating leave request: error: invalid input value for enum leave_status: "{"status":"approved","approvedBy":"b6ae5548-cdfc-4256-b252-98d253306bb7","approvedAt":"2025-10-26T04:51:37.824Z"}"
+2025-10-26T04:51:37:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/pg-pool/index.js:45:11
+2025-10-26T04:51:37:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-26T04:51:37:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-26T04:51:37:     at async MemStorage.updateLeaveRequest (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1282:23)
+2025-10-26T04:51:37:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2863:28 {
+2025-10-26T04:51:37:   length: 208,
+2025-10-26T04:51:37:   severity: 'ERROR',
+2025-10-26T04:51:37:   code: '22P02',
+2025-10-26T04:51:37:   detail: undefined,
+2025-10-26T04:51:37:   hint: undefined,
+2025-10-26T04:51:37:   position: undefined,
+2025-10-26T04:51:37:   internalPosition: undefined,
+2025-10-26T04:51:37:   internalQuery: undefined,
+2025-10-26T04:51:37:   where: undefined,
+2025-10-26T04:51:37:   schema: undefined,
+2025-10-26T04:51:37:   table: undefined,
+2025-10-26T04:51:37:   column: undefined,
+2025-10-26T04:51:37:   dataType: undefined,
+2025-10-26T04:51:37:   constraint: undefined,
+2025-10-26T04:51:37:   file: 'enum.c',
+2025-10-26T04:51:37:   line: '119',
+2025-10-26T04:51:37:   routine: 'enum_in'
+2025-10-26T04:51:37: }
+2025-10-26T04:51:37: Error details: invalid input value for enum leave_status: "{"status":"approved","approvedBy":"b6ae5548-cdfc-4256-b252-98d253306bb7","approvedAt":"2025-10-26T04:51:37.824Z"}" error: invalid input value for enum leave_status: "{"status":"approved","approvedBy":"b6ae5548-cdfc-4256-b252-98d253306bb7","approvedAt":"2025-10-26T04:51:37.824Z"}"
+2025-10-26T04:51:37:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/pg-pool/index.js:45:11
+2025-10-26T04:51:37:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-26T04:51:37:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-26T04:51:37:     at async MemStorage.updateLeaveRequest (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1282:23)
+2025-10-26T04:51:37:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2863:28
+2025-10-26T04:51:51: Error updating leave request: error: invalid input value for enum leave_status: "{"status":"approved","approvedBy":"b6ae5548-cdfc-4256-b252-98d253306bb7","approvedAt":"2025-10-26T04:51:51.881Z"}"
+2025-10-26T04:51:51:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/pg-pool/index.js:45:11
+2025-10-26T04:51:51:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-26T04:51:51:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-26T04:51:51:     at async MemStorage.updateLeaveRequest (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1282:23)
+2025-10-26T04:51:51:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2863:28 {
+2025-10-26T04:51:51:   length: 208,
+2025-10-26T04:51:51:   severity: 'ERROR',
+2025-10-26T04:51:51:   code: '22P02',
+2025-10-26T04:51:51:   detail: undefined,
+2025-10-26T04:51:51:   hint: undefined,
+2025-10-26T04:51:51:   position: undefined,
+2025-10-26T04:51:51:   internalPosition: undefined,
+2025-10-26T04:51:51:   internalQuery: undefined,
+2025-10-26T04:51:51:   where: undefined,
+2025-10-26T04:51:51:   schema: undefined,
+2025-10-26T04:51:51:   table: undefined,
+2025-10-26T04:51:51:   column: undefined,
+2025-10-26T04:51:51:   dataType: undefined,
+2025-10-26T04:51:51:   constraint: undefined,
+2025-10-26T04:51:51:   file: 'enum.c',
+2025-10-26T04:51:51:   line: '119',
+2025-10-26T04:51:51:   routine: 'enum_in'
+2025-10-26T04:51:51: }
+2025-10-26T04:51:51: Error details: invalid input value for enum leave_status: "{"status":"approved","approvedBy":"b6ae5548-cdfc-4256-b252-98d253306bb7","approvedAt":"2025-10-26T04:51:51.881Z"}" error: invalid input value for enum leave_status: "{"status":"approved","approvedBy":"b6ae5548-cdfc-4256-b252-98d253306bb7","approvedAt":"2025-10-26T04:51:51.881Z"}"
+2025-10-26T04:51:51:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/pg-pool/index.js:45:11
+2025-10-26T04:51:51:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-26T04:51:51:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-26T04:51:51:     at async MemStorage.updateLeaveRequest (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1282:23)
+2025-10-26T04:51:51:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2863:28
+2025-10-26T04:57:23: Error creating deduction: ReferenceError: broadcast is not defined
+2025-10-26T04:57:23:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:3011:7
+2025-10-26T04:57:23:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-26T04:57:33: Error creating deduction: ReferenceError: broadcast is not defined
+2025-10-26T04:57:33:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:3011:7
+2025-10-26T04:57:33:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-26T05:03:02: Error fetching pending salary advance requests: TypeError: storage.getPendingSalaryAdvanceRequests is not a function
+2025-10-26T05:03:02:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2911:38
+2025-10-26T05:03:02:     at Layer.handle [as handle_request] (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/layer.js:95:5)
+2025-10-26T05:03:02:     at next (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:149:13)
+2025-10-26T05:03:02:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2260:5
+2025-10-26T05:03:02:     at Layer.handle [as handle_request] (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/layer.js:95:5)
+2025-10-26T05:03:02:     at next (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:149:13)
+2025-10-26T05:03:02:     at requireAuth (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2253:3)
+2025-10-26T05:03:02:     at Layer.handle [as handle_request] (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/layer.js:95:5)
+2025-10-26T05:03:02:     at next (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:149:13)
+2025-10-26T05:03:02:     at Route.dispatch (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:119:3)
+2025-10-26T05:03:02: Error details: storage.getPendingSalaryAdvanceRequests is not a function TypeError: storage.getPendingSalaryAdvanceRequests is not a function
+2025-10-26T05:03:02:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2911:38
+2025-10-26T05:03:02:     at Layer.handle [as handle_request] (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/layer.js:95:5)
+2025-10-26T05:03:02:     at next (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:149:13)
+2025-10-26T05:03:02:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2260:5
+2025-10-26T05:03:02:     at Layer.handle [as handle_request] (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/layer.js:95:5)
+2025-10-26T05:03:02:     at next (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:149:13)
+2025-10-26T05:03:02:     at requireAuth (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2253:3)
+2025-10-26T05:03:02:     at Layer.handle [as handle_request] (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/layer.js:95:5)
+2025-10-26T05:03:02:     at next (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:149:13)
+2025-10-26T05:03:02:     at Route.dispatch (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:119:3)
+2025-10-26T05:03:04: Error fetching pending salary advance requests: TypeError: storage.getPendingSalaryAdvanceRequests is not a function
+2025-10-26T05:03:04:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2911:38
+2025-10-26T05:03:04:     at Layer.handle [as handle_request] (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/layer.js:95:5)
+2025-10-26T05:03:04:     at next (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:149:13)
+2025-10-26T05:03:04:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2260:5
+2025-10-26T05:03:04:     at Layer.handle [as handle_request] (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/layer.js:95:5)
+2025-10-26T05:03:04:     at next (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:149:13)
+2025-10-26T05:03:04:     at requireAuth (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2253:3)
+2025-10-26T05:03:04:     at Layer.handle [as handle_request] (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/layer.js:95:5)
+2025-10-26T05:03:04:     at next (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:149:13)
+2025-10-26T05:03:04:     at Route.dispatch (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:119:3)
+2025-10-26T05:03:04: Error details: storage.getPendingSalaryAdvanceRequests is not a function TypeError: storage.getPendingSalaryAdvanceRequests is not a function
+2025-10-26T05:03:04:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2911:38
+2025-10-26T05:03:04:     at Layer.handle [as handle_request] (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/layer.js:95:5)
+2025-10-26T05:03:04:     at next (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:149:13)
+2025-10-26T05:03:04:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2260:5
+2025-10-26T05:03:04:     at Layer.handle [as handle_request] (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/layer.js:95:5)
+2025-10-26T05:03:04:     at next (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:149:13)
+2025-10-26T05:03:04:     at requireAuth (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2253:3)
+2025-10-26T05:03:04:     at Layer.handle [as handle_request] (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/layer.js:95:5)
+2025-10-26T05:03:04:     at next (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:149:13)
+2025-10-26T05:03:04:     at Route.dispatch (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/express/lib/router/route.js:119:3)
+2025-10-26T05:20:33: Error creating deduction: ReferenceError: broadcast is not defined
+2025-10-26T05:20:33:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:3040:7
+2025-10-26T05:20:33:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-26T05:20:33: Error details: broadcast is not defined ReferenceError: broadcast is not defined
+2025-10-26T05:20:33:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:3040:7
+2025-10-26T05:20:33:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-26T05:20:43: Error creating deduction: ReferenceError: broadcast is not defined
+2025-10-26T05:20:43:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:3040:7
+2025-10-26T05:20:43:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-26T05:20:43: Error details: broadcast is not defined ReferenceError: broadcast is not defined
+2025-10-26T05:20:43:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:3040:7
+2025-10-26T05:20:43:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-26T05:40:23: Error creating deduction: error: numeric field overflow
+2025-10-26T05:40:23:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/pg-pool/index.js:45:11
+2025-10-26T05:40:23:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-26T05:40:23:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-26T05:40:23:     at async MemStorage.createSalaryDeduction (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1752:28)
+2025-10-26T05:40:23:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:3021:25 {
+2025-10-26T05:40:23:   length: 165,
+2025-10-26T05:40:23:   severity: 'ERROR',
+2025-10-26T05:40:23:   code: '22003',
+2025-10-26T05:40:23:   detail: 'A field with precision 10, scale 2 must round to an absolute value less than 10^8.',
+2025-10-26T05:40:23:   hint: undefined,
+2025-10-26T05:40:23:   position: undefined,
+2025-10-26T05:40:23:   internalPosition: undefined,
+2025-10-26T05:40:23:   internalQuery: undefined,
+2025-10-26T05:40:23:   where: undefined,
+2025-10-26T05:40:23:   schema: undefined,
+2025-10-26T05:40:23:   table: undefined,
+2025-10-26T05:40:23:   column: undefined,
+2025-10-26T05:40:23:   dataType: undefined,
+2025-10-26T05:40:23:   constraint: undefined,
+2025-10-26T05:40:23:   file: 'numeric.c',
+2025-10-26T05:40:23:   line: '6604',
+2025-10-26T05:40:23:   routine: 'apply_typmod'
+2025-10-26T05:40:23: }
+2025-10-26T05:40:23: Error details: numeric field overflow error: numeric field overflow
+2025-10-26T05:40:23:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/pg-pool/index.js:45:11
+2025-10-26T05:40:23:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-26T05:40:23:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-26T05:40:23:     at async MemStorage.createSalaryDeduction (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1752:28)
+2025-10-26T05:40:23:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:3021:25
+2025-10-26T05:40:28: Error creating deduction: error: numeric field overflow
+2025-10-26T05:40:28:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/pg-pool/index.js:45:11
+2025-10-26T05:40:28:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-26T05:40:28:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-26T05:40:28:     at async MemStorage.createSalaryDeduction (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1752:28)
+2025-10-26T05:40:28:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:3021:25 {
+2025-10-26T05:40:28:   length: 165,
+2025-10-26T05:40:28:   severity: 'ERROR',
+2025-10-26T05:40:28:   code: '22003',
+2025-10-26T05:40:28:   detail: 'A field with precision 10, scale 2 must round to an absolute value less than 10^8.',
+2025-10-26T05:40:28:   hint: undefined,
+2025-10-26T05:40:28:   position: undefined,
+2025-10-26T05:40:28:   internalPosition: undefined,
+2025-10-26T05:40:28:   internalQuery: undefined,
+2025-10-26T05:40:28:   where: undefined,
+2025-10-26T05:40:28:   schema: undefined,
+2025-10-26T05:40:28:   table: undefined,
+2025-10-26T05:40:28:   column: undefined,
+2025-10-26T05:40:28:   dataType: undefined,
+2025-10-26T05:40:28:   constraint: undefined,
+2025-10-26T05:40:28:   file: 'numeric.c',
+2025-10-26T05:40:28:   line: '6604',
+2025-10-26T05:40:28:   routine: 'apply_typmod'
+2025-10-26T05:40:28: }
+2025-10-26T05:40:28: Error details: numeric field overflow error: numeric field overflow
+2025-10-26T05:40:28:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/pg-pool/index.js:45:11
+2025-10-26T05:40:28:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-26T05:40:28:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-26T05:40:28:     at async MemStorage.createSalaryDeduction (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1752:28)
+2025-10-26T05:40:28:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:3021:25
+2025-10-27T04:02:38: error: relation "session" does not exist
+2025-10-27T04:02:38:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/pg-pool/index.js:45:11
+2025-10-27T04:02:38:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-27T04:02:38:     at async PGStore._asyncQuery (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/connect-pg-simple/index.js:322:21)
+2025-10-27T04:02:38: error: relation "session" does not exist
+2025-10-27T04:02:38:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/pg-pool/index.js:45:11
+2025-10-27T04:02:38:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-27T04:02:38:     at async PGStore._asyncQuery (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/connect-pg-simple/index.js:322:21)
+2025-10-27T14:33:08: Error fetching company milestones: error: invalid input syntax for type uuid: "test"
+2025-10-27T14:33:08:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/pg-pool/index.js:45:11
+2025-10-27T14:33:08:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-27T14:33:08:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-27T14:33:08:     at async MemStorage.getCompanyMilestones (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1993:12)
+2025-10-27T14:33:08:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:4219:26 {
+2025-10-27T14:33:08:   length: 99,
+2025-10-27T14:33:08:   severity: 'ERROR',
+2025-10-27T14:33:08:   code: '22P02',
+2025-10-27T14:33:08:   detail: undefined,
+2025-10-27T14:33:08:   hint: undefined,
+2025-10-27T14:33:08:   position: undefined,
+2025-10-27T14:33:08:   internalPosition: undefined,
+2025-10-27T14:33:08:   internalQuery: undefined,
+2025-10-27T14:33:08:   where: undefined,
+2025-10-27T14:33:08:   schema: undefined,
+2025-10-27T14:33:08:   table: undefined,
+2025-10-27T14:33:08:   column: undefined,
+2025-10-27T14:33:08:   dataType: undefined,
+2025-10-27T14:33:08:   constraint: undefined,
+2025-10-27T14:33:08:   file: 'uuid.c',
+2025-10-27T14:33:08:   line: '134',
+2025-10-27T14:33:08:   routine: 'string_to_uuid'
+2025-10-27T14:33:08: }
+2025-10-27T14:33:08: Error fetching company: error: invalid input syntax for type uuid: "test"
+2025-10-27T14:33:08:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/pg-pool/index.js:45:11
+2025-10-27T14:33:08:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-27T14:33:08:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-27T14:33:08:     at async MemStorage.getCompany (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1908:23)
+2025-10-27T14:33:08:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:4170:23 {
+2025-10-27T14:33:08:   length: 99,
+2025-10-27T14:33:08:   severity: 'ERROR',
+2025-10-27T14:33:08:   code: '22P02',
+2025-10-27T14:33:08:   detail: undefined,
+2025-10-27T14:33:08:   hint: undefined,
+2025-10-27T14:33:08:   position: undefined,
+2025-10-27T14:33:08:   internalPosition: undefined,
+2025-10-27T14:33:08:   internalQuery: undefined,
+2025-10-27T14:33:08:   where: undefined,
+2025-10-27T14:33:08:   schema: undefined,
+2025-10-27T14:33:08:   table: undefined,
+2025-10-27T14:33:08:   column: undefined,
+2025-10-27T14:33:08:   dataType: undefined,
+2025-10-27T14:33:08:   constraint: undefined,
+2025-10-27T14:33:08:   file: 'uuid.c',
+2025-10-27T14:33:08:   line: '134',
+2025-10-27T14:33:08:   routine: 'string_to_uuid'
+2025-10-27T14:33:08: }
+2025-10-27T14:33:08: Error fetching company tasks: error: invalid input syntax for type uuid: "test"
+2025-10-27T14:33:08:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/pg-pool/index.js:45:11
+2025-10-27T14:33:08:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-27T14:33:08:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-27T14:33:08:     at async MemStorage.getCompanyTasks (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1944:23)
+2025-10-27T14:33:08:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:4210:22 {
+2025-10-27T14:33:08:   length: 99,
+2025-10-27T14:33:08:   severity: 'ERROR',
+2025-10-27T14:33:08:   code: '22P02',
+2025-10-27T14:33:08:   detail: undefined,
+2025-10-27T14:33:08:   hint: undefined,
+2025-10-27T14:33:08:   position: undefined,
+2025-10-27T14:33:08:   internalPosition: undefined,
+2025-10-27T14:33:08:   internalQuery: undefined,
+2025-10-27T14:33:08:   where: undefined,
+2025-10-27T14:33:08:   schema: undefined,
+2025-10-27T14:33:08:   table: undefined,
+2025-10-27T14:33:08:   column: undefined,
+2025-10-27T14:33:08:   dataType: undefined,
+2025-10-27T14:33:08:   constraint: undefined,
+2025-10-27T14:33:08:   file: 'uuid.c',
+2025-10-27T14:33:08:   line: '134',
+2025-10-27T14:33:08:   routine: 'string_to_uuid'
+2025-10-27T14:33:08: }
+2025-10-27T14:33:08: Error fetching company reports: error: invalid input syntax for type uuid: "test"
+2025-10-27T14:33:08:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/pg-pool/index.js:45:11
+2025-10-27T14:33:08:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-27T14:33:08:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-27T14:33:08:     at async MemStorage.getCompanyReports (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2028:21)
+2025-10-27T14:33:08:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:4317:23 {
+2025-10-27T14:33:08:   length: 99,
+2025-10-27T14:33:08:   severity: 'ERROR',
+2025-10-27T14:33:08:   code: '22P02',
+2025-10-27T14:33:08:   detail: undefined,
+2025-10-27T14:33:08:   hint: undefined,
+2025-10-27T14:33:08:   position: undefined,
+2025-10-27T14:33:08:   internalPosition: undefined,
+2025-10-27T14:33:08:   internalQuery: undefined,
+2025-10-27T14:33:08:   where: undefined,
+2025-10-27T14:33:08:   schema: undefined,
+2025-10-27T14:33:08:   table: undefined,
+2025-10-27T14:33:08:   column: undefined,
+2025-10-27T14:33:08:   dataType: undefined,
+2025-10-27T14:33:08:   constraint: undefined,
+2025-10-27T14:33:08:   file: 'uuid.c',
+2025-10-27T14:33:08:   line: '134',
+2025-10-27T14:33:08:   routine: 'string_to_uuid'
+2025-10-27T14:33:08: }
+2025-10-27T14:33:08: Error fetching company files: error: invalid input syntax for type uuid: "test"
+2025-10-27T14:33:08:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/pg-pool/index.js:45:11
+2025-10-27T14:33:08:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-27T14:33:08:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-27T14:33:08:     at async MemStorage.getCompanyFiles (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2009:19)
+2025-10-27T14:33:08:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:4276:21 {
+2025-10-27T14:33:08:   length: 99,
+2025-10-27T14:33:08:   severity: 'ERROR',
+2025-10-27T14:33:08:   code: '22P02',
+2025-10-27T14:33:08:   detail: undefined,
+2025-10-27T14:33:08:   hint: undefined,
+2025-10-27T14:33:08:   position: undefined,
+2025-10-27T14:33:08:   internalPosition: undefined,
+2025-10-27T14:33:08:   internalQuery: undefined,
+2025-10-27T14:33:08:   where: undefined,
+2025-10-27T14:33:08:   schema: undefined,
+2025-10-27T14:33:08:   table: undefined,
+2025-10-27T14:33:08:   column: undefined,
+2025-10-27T14:33:08:   dataType: undefined,
+2025-10-27T14:33:08:   constraint: undefined,
+2025-10-27T14:33:08:   file: 'uuid.c',
+2025-10-27T14:33:08:   line: '134',
+2025-10-27T14:33:08:   routine: 'string_to_uuid'
+2025-10-27T14:33:08: }
+2025-10-27T14:33:08: Error fetching company comments: error: invalid input syntax for type uuid: "test"
+2025-10-27T14:33:08:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/pg-pool/index.js:45:11
+2025-10-27T14:33:08:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-27T14:33:08:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-27T14:33:08:     at async MemStorage.getCompanyComments (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2051:22)
+2025-10-27T14:33:08:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:4375:24 {
+2025-10-27T14:33:08:   length: 99,
+2025-10-27T14:33:08:   severity: 'ERROR',
+2025-10-27T14:33:08:   code: '22P02',
+2025-10-27T14:33:08:   detail: undefined,
+2025-10-27T14:33:08:   hint: undefined,
+2025-10-27T14:33:08:   position: undefined,
+2025-10-27T14:33:08:   internalPosition: undefined,
+2025-10-27T14:33:08:   internalQuery: undefined,
+2025-10-27T14:33:08:   where: undefined,
+2025-10-27T14:33:08:   schema: undefined,
+2025-10-27T14:33:08:   table: undefined,
+2025-10-27T14:33:08:   column: undefined,
+2025-10-27T14:33:08:   dataType: undefined,
+2025-10-27T14:33:08:   constraint: undefined,
+2025-10-27T14:33:08:   file: 'uuid.c',
+2025-10-27T14:33:08:   line: '134',
+2025-10-27T14:33:08:   routine: 'string_to_uuid'
+2025-10-27T14:33:08: }
+2025-10-27T14:33:09: Error fetching company milestones: error: invalid input syntax for type uuid: "test"
+2025-10-27T14:33:09:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/pg-pool/index.js:45:11
+2025-10-27T14:33:09:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-27T14:33:09:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-27T14:33:09:     at async MemStorage.getCompanyMilestones (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1993:12)
+2025-10-27T14:33:09:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:4219:26 {
+2025-10-27T14:33:09:   length: 99,
+2025-10-27T14:33:09:   severity: 'ERROR',
+2025-10-27T14:33:09:   code: '22P02',
+2025-10-27T14:33:09:   detail: undefined,
+2025-10-27T14:33:09:   hint: undefined,
+2025-10-27T14:33:09:   position: undefined,
+2025-10-27T14:33:09:   internalPosition: undefined,
+2025-10-27T14:33:09:   internalQuery: undefined,
+2025-10-27T14:33:09:   where: undefined,
+2025-10-27T14:33:09:   schema: undefined,
+2025-10-27T14:33:09:   table: undefined,
+2025-10-27T14:33:09:   column: undefined,
+2025-10-27T14:33:09:   dataType: undefined,
+2025-10-27T14:33:09:   constraint: undefined,
+2025-10-27T14:33:09:   file: 'uuid.c',
+2025-10-27T14:33:09:   line: '134',
+2025-10-27T14:33:09:   routine: 'string_to_uuid'
+2025-10-27T14:33:09: }
+2025-10-27T14:33:09: Error fetching company tasks: error: invalid input syntax for type uuid: "test"
+2025-10-27T14:33:09:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/pg-pool/index.js:45:11
+2025-10-27T14:33:09:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-27T14:33:09:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-27T14:33:09:     at async MemStorage.getCompanyTasks (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1944:23)
+2025-10-27T14:33:09:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:4210:22 {
+2025-10-27T14:33:09:   length: 99,
+2025-10-27T14:33:09:   severity: 'ERROR',
+2025-10-27T14:33:09:   code: '22P02',
+2025-10-27T14:33:09:   detail: undefined,
+2025-10-27T14:33:09:   hint: undefined,
+2025-10-27T14:33:09:   position: undefined,
+2025-10-27T14:33:09:   internalPosition: undefined,
+2025-10-27T14:33:09:   internalQuery: undefined,
+2025-10-27T14:33:09:   where: undefined,
+2025-10-27T14:33:09:   schema: undefined,
+2025-10-27T14:33:09:   table: undefined,
+2025-10-27T14:33:09:   column: undefined,
+2025-10-27T14:33:09:   dataType: undefined,
+2025-10-27T14:33:09:   constraint: undefined,
+2025-10-27T14:33:09:   file: 'uuid.c',
+2025-10-27T14:33:09:   line: '134',
+2025-10-27T14:33:09:   routine: 'string_to_uuid'
+2025-10-27T14:33:09: }
+2025-10-27T14:33:09: Error fetching company: error: invalid input syntax for type uuid: "test"
+2025-10-27T14:33:09:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/pg-pool/index.js:45:11
+2025-10-27T14:33:09:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-27T14:33:09:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-27T14:33:09:     at async MemStorage.getCompany (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:1908:23)
+2025-10-27T14:33:09:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:4170:23 {
+2025-10-27T14:33:09:   length: 99,
+2025-10-27T14:33:09:   severity: 'ERROR',
+2025-10-27T14:33:09:   code: '22P02',
+2025-10-27T14:33:09:   detail: undefined,
+2025-10-27T14:33:09:   hint: undefined,
+2025-10-27T14:33:09:   position: undefined,
+2025-10-27T14:33:09:   internalPosition: undefined,
+2025-10-27T14:33:09:   internalQuery: undefined,
+2025-10-27T14:33:09:   where: undefined,
+2025-10-27T14:33:09:   schema: undefined,
+2025-10-27T14:33:09:   table: undefined,
+2025-10-27T14:33:09:   column: undefined,
+2025-10-27T14:33:09:   dataType: undefined,
+2025-10-27T14:33:09:   constraint: undefined,
+2025-10-27T14:33:09:   file: 'uuid.c',
+2025-10-27T14:33:09:   line: '134',
+2025-10-27T14:33:09:   routine: 'string_to_uuid'
+2025-10-27T14:33:09: }
+2025-10-27T14:33:09: Error fetching company files: error: invalid input syntax for type uuid: "test"
+2025-10-27T14:33:09:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/pg-pool/index.js:45:11
+2025-10-27T14:33:09:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-27T14:33:09:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-27T14:33:09:     at async MemStorage.getCompanyFiles (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2009:19)
+2025-10-27T14:33:09:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:4276:21 {
+2025-10-27T14:33:09:   length: 99,
+2025-10-27T14:33:09:   severity: 'ERROR',
+2025-10-27T14:33:09:   code: '22P02',
+2025-10-27T14:33:09:   detail: undefined,
+2025-10-27T14:33:09:   hint: undefined,
+2025-10-27T14:33:09:   position: undefined,
+2025-10-27T14:33:09:   internalPosition: undefined,
+2025-10-27T14:33:09:   internalQuery: undefined,
+2025-10-27T14:33:09:   where: undefined,
+2025-10-27T14:33:09:   schema: undefined,
+2025-10-27T14:33:09:   table: undefined,
+2025-10-27T14:33:09:   column: undefined,
+2025-10-27T14:33:09:   dataType: undefined,
+2025-10-27T14:33:09:   constraint: undefined,
+2025-10-27T14:33:09:   file: 'uuid.c',
+2025-10-27T14:33:09:   line: '134',
+2025-10-27T14:33:09:   routine: 'string_to_uuid'
+2025-10-27T14:33:09: }
+2025-10-27T14:33:09: Error fetching company reports: error: invalid input syntax for type uuid: "test"
+2025-10-27T14:33:09:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/pg-pool/index.js:45:11
+2025-10-27T14:33:09:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-27T14:33:09:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-27T14:33:09:     at async MemStorage.getCompanyReports (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2028:21)
+2025-10-27T14:33:09:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:4317:23 {
+2025-10-27T14:33:09:   length: 99,
+2025-10-27T14:33:09:   severity: 'ERROR',
+2025-10-27T14:33:09:   code: '22P02',
+2025-10-27T14:33:09:   detail: undefined,
+2025-10-27T14:33:09:   hint: undefined,
+2025-10-27T14:33:09:   position: undefined,
+2025-10-27T14:33:09:   internalPosition: undefined,
+2025-10-27T14:33:09:   internalQuery: undefined,
+2025-10-27T14:33:09:   where: undefined,
+2025-10-27T14:33:09:   schema: undefined,
+2025-10-27T14:33:09:   table: undefined,
+2025-10-27T14:33:09:   column: undefined,
+2025-10-27T14:33:09:   dataType: undefined,
+2025-10-27T14:33:09:   constraint: undefined,
+2025-10-27T14:33:09:   file: 'uuid.c',
+2025-10-27T14:33:09:   line: '134',
+2025-10-27T14:33:09:   routine: 'string_to_uuid'
+2025-10-27T14:33:09: }
+2025-10-27T14:33:09: Error fetching company comments: error: invalid input syntax for type uuid: "test"
+2025-10-27T14:33:09:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/pg-pool/index.js:45:11
+2025-10-27T14:33:09:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-27T14:33:09:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/drizzle-orm/node-postgres/session.js:83:22
+2025-10-27T14:33:09:     at async MemStorage.getCompanyComments (file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2051:22)
+2025-10-27T14:33:09:     at async file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:4375:24 {
+2025-10-27T14:33:09:   length: 99,
+2025-10-27T14:33:09:   severity: 'ERROR',
+2025-10-27T14:33:09:   code: '22P02',
+2025-10-27T14:33:09:   detail: undefined,
+2025-10-27T14:33:09:   hint: undefined,
+2025-10-27T14:33:09:   position: undefined,
+2025-10-27T14:33:09:   internalPosition: undefined,
+2025-10-27T14:33:09:   internalQuery: undefined,
+2025-10-27T14:33:09:   where: undefined,
+2025-10-27T14:33:09:   schema: undefined,
+2025-10-27T14:33:09:   table: undefined,
+2025-10-27T14:33:09:   column: undefined,
+2025-10-27T14:33:09:   dataType: undefined,
+2025-10-27T14:33:09:   constraint: undefined,
+2025-10-27T14:33:09:   file: 'uuid.c',
+2025-10-27T14:33:09:   line: '134',
+2025-10-27T14:33:09:   routine: 'string_to_uuid'
+2025-10-27T14:33:09: }
+2025-10-27T14:52:38: Error creating employee: Error: data must be a string or Buffer and salt must either be a salt string or a number of rounds
+2025-10-27T14:52:38:     at Module.hash (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/bcrypt/bcrypt.js:140:17)
+2025-10-27T14:52:38:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/bcrypt/promises.js:26:12
+2025-10-27T14:52:38:     at new Promise (<anonymous>)
+2025-10-27T14:52:38:     at Object.promise (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/bcrypt/promises.js:17:12)
+2025-10-27T14:52:38:     at Module.hash (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/bcrypt/bcrypt.js:129:25)
+2025-10-27T14:52:38:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2652:43
+2025-10-27T14:52:38:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-27T14:52:47: Error creating employee: Error: data must be a string or Buffer and salt must either be a salt string or a number of rounds
+2025-10-27T14:52:47:     at Module.hash (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/bcrypt/bcrypt.js:140:17)
+2025-10-27T14:52:47:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/bcrypt/promises.js:26:12
+2025-10-27T14:52:47:     at new Promise (<anonymous>)
+2025-10-27T14:52:47:     at Object.promise (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/bcrypt/promises.js:17:12)
+2025-10-27T14:52:47:     at Module.hash (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/bcrypt/bcrypt.js:129:25)
+2025-10-27T14:52:47:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2652:43
+2025-10-27T14:52:47:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-27T14:52:57: Error creating employee: Error: data must be a string or Buffer and salt must either be a salt string or a number of rounds
+2025-10-27T14:52:57:     at Module.hash (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/bcrypt/bcrypt.js:140:17)
+2025-10-27T14:52:57:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/bcrypt/promises.js:26:12
+2025-10-27T14:52:57:     at new Promise (<anonymous>)
+2025-10-27T14:52:57:     at Object.promise (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/bcrypt/promises.js:17:12)
+2025-10-27T14:52:57:     at Module.hash (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/bcrypt/bcrypt.js:129:25)
+2025-10-27T14:52:57:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2652:43
+2025-10-27T14:52:57:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-27T14:53:08: Error creating employee: Error: data must be a string or Buffer and salt must either be a salt string or a number of rounds
+2025-10-27T14:53:08:     at Module.hash (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/bcrypt/bcrypt.js:140:17)
+2025-10-27T14:53:08:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/bcrypt/promises.js:26:12
+2025-10-27T14:53:08:     at new Promise (<anonymous>)
+2025-10-27T14:53:08:     at Object.promise (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/bcrypt/promises.js:17:12)
+2025-10-27T14:53:08:     at Module.hash (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/bcrypt/bcrypt.js:129:25)
+2025-10-27T14:53:08:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2652:43
+2025-10-27T14:53:08:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-27T14:53:13: Error creating employee: Error: data must be a string or Buffer and salt must either be a salt string or a number of rounds
+2025-10-27T14:53:13:     at Module.hash (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/bcrypt/bcrypt.js:140:17)
+2025-10-27T14:53:13:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/bcrypt/promises.js:26:12
+2025-10-27T14:53:13:     at new Promise (<anonymous>)
+2025-10-27T14:53:13:     at Object.promise (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/bcrypt/promises.js:17:12)
+2025-10-27T14:53:13:     at Module.hash (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/bcrypt/bcrypt.js:129:25)
+2025-10-27T14:53:13:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2652:43
+2025-10-27T14:53:13:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-27T14:53:17: Error creating employee: Error: data must be a string or Buffer and salt must either be a salt string or a number of rounds
+2025-10-27T14:53:17:     at Module.hash (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/bcrypt/bcrypt.js:140:17)
+2025-10-27T14:53:17:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/bcrypt/promises.js:26:12
+2025-10-27T14:53:17:     at new Promise (<anonymous>)
+2025-10-27T14:53:17:     at Object.promise (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/bcrypt/promises.js:17:12)
+2025-10-27T14:53:17:     at Module.hash (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/bcrypt/bcrypt.js:129:25)
+2025-10-27T14:53:17:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2652:43
+2025-10-27T14:53:17:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-27T14:53:30: Error creating employee: Error: data must be a string or Buffer and salt must either be a salt string or a number of rounds
+2025-10-27T14:53:30:     at Module.hash (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/bcrypt/bcrypt.js:140:17)
+2025-10-27T14:53:30:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/bcrypt/promises.js:26:12
+2025-10-27T14:53:30:     at new Promise (<anonymous>)
+2025-10-27T14:53:30:     at Object.promise (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/bcrypt/promises.js:17:12)
+2025-10-27T14:53:30:     at Module.hash (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/bcrypt/bcrypt.js:129:25)
+2025-10-27T14:53:30:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2652:43
+2025-10-27T14:53:30:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-27T14:56:41: Error creating employee: Error: data must be a string or Buffer and salt must either be a salt string or a number of rounds
+2025-10-27T14:56:41:     at Module.hash (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/bcrypt/bcrypt.js:140:17)
+2025-10-27T14:56:41:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/bcrypt/promises.js:26:12
+2025-10-27T14:56:41:     at new Promise (<anonymous>)
+2025-10-27T14:56:41:     at Object.promise (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/bcrypt/promises.js:17:12)
+2025-10-27T14:56:41:     at Module.hash (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/bcrypt/bcrypt.js:129:25)
+2025-10-27T14:56:41:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2652:43
+2025-10-27T14:56:41:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2025-10-27T14:57:06: Error creating employee: Error: data must be a string or Buffer and salt must either be a salt string or a number of rounds
+2025-10-27T14:57:06:     at Module.hash (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/bcrypt/bcrypt.js:140:17)
+2025-10-27T14:57:06:     at /home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/bcrypt/promises.js:26:12
+2025-10-27T14:57:06:     at new Promise (<anonymous>)
+2025-10-27T14:57:06:     at Object.promise (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/bcrypt/promises.js:17:12)
+2025-10-27T14:57:06:     at Module.hash (/home/greenwebtech/public_html/hub.greenweb-tech.com/node_modules/bcrypt/bcrypt.js:129:25)
+2025-10-27T14:57:06:     at file:///home/greenwebtech/public_html/hub.greenweb-tech.com/dist/index.js:2652:43
+2025-10-27T14:57:06:     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)

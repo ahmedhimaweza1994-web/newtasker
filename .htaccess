@@ -1,0 +1,26 @@
+RewriteEngine On
+
+# Redirect HTTP to HTTPS (لو عايز، اختياري)
+RewriteCond %{HTTPS} off
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Proxy all requests to app (except .well-known for AutoSSL)
+ProxyPreserveHost On
+ProxyRequests Off
+ProxyPass /.well-known/ !
+ProxyPass / http://127.0.0.1:3000/
+ProxyPassReverse / http://127.0.0.1:3000/
+
+# WebSocket support for Socket.io (ws for HTTP, wss for HTTPS)
+RewriteCond %{HTTP:Upgrade} websocket [NC]
+RewriteCond %{HTTP:Connection} upgrade [NC]
+RewriteRule ^/?(.*) "ws://127.0.0.1:3000/$1" [P,L]
+
+# SSE support for real-time updates
+ProxyPass /socket.io/ http://127.0.0.1:3000/socket.io/
+ProxyPassReverse /socket.io/ http://127.0.0.1:3000/socket.io/
+
+# Fix MIME type for Service Worker (text/html error)
+<IfModule mod_mime.c>
+    AddType application/javascript .js
+</IfModule>
