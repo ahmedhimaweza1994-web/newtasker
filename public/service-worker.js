@@ -65,7 +65,13 @@ self.addEventListener('notificationclick', (event) => {
       url = `/tasks?taskId=${notification.metadata.taskId}`;
     } else if (notification.category === 'call') {
       url = '/call-history';
-    } else if (notification.category === 'leave_request') {
+    } else if (notification.category === 'leave' || notification.category === 'leave_request' || notification.category === 'salary_advance') {
+      url = '/my-requests';
+    } else if (notification.category === 'deduction') {
+      url = '/my-deductions';
+    } else if (notification.category === 'suggestion') {
+      url = '/suggestions';
+    } else if (notification.category === 'meeting') {
       url = '/hr';
     } else {
       url = '/dashboard';
