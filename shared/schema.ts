@@ -623,6 +623,12 @@ export const insertSalaryDeductionSchema = createInsertSchema(salaryDeductions).
   updatedAt: true,
 });
 
+export const updateSalaryDeductionSchema = z.object({
+  reason: z.string().min(1),
+  daysDeducted: z.number().int().min(0).nullable().optional(),
+  amount: z.string().or(z.number()).transform(val => String(val)),
+});
+
 export const insertChatRoomSchema = createInsertSchema(chatRooms).omit({
   id: true,
   createdAt: true,

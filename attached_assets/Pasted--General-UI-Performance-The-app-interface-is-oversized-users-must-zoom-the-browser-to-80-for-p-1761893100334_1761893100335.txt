@@ -1,0 +1,216 @@
+. General UI & Performance
+
+The app interface is oversized; users must zoom the browser to 80% for proper view.
+
+Page transitions sometimes cause blank/white screens.
+
+Overall navigation between pages (especially Tasks & Companies) feels slow.
+
+Task sections are too wide, hiding part of the content on the left side.
+
+When navigating back, some pages fail to reload properly (possible router/state issue).
+
+2. Task Management (إدارة المهام)
+
+Layout issue: Task board is too wide — left section partially hidden.
+
+Blank screen: Opening task “Details” or “Edit” sometimes loads a white page.
+
+Performance: Noticeable lag when multiple tasks are displayed.
+
+Date validation: Tasks can be created with past dates.
+
+Data sync: Tasks from personal profile or HR view not linked correctly to main Tasks.
+
+Buttons: View/Edit icons occasionally cause blank pages.
+
+Search: Global search only finds usernames — not task titles or descriptions.
+
+3. Companies Module
+
+Opening Files or Team tabs causes blank/white screens.
+
+Returning from Files tab reloads the whole app.
+
+After adding a company, clicking “View” leads to a blank screen.
+
+Old dates accepted in fields without validation.
+
+Sidebar lacks a Companies menu entry.
+
+4. Chat & Calls
+
+Calls and messages occasionally fail — audio/video buttons unresponsive.
+
+No sound or visual notification for new messages on mobile.
+
+Switching between chats can cause app freeze.
+
+Group chats missing voice/video call buttons.
+
+Reactions don’t show usernames of reactors.
+
+Search within chat rooms doesn’t work.
+
+Delete chat buttons nonfunctional in both group and private chats.
+
+Group images visible in list but missing in header.
+
+User avatars disappear daily (not persisted).
+
+Can upload images but cannot paste copied images directly.
+
+Clicking an image doesn’t open preview popup.
+
+No recording timer — should show while recording.
+
+Cannot edit existing group photo.
+
+Clicking a reaction should open popup listing all users reacted.
+
+5. Notifications
+
+Clicking notifications doesn’t redirect to related page (chat/task/etc).
+
+Notifications repeat multiple times for the same event.
+
+Notifications not auto-marked as read when opening related content manually.
+
+Notification counters update only when clicked.
+
+Message sender receives notification for their own message (shouldn’t happen).
+
+Browser notifications don’t work on mobile (iOS/Android).
+
+Task notifications visible to creator incorrectly — should be visible only to “المكلف به” and “المراجع.”
+
+Chrome notifications play sound repeatedly even if message is already seen.
+
+6. Requests (الإجازات – السلف – الخصومات)
+
+Leave Requests:
+
+Submitting triggers 400 Bad Request.
+
+Admin doesn’t receive it.
+
+Approve/Decline actions fail (500 Internal Server Error).
+
+Salary Advance (سلفة):
+
+Request creation works but admin cannot approve/decline.
+
+Deductions:
+
+Creating deduction causes 500 Internal Server Error: حدث خطأ في إضافة الخصم.
+
+UI & Accessibility:
+
+Missing Edit/Delete buttons for requests.
+
+Notifications appear but don’t open related request.
+
+Export buttons under HR > Reports not working.
+
+HR Employee view shows wrong user data.
+
+No visible list of employees currently on leave after approval.
+
+7. HR Panel & Admin Controls
+
+“Add Employee” button doesn’t work (returns error).
+
+Cannot delete or edit users.
+
+No link between HR > Employee List and detailed profiles.
+
+Reports/Payroll tables not aligned properly (need right alignment).
+
+Add sorting and filtering to columns.
+
+8. Suggestions Page (صفحة المقترحات)
+
+Missing Edit and Delete options for submitted suggestions.
+
+9. AI Models Page — Major Issues
+
+Connection Problem:
+When entering a valid OpenRouter API key and clicking “اتصال (Connect),” the app incorrectly returns an “Invalid API Key” error.
+
+Missing Settings System:
+There’s no dedicated settings page or popup for each AI model to manage:
+
+API key input
+
+Admin prompt setup
+
+Model preferences and parameters (temperature, max tokens, etc.)
+
+Model selection (from OpenRouter models list)
+
+Functionality:
+
+None of the AI models actually connect or generate responses (frontend only).
+
+Clicking any model card still opens # links instead of real pages.
+
+Reset Filters button doesn’t work.
+
+Page layout inconsistent with the rest of the app (titles, icons too large).
+
+Spinning transparent overlay icons should be removed.
+
+Required Fix:
+Fully integrate OpenRouter API to make all models functional, each with proper:
+
+Working input/output chat interface.
+
+Separate model settings popup.
+
+Saved configuration per model.
+
+Error handling for invalid keys, rate limits, or network issues.
+
+Fetch and display available OpenRouter models dynamically.
+
+10. Additional UI / UX Notes
+
+Address field misaligned.
+
+Allow moving cover photo vertically.
+
+Add tooltips on unclear icons.
+
+Export buttons don’t work across multiple pages.
+
+Add validation to all forms.
+
+11. Technical Errors Observed
+POST /api/leaves 400 Bad Request
+PUT /api/leaves/{id} 500 Internal Server Error
+POST /api/deductions 500 Internal Server Error: "حدث خطأ في إضافة الخصم"
+ServiceWorker Registration failed: unsupported MIME type ('text/html')
+api/tasks/my 500 Internal Server Error
+api/tasks/assigned 500 Internal Server Error
+api/salary-advances/pending 500 Internal Server Error
+api/hr/reports 500 Internal Server Error
+Warning: Missing DialogTitle or aria-describedby for DialogContent
+AI API Error: Invalid API key (even though key is correct)
+
+12. Summary of Critical Fix Priorities
+
+Fix all backend API routes for /leaves, /deductions, /salary-advances, /tasks.
+
+Stabilize notification system (sync, mobile/browser, repetition).
+
+Fix call and chat features (connectivity, notifications, UI behavior).
+
+Resolve AI integration — connect OpenRouter API and create full model settings UI.
+
+Fix rendering issues (white screens, layout clipping).
+
+Repair HR panel actions and ensure all requests are visible/approvable.
+
+Add sidebar Companies menu for easier access.
+
+Ensure full cross-page sync for tasks, notifications, and requests.
