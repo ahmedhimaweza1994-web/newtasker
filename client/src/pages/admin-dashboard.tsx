@@ -259,7 +259,6 @@ export default function AdminDashboard() {
                   </Button>
                 </div>
               </div>
-            </div>
           </MotionSection>
 
           {/* Employee Grid - Desktop Table View */}

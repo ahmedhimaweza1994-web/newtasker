@@ -160,8 +160,8 @@ export default function EmployeeDashboard() {
                       <p>رائع! لا توجد مهام معلقة</p>
                     </motion.div>
                   )}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
               {/* Recent Activity - AI Glass Design */}
               <div data-testid="card-recent-activity" className="card-neural overflow-hidden">

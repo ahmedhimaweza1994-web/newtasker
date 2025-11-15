@@ -305,12 +305,12 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
         {...attributes}
       >
         <div {...listeners} className="cursor-grab active:cursor-grabbing">
-          <Card className="p-2.5 hover:shadow-lg hover-elevate transition-all bg-card border border-border/50">
+          <div className="glass-panel p-3 hover:neon-edge-green hover-lift transition-all duration-200">
             <div className="space-y-2">
               {/* Title with Menu */}
               <div className="flex items-start gap-2">
                 <h4 
-                  className="font-medium text-sm leading-snug flex-1 cursor-pointer"
+                  className="font-medium text-sm leading-snug flex-1 cursor-pointer group-hover:text-primary transition-colors"
                   title={task.title}
                   onClick={() => setTaskDetailsDialog({ open: true, taskId: task.id })}
                   data-testid={`task-title-${task.id}`}
@@ -469,7 +469,7 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
                 )}
               </div>
             </div>
-          </Card>
+          </div>
         </div>
       </div>
     );
