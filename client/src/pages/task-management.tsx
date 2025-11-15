@@ -363,13 +363,13 @@ export default function TaskManagement() {
           <MotionSection delay={0.2}>
             <Card className="mb-6" data-testid="card-task-filters">
               <CardContent className="p-4">
-                <div className="flex flex-wrap items-center gap-3">
-                  <div className="flex-1 min-w-[200px]">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
+                  <div className="sm:col-span-2 lg:col-span-3 xl:col-span-2">
                     <div className="relative">
                       <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                       <Input
                         placeholder="البحث في المهام..."
-                        className="pr-10 h-11 sm:h-10"
+                        className="pr-10 h-11 sm:h-10 w-full"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         data-testid="input-search-tasks"
@@ -377,7 +377,7 @@ export default function TaskManagement() {
                     </div>
                   </div>
                   <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-[140px] h-11 sm:h-10" data-testid="select-filter-status">
+                    <SelectTrigger className="w-full h-11 sm:h-10" data-testid="select-filter-status">
                       <SelectValue placeholder="الحالة" />
                     </SelectTrigger>
                     <SelectContent>
@@ -389,7 +389,7 @@ export default function TaskManagement() {
                     </SelectContent>
                   </Select>
                   <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-                    <SelectTrigger className="w-[140px] h-11 sm:h-10" data-testid="select-filter-priority">
+                    <SelectTrigger className="w-full h-11 sm:h-10" data-testid="select-filter-priority">
                       <SelectValue placeholder="الأولوية" />
                     </SelectTrigger>
                     <SelectContent>
@@ -402,7 +402,7 @@ export default function TaskManagement() {
                   {(user?.role === 'admin' || user?.role === 'sub-admin') && (
                     <>
                       <Select value={userFilter} onValueChange={setUserFilter}>
-                        <SelectTrigger className="w-[180px] h-11 sm:h-10" data-testid="select-filter-user">
+                        <SelectTrigger className="w-full h-11 sm:h-10" data-testid="select-filter-user">
                           <SelectValue placeholder="الموظف" />
                         </SelectTrigger>
                         <SelectContent>
@@ -416,7 +416,7 @@ export default function TaskManagement() {
                         </SelectContent>
                       </Select>
                       <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
-                        <SelectTrigger className="w-[140px] h-11 sm:h-10" data-testid="select-filter-department">
+                        <SelectTrigger className="w-full h-11 sm:h-10" data-testid="select-filter-department">
                           <SelectValue placeholder="القسم" />
                         </SelectTrigger>
                         <SelectContent>
@@ -428,9 +428,10 @@ export default function TaskManagement() {
                       </Select>
                     </>
                   )}
-                  <Button variant="outline" size="sm" onClick={handleResetFilters} data-testid="button-reset-filters" className="h-11 sm:h-10">
+                  <Button variant="outline" size="sm" onClick={handleResetFilters} data-testid="button-reset-filters" className="h-11 sm:h-10 w-full sm:w-auto">
                     <Filter className="w-4 h-4 ml-2" />
-                    إعادة تعيين
+                    <span className="hidden sm:inline">إعادة تعيين</span>
+                    <span className="sm:hidden">إعادة</span>
                   </Button>
                 </div>
               </CardContent>
@@ -439,9 +440,9 @@ export default function TaskManagement() {
 
           <MotionSection delay={0.3}>
             {isLoading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
                 {[...Array(4)].map((_, i) => (
-                  <Card key={i} className="hover:shadow-lg transition-shadow">
+                  <Card key={i} className="hover:shadow-lg transition-shadow min-w-[220px]">
                     <CardHeader className="pb-2">
                       <Skeleton className="h-5 w-24" />
                     </CardHeader>
@@ -454,13 +455,13 @@ export default function TaskManagement() {
               </div>
             ) : (
               <motion.div 
-                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6"
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}
               >
                 <motion.div whileHover={{ y: -4, transition: { duration: 0.2 } }}>
-                  <Card className="hover:shadow-lg transition-shadow" data-testid="card-pending-tasks-count">
+                  <Card className="hover:shadow-lg transition-shadow min-w-[220px]" data-testid="card-pending-tasks-count">
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                         <Clock className="w-4 h-4" />
@@ -482,7 +483,7 @@ export default function TaskManagement() {
                 </motion.div>
 
                 <motion.div whileHover={{ y: -4, transition: { duration: 0.2 } }}>
-                  <Card className="hover:shadow-lg transition-shadow" data-testid="card-progress-tasks-count">
+                  <Card className="hover:shadow-lg transition-shadow min-w-[220px]" data-testid="card-progress-tasks-count">
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                         <Zap className="w-4 h-4" />
@@ -504,7 +505,7 @@ export default function TaskManagement() {
                 </motion.div>
 
                 <motion.div whileHover={{ y: -4, transition: { duration: 0.2 } }}>
-                  <Card className="hover:shadow-lg transition-shadow" data-testid="card-review-tasks-count">
+                  <Card className="hover:shadow-lg transition-shadow min-w-[220px]" data-testid="card-review-tasks-count">
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                         <Search className="w-4 h-4" />
@@ -526,7 +527,7 @@ export default function TaskManagement() {
                 </motion.div>
 
                 <motion.div whileHover={{ y: -4, transition: { duration: 0.2 } }}>
-                  <Card className="hover:shadow-lg transition-shadow" data-testid="card-completed-tasks-count">
+                  <Card className="hover:shadow-lg transition-shadow min-w-[220px]" data-testid="card-completed-tasks-count">
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                         <CheckCircle2 className="w-4 h-4" />
