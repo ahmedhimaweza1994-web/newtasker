@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MotionPageShell, MotionSection, MotionCardWrapper, ResponsiveGrid } from "@/components/ui/motion-wrappers";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -79,7 +80,7 @@ export default function Dashboard() {
 
   // AUX session mutations
   const startSessionMutation = useMutation({
-    mutationFn: async (data: { status: string; notes?: string }) => {
+    mutationFn: async (data: { status: string; notes?: string; selectedTaskId?: string }) => {
       const res = await apiRequest("POST", "/api/aux/start", data);
       return res.json();
     },
@@ -94,8 +95,11 @@ export default function Dashboard() {
   });
 
   const endSessionMutation = useMutation({
-    mutationFn: async (data: { id: string; notes?: string }) => {
-      const res = await apiRequest("POST", `/api/aux/end/${data.id}`, { notes: data.notes });
+    mutationFn: async (data: { id: string; notes?: string; selectedTaskId?: string }) => {
+      const res = await apiRequest("POST", `/api/aux/end/${data.id}`, { 
+        notes: data.notes,
+        selectedTaskId: data.selectedTaskId
+      });
       return res.json();
     },
     onSuccess: async (endedSession) => {
@@ -103,7 +107,7 @@ export default function Dashboard() {
       await refetchCurrentSession();
       toast({
         title: "تم إنهاء الشيفت بنجاح",
-        description: "تم حفظ الوقت والملاحظات",
+        description: "تم حفظ الوقت والمهمة المحددة",
       });
     },
   });
@@ -173,32 +177,41 @@ export default function Dashboard() {
   }, [currentSession]);
 
   const [currentNotes, setCurrentNotes] = useState("");
+  const [selectedTaskId, setSelectedTaskId] = useState<string>("");
+  
   const handleStatusChange = (status: string) => {
+    const taskId = selectedTaskId && selectedTaskId !== 'none' ? selectedTaskId : undefined;
+    
     if (currentSession && !currentSession.endTime) {
       endSessionMutation.mutate({
         id: currentSession.id,
-        notes: currentNotes
+        notes: currentNotes,
+        selectedTaskId: taskId
       }, {
         onSuccess: () => {
           startSessionMutation.mutate({
             status,
-            notes: currentNotes
+            notes: currentNotes,
+            selectedTaskId: taskId
           });
         }
       });
     } else {
       startSessionMutation.mutate({
         status,
-        notes: currentNotes
+        notes: currentNotes,
+        selectedTaskId: taskId
       });
     }
     setSelectedStatus(status);
     setCurrentNotes("");
+    setSelectedTaskId("");
   };
 
   const handleToggleShift = () => {
     toggleShiftMutation.mutate(currentNotes);
     setCurrentNotes("");
+    setSelectedTaskId("");
   };
 
   const getStatusInfo = (status: string) => {
@@ -507,14 +520,78 @@ export default function Dashboard() {
                       </div>
 
                       <div className="space-y-2 text-right">
-                        <label className="text-sm font-medium text-right">ملاحظات (اختياري)</label>
-                        <Textarea
-                          value={currentNotes}
-                          onChange={(e) => setCurrentNotes(e.target.value)}
-                          placeholder="أضف ملاحظات حول نشاطك الحالي..."
-                          rows={3}
-                          data-testid="textarea-notes"
-                        />
+                        <label className="text-sm font-medium text-right">المهمة الحالية (اختياري)</label>
+                        <Select value={selectedTaskId} onValueChange={setSelectedTaskId}>
+                          <SelectTrigger className="w-full" data-testid="select-current-task-dashboard">
+                            <SelectValue placeholder="اختر المهمة التي تعمل عليها..." />
+                          </SelectTrigger>
+                          <SelectContent className="max-h-[300px]">
+                            <SelectItem value="none">لا أعمل على مهمة محددة</SelectItem>
+                            {userTasks
+                              .filter((task) => task.status !== 'completed')
+                              .map((task) => (
+                                <SelectItem key={task.id} value={task.id}>
+                                  <div className="flex items-center gap-2 py-1">
+                                    <div className="flex-1 min-w-0">
+                                      <p className="font-medium truncate">{task.title}</p>
+                                      {task.description && (
+                                        <p className="text-xs text-muted-foreground truncate">
+                                          {task.description.substring(0, 50)}...
+                                        </p>
+                                      )}
+                                    </div>
+                                    <Badge 
+                                      variant="outline" 
+                                      className={
+                                        task.status === 'in_progress' ? 'bg-blue-500/10 text-blue-700 dark:text-blue-400' :
+                                        task.status === 'under_review' ? 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400' :
+                                        'bg-gray-500/10 text-gray-700 dark:text-gray-400'
+                                      }
+                                    >
+                                      {task.status === 'in_progress' ? 'قيد التنفيذ' :
+                                       task.status === 'under_review' ? 'قيد المراجعة' :
+                                       'قيد الانتظار'}
+                                    </Badge>
+                                  </div>
+                                </SelectItem>
+                              ))}
+                          </SelectContent>
+                        </Select>
+
+                        {selectedTaskId && selectedTaskId !== 'none' && (
+                          <div className="p-3 rounded-lg bg-muted/50 border border-border">
+                            {(() => {
+                              const selectedTask = userTasks.find(t => t.id === selectedTaskId);
+                              if (!selectedTask) return null;
+                              return (
+                                <>
+                                  <p className="text-sm font-medium text-foreground mb-1">
+                                    {selectedTask.title}
+                                  </p>
+                                  {selectedTask.description && (
+                                    <p className="text-xs text-muted-foreground mb-2">
+                                      {selectedTask.description}
+                                    </p>
+                                  )}
+                                  <div className="flex items-center gap-2">
+                                    <Badge 
+                                      variant="secondary"
+                                      className={
+                                        selectedTask.priority === "high" ? "bg-red-500/20 text-red-700 dark:text-red-400" :
+                                        selectedTask.priority === "medium" ? "bg-yellow-500/20 text-yellow-700 dark:text-yellow-400" :
+                                        "bg-blue-500/20 text-blue-700 dark:text-blue-400"
+                                      }
+                                    >
+                                      {selectedTask.priority === "high" ? "أولوية عالية" :
+                                       selectedTask.priority === "medium" ? "أولوية متوسطة" :
+                                       "أولوية منخفضة"}
+                                    </Badge>
+                                  </div>
+                                </>
+                              );
+                            })()}
+                          </div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
