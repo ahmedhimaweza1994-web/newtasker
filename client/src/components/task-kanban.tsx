@@ -280,7 +280,7 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
   };
 
   const DraggableTaskCard = ({ task }: { task: Task }) => {
-    const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    const { attributes, listeners, setNodeRef, transform, isDragging} = useDraggable({
       id: task.id,
     });
 
@@ -293,141 +293,151 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
       <div
         ref={setNodeRef}
         style={style}
-        className="group transition-transform hover:-translate-y-1 duration-200"
+        className="group"
         data-testid={`task-card-${task.id}`}
         {...attributes}
       >
         <div {...listeners} className="cursor-grab active:cursor-grabbing">
-          <Card className="p-4 sm:p-3 hover:shadow-lg transition-all border-border/50 hover:border-primary/30 min-h-[140px] touch-manipulation">
-        <div className="space-y-3 sm:space-y-2">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex-1 min-w-0">
-              <h4 className="font-semibold text-base sm:text-sm truncate" data-testid={`task-title-${task.id}`}>
-                {task.title}
-              </h4>
-              {task.companyId && getCompanyName(task.companyId) && (
-                <p className="text-sm sm:text-xs text-muted-foreground mt-1 flex items-center gap-1" data-testid={`task-company-${task.id}`}>
-                  <Building2 className="w-4 h-4 sm:w-3 sm:h-3" />
-                  {getCompanyName(task.companyId)}
-                </p>
-              )}
-            </div>
-            <div className="flex gap-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-9 w-9 sm:h-7 sm:w-7 p-0 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity"
-                onClick={() => setTaskDetailsDialog({ open: true, taskId: task.id })}
-                data-testid={`button-view-task-${task.id}`}
-              >
-                <Eye className="w-5 h-5 sm:w-4 sm:h-4" />
-              </Button>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="h-9 w-9 sm:h-7 sm:w-7 p-0 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity" 
-                    data-testid={`button-task-menu-${task.id}`}
+          <Card className="p-3 hover:shadow-md hover-elevate transition-all bg-card max-w-full overflow-hidden">
+            <div className="space-y-2">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-medium text-sm line-clamp-2 leading-snug" data-testid={`task-title-${task.id}`}>
+                    {task.title}
+                  </h4>
+                </div>
+                <div className="flex gap-1 flex-shrink-0">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
+                    onClick={() => setTaskDetailsDialog({ open: true, taskId: task.id })}
+                    data-testid={`button-view-task-${task.id}`}
                   >
-                    <MoreHorizontal className="w-5 h-5 sm:w-4 sm:h-4" />
+                    <Eye className="w-4 h-4" />
                   </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  {task.status === 'pending' && (
-                    <DropdownMenuItem onClick={() => handleMoveTask(task.id, 'in_progress')} data-testid={`menu-move-to-progress-${task.id}`}>
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                      نقل إلى قيد التنفيذ
-                    </DropdownMenuItem>
-                  )}
-                  {task.status === 'in_progress' && (
-                    <>
-                      <DropdownMenuItem onClick={() => handleMoveTask(task.id, 'under_review')} data-testid={`menu-move-to-review-${task.id}`}>
-                        <ArrowRight className="w-4 h-4 ml-2" />
-                        نقل للمراجعة
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleMoveTask(task.id, 'pending')} data-testid={`menu-move-to-pending-${task.id}`}>
-                        <ArrowRight className="w-4 h-4 ml-2" />
-                        إرجاع للانتظار
-                      </DropdownMenuItem>
-                    </>
-                  )}
-                  {task.status === 'under_review' && (
-                    <>
-                      {user?.role === 'admin' && (
-                        <DropdownMenuItem onClick={() => handleApproveTask(task.id)} data-testid={`menu-approve-task-${task.id}`}>
-                          <CheckCircle className="w-4 h-4 ml-2" />
-                          الموافقة والإكمال
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-7 w-7" 
+                        data-testid={`button-task-menu-${task.id}`}
+                      >
+                        <MoreHorizontal className="w-4 h-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      {task.status === 'pending' && (
+                        <DropdownMenuItem onClick={() => handleMoveTask(task.id, 'in_progress')} data-testid={`menu-move-to-progress-${task.id}`}>
+                          <ArrowRight className="w-4 h-4 ml-2" />
+                          نقل إلى قيد التنفيذ
                         </DropdownMenuItem>
                       )}
-                      <DropdownMenuItem onClick={() => handleMoveTask(task.id, 'in_progress')} data-testid={`menu-move-back-to-progress-${task.id}`}>
-                        <ArrowRight className="w-4 h-4 ml-2" />
-                        إرجاع لقيد التنفيذ
-                      </DropdownMenuItem>
-                    </>
-                  )}
-                  {task.status === 'completed' && user?.role === 'admin' && !task.rewardPoints && (
-                    <DropdownMenuItem onClick={() => setAssignPointsDialog({ open: true, taskId: task.id })} data-testid={`menu-assign-points-${task.id}`}>
-                      <Star className="w-4 h-4 ml-2" />
-                      تعيين نقاط
-                    </DropdownMenuItem>
-                  )}
-                  {(task.createdBy === user?.id || user?.role === 'admin' || user?.role === 'sub-admin') && (
-                    <DropdownMenuItem className="text-destructive" onClick={() => deleteTaskMutation.mutate(task.id)} data-testid={`menu-delete-task-${task.id}`}>
-                      <Trash2 className="w-4 h-4 ml-2" />
-                      حذف المهمة
-                    </DropdownMenuItem>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
-
-          {task.description && (
-            <p className="text-sm sm:text-xs text-muted-foreground line-clamp-2" data-testid={`task-description-${task.id}`}>
-              {task.description}
-            </p>
-          )}
-
-          <div className="flex items-center gap-2 flex-wrap">
-            <Badge className={cn("text-xs border", getPriorityColor(task.priority))} data-testid={`task-priority-${task.id}`}>
-              {getPriorityLabel(task.priority)}
-            </Badge>
-            {task.rewardPoints && (
-              <Badge variant="secondary" className="text-xs gap-1" data-testid={`task-points-${task.id}`}>
-                <Trophy className="w-3 h-3" />
-                {task.rewardPoints} نقطة
-              </Badge>
-            )}
-          </div>
-
-          {task.dueDate && (
-            <div className="flex items-center gap-2 text-sm sm:text-xs text-muted-foreground" data-testid={`task-due-date-${task.id}`}>
-              <Calendar className="w-4 h-4 sm:w-3 sm:h-3" />
-              {formatArabicDate(task.dueDate)}
-            </div>
-          )}
-
-          <div className="flex items-center gap-3 pt-1 border-t border-border/50 flex-wrap">
-            {(task as any).createdForUser && (
-              <div className="flex items-center gap-1" data-testid={`task-created-for-${task.id}`}>
-                <User className="w-3 h-3 text-muted-foreground" />
-                <span className="text-xs text-muted-foreground">
-                  <span className="font-medium">مكلفة لـ:</span> {(task as any).createdForUser.fullName}
-                </span>
+                      {task.status === 'in_progress' && (
+                        <>
+                          <DropdownMenuItem onClick={() => handleMoveTask(task.id, 'under_review')} data-testid={`menu-move-to-review-${task.id}`}>
+                            <ArrowRight className="w-4 h-4 ml-2" />
+                            نقل للمراجعة
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleMoveTask(task.id, 'pending')} data-testid={`menu-move-to-pending-${task.id}`}>
+                            <ArrowRight className="w-4 h-4 ml-2" />
+                            إرجاع للانتظار
+                          </DropdownMenuItem>
+                        </>
+                      )}
+                      {task.status === 'under_review' && (
+                        <>
+                          {user?.role === 'admin' && (
+                            <DropdownMenuItem onClick={() => handleApproveTask(task.id)} data-testid={`menu-approve-task-${task.id}`}>
+                              <CheckCircle className="w-4 h-4 ml-2" />
+                              الموافقة والإكمال
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuItem onClick={() => handleMoveTask(task.id, 'in_progress')} data-testid={`menu-move-back-to-progress-${task.id}`}>
+                            <ArrowRight className="w-4 h-4 ml-2" />
+                            إرجاع لقيد التنفيذ
+                          </DropdownMenuItem>
+                        </>
+                      )}
+                      {task.status === 'completed' && user?.role === 'admin' && !task.rewardPoints && (
+                        <DropdownMenuItem onClick={() => setAssignPointsDialog({ open: true, taskId: task.id })} data-testid={`menu-assign-points-${task.id}`}>
+                          <Star className="w-4 h-4 ml-2" />
+                          تعيين نقاط
+                        </DropdownMenuItem>
+                      )}
+                      {(task.createdBy === user?.id || user?.role === 'admin' || user?.role === 'sub-admin') && (
+                        <DropdownMenuItem className="text-destructive" onClick={() => deleteTaskMutation.mutate(task.id)} data-testid={`menu-delete-task-${task.id}`}>
+                          <Trash2 className="w-4 h-4 ml-2" />
+                          حذف المهمة
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </div>
-            )}
-            {task.assignedToUser && (
-              <div className="flex items-center gap-1" data-testid={`task-assignee-${task.id}`}>
-                <Users className="w-3 h-3 text-muted-foreground" />
-                <span className="text-xs text-muted-foreground">
-                  <span className="font-medium">المراجع:</span> {task.assignedToUser.fullName}
-                </span>
+
+              {task.description && (
+                <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed" data-testid={`task-description-${task.id}`}>
+                  {task.description}
+                </p>
+              )}
+
+              {task.companyId && getCompanyName(task.companyId) && (
+                <div className="flex items-center gap-1 text-xs text-muted-foreground" data-testid={`task-company-${task.id}`}>
+                  <Building2 className="w-3 h-3 flex-shrink-0" />
+                  <span className="truncate">{getCompanyName(task.companyId)}</span>
+                </div>
+              )}
+
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <Badge className={cn("text-xs border", getPriorityColor(task.priority))} data-testid={`task-priority-${task.id}`}>
+                  {getPriorityLabel(task.priority)}
+                </Badge>
+                {task.rewardPoints && (
+                  <Badge variant="secondary" className="text-xs gap-1" data-testid={`task-points-${task.id}`}>
+                    <Trophy className="w-3 h-3" />
+                    {task.rewardPoints}
+                  </Badge>
+                )}
               </div>
-            )}
-          </div>
-          </div>
-        </Card>
+
+              {task.dueDate && (
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground" data-testid={`task-due-date-${task.id}`}>
+                  <Clock className="w-3 h-3 flex-shrink-0" />
+                  <span className="truncate">{formatArabicDate(task.dueDate)}</span>
+                </div>
+              )}
+
+              {((task as any).createdForUser || task.assignedToUser) && (
+                <div className="flex items-center gap-2 pt-2 border-t border-border/40">
+                  {(task as any).createdForUser && (
+                    <div className="flex items-center gap-1 flex-1 min-w-0" data-testid={`task-created-for-${task.id}`}>
+                      <Avatar className="h-5 w-5 flex-shrink-0">
+                        <AvatarImage 
+                          src={(task as any).createdForUser.profilePicture || undefined} 
+                          alt={(task as any).createdForUser.fullName}
+                        />
+                        <AvatarFallback className="text-xs">{(task as any).createdForUser.fullName?.[0]}</AvatarFallback>
+                      </Avatar>
+                      <span className="text-xs text-muted-foreground truncate">{(task as any).createdForUser.fullName}</span>
+                    </div>
+                  )}
+                  {task.assignedToUser && (
+                    <div className="flex items-center gap-1 flex-shrink-0" data-testid={`task-assignee-${task.id}`}>
+                      <Avatar className="h-5 w-5">
+                        <AvatarImage 
+                          src={task.assignedToUser.profilePicture || undefined} 
+                          alt={task.assignedToUser.fullName}
+                        />
+                        <AvatarFallback className="text-xs">{task.assignedToUser.fullName?.[0]}</AvatarFallback>
+                      </Avatar>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </Card>
         </div>
       </div>
     );
@@ -453,40 +463,35 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
     });
 
     return (
-      <div className="flex-1 min-w-[250px] md:min-w-[240px] lg:min-w-[260px] w-full md:w-auto" ref={setNodeRef}>
-        <Card className={cn(
-          "h-full border-t-4 transition-all", 
-          color,
-          isOver && "ring-2 ring-primary ring-offset-2 bg-primary/5"
+      <div className="flex-shrink-0 w-80" ref={setNodeRef}>
+        <div className={cn(
+          "rounded-lg bg-muted/40 p-3 h-full flex flex-col",
+          isOver && "ring-2 ring-primary bg-primary/5"
         )} data-testid={testId}>
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center justify-between text-base">
-              <div className="flex items-center gap-2">
-                {icon}
-                <span>{title}</span>
-              </div>
-              <Badge variant="secondary" className="text-sm" data-testid={`${testId}-count`}>
+          <div className="flex items-center justify-between mb-3 px-1">
+            <div className="flex items-center gap-2">
+              {icon}
+              <h3 className="font-semibold text-sm">{title}</h3>
+              <Badge variant="secondary" className="text-xs h-5 px-2" data-testid={`${testId}-count`}>
                 {tasks.length}
               </Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 max-h-[calc(100vh-300px)] overflow-y-auto px-3 pb-4">
-            <div className="space-y-3">
-              {tasks.length > 0 ? (
-                tasks.map((task) => (
-                  <DraggableTaskCard key={task.id} task={task} />
-                ))
-              ) : (
-                <div className="text-center py-8 text-muted-foreground" data-testid={`${testId}-empty`}>
-                  <div className="flex flex-col items-center gap-2">
-                    {icon}
-                    <p className="text-sm">لا توجد مهام</p>
-                  </div>
-                </div>
-              )}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+          <div className="flex-1 overflow-y-auto space-y-2 min-h-0 px-1 scrollbar-thin" style={{ maxHeight: 'calc(100vh - 280px)' }}>
+            {tasks.length > 0 ? (
+              tasks.map((task) => (
+                <DraggableTaskCard key={task.id} task={task} />
+              ))
+            ) : (
+              <div className="text-center py-12 text-muted-foreground" data-testid={`${testId}-empty`}>
+                <div className="flex flex-col items-center gap-2 opacity-50">
+                  {icon}
+                  <p className="text-sm">لا توجد مهام</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     );
   };
@@ -502,13 +507,13 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
-        <div className="w-full overflow-x-auto pb-4" data-testid="kanban-board-trello-style">
-          <div className="flex flex-col md:flex-row gap-4 max-w-full">
+        <div className="w-full overflow-x-auto pb-4 -mx-4 px-4" data-testid="kanban-board-trello-style">
+          <div className="flex gap-3 min-w-min">
             <DroppableColumn
               id="pending"
               title="قيد الانتظار"
               tasks={pendingTasks}
-              icon={<Clock className="w-5 h-5 text-yellow-600" />}
+              icon={<Clock className="w-4 h-4 text-yellow-600" />}
               color="border-t-yellow-500"
               testId="column-pending"
             />
@@ -516,7 +521,7 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
               id="in_progress"
               title="قيد التنفيذ"
               tasks={inProgressTasks}
-              icon={<AlertCircle className="w-5 h-5 text-blue-600" />}
+              icon={<AlertCircle className="w-4 h-4 text-blue-600" />}
               color="border-t-blue-500"
               testId="column-in-progress"
             />
@@ -524,7 +529,7 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
               id="under_review"
               title="تحت المراجعة"
               tasks={underReviewTasks}
-              icon={<Eye className="w-5 h-5 text-purple-600" />}
+              icon={<Eye className="w-4 h-4 text-purple-600" />}
               color="border-t-purple-500"
               testId="column-under-review"
             />
@@ -532,7 +537,7 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
               id="completed"
               title="مكتمل"
               tasks={completedTasks}
-              icon={<CheckCircle className="w-5 h-5 text-green-600" />}
+              icon={<CheckCircle className="w-4 h-4 text-green-600" />}
               color="border-t-green-500"
               testId="column-completed"
             />
@@ -541,8 +546,8 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
 
         <DragOverlay>
           {activeTask ? (
-            <Card className="p-4 sm:p-3 shadow-2xl opacity-90">
-              <div className="font-semibold">{activeTask.title}</div>
+            <Card className="p-3 shadow-2xl opacity-90 w-80">
+              <div className="font-medium text-sm line-clamp-2">{activeTask.title}</div>
             </Card>
           ) : null}
         </DragOverlay>
