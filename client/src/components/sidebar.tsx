@@ -5,67 +5,68 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { 
   Home, 
   CheckSquare, 
   Users, 
+  Clock, 
   BarChart3, 
+  Calendar, 
   Briefcase, 
   Settings,
   ChevronLeft,
-  ChevronDown,
-  ChevronUp,
   Building,
+  FileText,
   UserCog,
   MessageSquare,
   DollarSign,
+  AlertCircle,
   Phone,
   Lightbulb,
   TrendingDown,
-  Brain,
-  Sparkles,
-  Image,
-  Video,
-  TrendingUp,
-  MessageCircle,
-  Code,
-  Layers,
-  UserCircle
+  Brain
 } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import type { Task, LeaveRequest, Notification } from "@shared/schema";
+import type { Task, LeaveRequest, User, Notification, SelectCompany } from "@shared/schema";
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-
-interface MenuGroup {
-  title: string;
-  items: MenuItem[];
-  icon?: any;
-  defaultOpen?: boolean;
-  roles?: string[];
-}
-
-interface MenuItem {
-  name: string;
-  href: string;
-  icon: any;
-  badge?: string | null;
-  roles?: string[];
-}
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 export default function Sidebar() {
   const { user } = useAuth();
   const [location, setLocation] = useLocation();
   const { isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen } = useSidebar();
   const isMobile = useIsMobile();
-  const [openGroups, setOpenGroups] = useState<string[]>(["overview", "work", "ai"]);
+  const [showMeetingDialog, setShowMeetingDialog] = useState(false);
+  const [showTaskDialog, setShowTaskDialog] = useState(false);
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [meetingTitle, setMeetingTitle] = useState("");
+  const [newTask, setNewTask] = useState({
+    title: "",
+    description: "",
+    priority: "medium",
+    assignedTo: "",
+    dueDate: "",
+    companyId: "",
+  });
+  const { toast } = useToast();
 
   const { data: userTasks = [] } = useQuery<Task[]>({
     queryKey: ["/api/tasks/my"],
@@ -82,6 +83,16 @@ export default function Sidebar() {
     enabled: !!user && (user.role === 'admin' || user.role === 'sub-admin'),
   });
 
+  const { data: allUsers = [], isLoading: isLoadingUsers } = useQuery<Pick<User, 'id' | 'fullName' | 'email' | 'department' | 'jobTitle' | 'profilePicture'>[]>({
+    queryKey: ["/api/users"],
+    enabled: !!user,
+  });
+
+  const { data: calendarStatus, isLoading: isLoadingCalendarStatus } = useQuery<{ connected: boolean }>({
+    queryKey: ["/api/google-calendar/status"],
+    enabled: !!user && showMeetingDialog,
+  });
+
   const { data: notifications = [] } = useQuery<Notification[]>({
     queryKey: ["/api/notifications"],
     enabled: !!user,
@@ -91,164 +102,105 @@ export default function Sidebar() {
   const pendingLeaves = leaveRequests.length;
   const unreadMessages = notifications.filter(n => !n.isRead && n.category === 'message').length;
 
-  const menuGroups: MenuGroup[] = [
+  const navigation = [
     {
-      title: "نظرة عامة",
-      icon: Layers,
-      defaultOpen: true,
-      items: [
-        {
-          name: "لوحة التحكم",
-          href: "/",
-          icon: Home,
-        },
-        {
-          name: "التقارير",
-          href: "/reports",
-          icon: BarChart3,
-        },
-      ],
+      name: "لوحة التحكم",
+      href: "/",
+      icon: Home,
+      badge: null,
     },
     {
-      title: "العمل والتواصل",
+      name: "المهام",
+      href: "/tasks",
+      icon: CheckSquare,
+      badge: totalTasks > 0 ? totalTasks.toString() : null,
+    },
+    {
+      name: "الدردشة",
+      href: "/chat",
       icon: MessageSquare,
-      defaultOpen: true,
-      items: [
-        {
-          name: "المهام",
-          href: "/tasks",
-          icon: CheckSquare,
-          badge: totalTasks > 0 ? totalTasks.toString() : null,
-        },
-        {
-          name: "الدردشة",
-          href: "/chat",
-          icon: MessageSquare,
-          badge: unreadMessages > 0 ? unreadMessages.toString() : null,
-        },
-        {
-          name: "سجل المكالمات",
-          href: "/call-history",
-          icon: Phone,
-        },
-      ],
+      badge: unreadMessages > 0 ? unreadMessages.toString() : null,
     },
     {
-      title: "الموارد البشرية",
-      icon: Briefcase,
-      items: [
-        {
-          name: "طلباتي",
-          href: "/my-requests",
-          icon: DollarSign,
-        },
-        {
-          name: "خصومات الراتب",
-          href: "/my-deductions",
-          icon: TrendingDown,
-        },
-      ],
+      name: "سجل المكالمات",
+      href: "/call-history",
+      icon: Phone,
+      badge: null,
     },
     {
-      title: "الإدارة",
-      icon: UserCog,
-      roles: ["admin", "sub-admin"],
-      items: [
-        {
-          name: "لوحة المدير",
-          href: "/admin",
-          icon: Building,
-          roles: ["admin", "sub-admin"],
-        },
-        {
-          name: "إدارة المستخدمين",
-          href: "/user-management",
-          icon: UserCog,
-          roles: ["admin", "sub-admin"],
-        },
-        {
-          name: "إدارة الموارد البشرية",
-          href: "/hr",
-          icon: Briefcase,
-          badge: pendingLeaves > 0 ? pendingLeaves.toString() : null,
-          roles: ["admin", "sub-admin"],
-        },
-        {
-          name: "إدارة الخصومات",
-          href: "/admin-deductions",
-          icon: TrendingDown,
-          roles: ["admin", "sub-admin"],
-        },
-      ],
+      name: "طلباتي",
+      href: "/my-requests",
+      icon: DollarSign,
+      badge: null,
     },
     {
-      title: "الشركات",
+      name: "خصومات الراتب",
+      href: "/my-deductions",
+      icon: TrendingDown,
+      badge: null,
+    },
+    {
+      name: "التقارير",
+      href: "/reports",
+      icon: BarChart3,
+      badge: null,
+    },
+    {
+      name: "الشركات",
+      href: "/companies",
       icon: Building,
-      items: [
-        {
-          name: "قائمة الشركات",
-          href: "/companies",
-          icon: Building,
-        },
-      ],
+      badge: null,
     },
     {
-      title: "الذكاء الاصطناعي",
+      name: "الملف الشخصي",
+      href: `/profile/${user?.id}`,
+      icon: Users,
+      badge: null,
+    },
+    {
+      name: "منصة الذكاء الاصطناعي",
+      href: "/ai-center",
       icon: Brain,
-      defaultOpen: true,
-      items: [
-        {
-          name: "مركز الذكاء الاصطناعي",
-          href: "/ai-center",
-          icon: Sparkles,
-        },
-        {
-          name: "مولد الصور",
-          href: "/ai/image-generator",
-          icon: Image,
-        },
-        {
-          name: "مولد الفيديو",
-          href: "/ai/video-generator",
-          icon: Video,
-        },
-        {
-          name: "التسويق والSEO",
-          href: "/ai/marketing-seo",
-          icon: TrendingUp,
-        },
-        {
-          name: "محادثة نصية",
-          href: "/ai/text-chat",
-          icon: MessageCircle,
-        },
-        {
-          name: "مساعد البرمجة",
-          href: "/ai/code-assistant",
-          icon: Code,
-        },
-      ],
+      badge: null,
     },
     {
-      title: "الحساب والإعدادات",
+      name: "صفحة المقترحات",
+      href: "/suggestions",
+      icon: Lightbulb,
+      badge: null,
+    },
+    {
+      name: "الإعدادات",
+      href: "/ai/settings",
       icon: Settings,
-      items: [
-        {
-          name: "الملف الشخصي",
-          href: `/profile/${user?.id}`,
-          icon: UserCircle,
-        },
-        {
-          name: "المقترحات",
-          href: "/suggestions",
-          icon: Lightbulb,
-        },
-        {
-          name: "الإعدادات",
-          href: "/ai/settings",
-          icon: Settings,
-        },
-      ],
+      badge: null,
+    },
+  ];
+
+  const adminNavigation = [
+    {
+      name: "لوحة المدير",
+      href: "/admin",
+      icon: Building,
+      badge: null,
+    },
+    {
+      name: "إدارة المستخدمين",
+      href: "/user-management",
+      icon: UserCog,
+      badge: null,
+    },
+    {
+      name: "الموارد البشرية",
+      href: "/hr",
+      icon: Briefcase,
+      badge: pendingLeaves > 0 ? pendingLeaves.toString() : null,
+    },
+    {
+      name: "إدارة الخصومات",
+      href: "/admin-deductions",
+      icon: TrendingDown,
+      badge: null,
     },
   ];
 
@@ -259,182 +211,266 @@ export default function Sidebar() {
     return location.startsWith(href);
   };
 
-  const toggleGroup = (groupTitle: string) => {
-    setOpenGroups(prev => 
-      prev.includes(groupTitle) 
-        ? prev.filter(g => g !== groupTitle)
-        : [...prev, groupTitle]
+  const allNavigation = [
+    ...navigation,
+    ...(user?.role === 'admin' || user?.role === 'sub-admin' ? adminNavigation : []),
+  ];
+
+  const handleToggleUser = (userId: string) => {
+    setSelectedUsers(prev => 
+      prev.includes(userId) 
+        ? prev.filter(id => id !== userId)
+        : [...prev, userId]
     );
   };
 
-  const filteredMenuGroups = menuGroups
-    .map(group => ({
-      ...group,
-      items: group.items.filter(item => 
-        !item.roles || item.roles.includes(user?.role || '')
-      )
-    }))
-    .filter(group => 
-      (!group.roles || group.roles.includes(user?.role || '')) && 
-      group.items.length > 0
-    );
+  const handleConnectGoogleCalendar = async () => {
+    try {
+      const res = await apiRequest("GET", "/api/google-calendar/auth");
+      const data = await res.json();
+      
+      if (data.authUrl) {
+        window.open(data.authUrl, '_blank', 'width=600,height=700');
+        
+        toast({
+          title: "جاري الربط",
+          description: "يرجى إكمال عملية الربط في النافذة الجديدة",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "حدث خطأ",
+        description: "فشل في بدء عملية ربط Google Calendar",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const scheduleMeetingMutation = useMutation({
+    mutationFn: async (data: { title: string; participantIds: string[] }) => {
+      const res = await apiRequest("POST", "/api/meetings/schedule", data);
+      return res.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/chat/rooms"] });
+      toast({
+        title: "تم جدولة الاجتماع",
+        description: "تم إنشاء الاجتماع وإرسال الرابط للمشاركين في الدردشة",
+      });
+      window.open(data.meetingLink, '_blank');
+      setShowMeetingDialog(false);
+      setSelectedUsers([]);
+      setMeetingTitle("");
+    },
+    onError: () => {
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ في جدولة الاجتماع",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleScheduleMeeting = () => {
+    if (selectedUsers.length === 0) {
+      toast({
+        title: "لم يتم تحديد مستخدمين",
+        description: "الرجاء تحديد مستخدم واحد على الأقل للاجتماع",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!meetingTitle.trim()) {
+      toast({
+        title: "لم يتم إدخال عنوان",
+        description: "الرجاء إدخال عنوان للاجتماع",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    scheduleMeetingMutation.mutate({
+      title: meetingTitle,
+      participantIds: selectedUsers,
+    });
+  };
+
+  const { data: users = [] } = useQuery<User[]>({
+    queryKey: ["/api/users"],
+  });
+
+  const { data: companies = [] } = useQuery<SelectCompany[]>({
+    queryKey: ["/api/companies"],
+  });
+
+  const createTaskMutation = useMutation({
+    mutationFn: async (taskData: any) => {
+      const res = await apiRequest("POST", "/api/tasks", taskData);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks/my"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks/assigned"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/companies"] });
+      setShowTaskDialog(false);
+      setNewTask({
+        title: "",
+        description: "",
+        priority: "medium",
+        assignedTo: "",
+        dueDate: "",
+        companyId: "",
+      });
+      toast({
+        title: "تم إنشاء المهمة بنجاح",
+        description: "تمت إضافة المهمة الجديدة",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "خطأ في إنشاء المهمة",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleCreateTask = (e: React.FormEvent) => {
+    e.preventDefault();
+    createTaskMutation.mutate({
+      ...newTask,
+      dueDate: newTask.dueDate ? new Date(newTask.dueDate) : undefined,
+      assignedTo: newTask.assignedTo || undefined,
+      companyId: newTask.companyId || undefined,
+    });
+  };
 
   const sidebarContent = (
-    <div className="flex h-full flex-col bg-gradient-to-b from-background to-muted/20">
-      {/* Header */}
-      <div className="flex h-16 items-center justify-between px-4 border-b border-border/50 bg-background/80 backdrop-blur-sm">
+    <div className="flex h-full flex-col">
+      <div className="flex h-14 items-center justify-between px-4 border-b border-border">
         {!isCollapsed && (
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="flex items-center gap-2"
-          >
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-              <CheckSquare className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h2 className="text-sm font-bold text-foreground leading-none">GWT</h2>
-              <p className="text-xs text-muted-foreground">إدارة المهام</p>
-            </div>
-          </motion.div>
+          <h2 className="text-lg font-semibold text-foreground dark:text-white">
+            القائمة الرئيسية
+          </h2>
         )}
         {!isMobile && (
           <Button
             variant="ghost"
-            size="icon"
+            size="sm"
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="h-8 w-8 hover-elevate"
+            className="h-9 w-9"
             data-testid="sidebar-toggle"
           >
-            <motion.div
-              animate={{ rotate: isCollapsed ? 180 : 0 }}
-              transition={{ duration: 0.3 }}
-            >
+            <div className={cn("transition-transform duration-300", isCollapsed && "rotate-180")}>
               <ChevronLeft className="h-4 w-4" />
-            </motion.div>
+            </div>
           </Button>
         )}
       </div>
 
-      {/* Navigation */}
       <ScrollArea className="flex-1 px-3 py-4">
-        <nav className="space-y-1">
-          {filteredMenuGroups.map((group) => (
-            <Collapsible
-              key={group.title}
-              open={!isCollapsed && openGroups.includes(group.title)}
-              onOpenChange={() => !isCollapsed && toggleGroup(group.title)}
-            >
-              {!isCollapsed && (
-                <CollapsibleTrigger asChild>
-                  <motion.button
-                    whileHover={{ x: 2 }}
-                    className="flex items-center justify-between w-full px-3 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-accent/50 group"
-                    data-testid={`group-${group.title}`}
-                  >
-                    <div className="flex items-center gap-2">
-                      {group.icon && <group.icon className="w-4 h-4" />}
-                      <span>{group.title}</span>
+        <nav className="space-y-2">
+          {allNavigation.map((item) => (
+            <div key={item.name}>
+              {item.external ? (
+                <a
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={cn(
+                    "flex items-center w-full justify-start gap-3 text-right h-11 md:h-10 transition-all duration-200 rounded-md px-3 hover:bg-accent text-foreground dark:text-foreground",
+                    isCollapsed && "justify-center px-2"
+                  )}
+                  data-testid={`sidebar-link-${item.href.replace('/', '')}`}
+                >
+                  <item.icon className="h-5 w-5 flex-shrink-0 text-foreground dark:text-foreground" />
+                  {!isCollapsed && (
+                    <div className="flex flex-1 items-center justify-between overflow-hidden">
+                      <span className="flex-1 text-foreground dark:text-foreground">{item.name}</span>
+                      {item.badge && (
+                        <Badge variant="secondary" className="mr-auto">
+                          {item.badge}
+                        </Badge>
+                      )}
                     </div>
-                    <motion.div
-                      animate={{ 
-                        rotate: openGroups.includes(group.title) ? 180 : 0 
-                      }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <ChevronDown className="w-3 h-3" />
-                    </motion.div>
-                  </motion.button>
-                </CollapsibleTrigger>
+                  )}
+                </a>
+              ) : (
+                <Button
+                  variant={isActive(item.href) ? "default" : "ghost"}
+                  className={cn(
+                    "w-full justify-start gap-3 text-right h-11 md:h-10 transition-all duration-200",
+                    isCollapsed && "justify-center px-2",
+                    isActive(item.href) && "shadow-md"
+                  )}
+                  onClick={() => {
+                    setLocation(item.href);
+                    if (isMobile) setIsMobileOpen(false);
+                  }}
+                  data-testid={`sidebar-link-${item.href.replace('/', '')}`}
+                >
+                  <item.icon className="h-5 w-5 flex-shrink-0" />
+                  {!isCollapsed && (
+                    <div className="flex flex-1 items-center justify-between overflow-hidden">
+                      <span className="flex-1">{item.name}</span>
+                      {item.badge && (
+                        <Badge variant="secondary" className="mr-auto">
+                          {item.badge}
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+                </Button>
               )}
-
-              <CollapsibleContent className="space-y-0.5 mt-0.5">
-                <AnimatePresence>
-                  {group.items.map((item, index) => (
-                    <motion.div
-                      key={item.href}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -10 }}
-                      transition={{ delay: index * 0.03 }}
-                    >
-                      <Button
-                        variant={isActive(item.href) ? "default" : "ghost"}
-                        className={cn(
-                          "w-full justify-start gap-3 text-right h-10 transition-all duration-200 relative overflow-hidden",
-                          isCollapsed && "justify-center px-2",
-                          isActive(item.href) && "shadow-sm"
-                        )}
-                        onClick={() => {
-                          setLocation(item.href);
-                          if (isMobile) setIsMobileOpen(false);
-                        }}
-                        data-testid={`sidebar-link-${item.href.replace(/\//g, '-')}`}
-                      >
-                        {isActive(item.href) && (
-                          <motion.div
-                            layoutId="activeIndicator"
-                            className="absolute right-0 top-0 bottom-0 w-1 bg-primary"
-                            initial={false}
-                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                          />
-                        )}
-                        <item.icon className="h-4 w-4 flex-shrink-0" />
-                        {!isCollapsed && (
-                          <div className="flex flex-1 items-center justify-between overflow-hidden">
-                            <span className="flex-1 text-sm truncate">{item.name}</span>
-                            {item.badge && (
-                              <Badge 
-                                variant={isActive(item.href) ? "secondary" : "outline"} 
-                                className="mr-auto text-xs h-5 px-2"
-                              >
-                                {item.badge}
-                              </Badge>
-                            )}
-                          </div>
-                        )}
-                        {isCollapsed && item.badge && (
-                          <div className="absolute -top-1 -right-1 w-4 h-4 bg-destructive rounded-full text-[9px] text-white flex items-center justify-center">
-                            {item.badge}
-                          </div>
-                        )}
-                      </Button>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </CollapsibleContent>
-            </Collapsible>
+            </div>
           ))}
         </nav>
+
+        {!isCollapsed && (
+          <div className="mt-8 space-y-2">
+            <h3 className="px-3 text-xs font-semibold text-muted-foreground dark:text-muted-foreground uppercase tracking-wider">
+              إجراءات سريعة
+            </h3>
+            <div className="space-y-1">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="w-full justify-start gap-3 h-11 md:h-10 text-foreground dark:text-foreground" 
+                onClick={() => window.open('https://meet.google.com/new', '_blank')}
+                data-testid="sidebar-quick-schedule"
+              >
+                <Calendar className="h-4 w-4 dark:text-foreground" />
+                <span className="dark:text-foreground">جدولة اجتماع</span>
+              </Button>
+            </div>
+          </div>
+        )}
       </ScrollArea>
 
-      {/* Footer */}
-      <div className="border-t border-border/50 p-4 bg-background/80 backdrop-blur-sm">
-        <motion.div 
+      <div className="border-t border-border p-4">
+        <div 
           className={cn(
-            "flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-primary/10 to-accent/10",
-            isCollapsed && "justify-center p-2"
+            "flex items-center gap-3",
+            isCollapsed && "justify-center"
           )}
-          whileHover={{ scale: 1.02 }}
         >
-          <div className="relative">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold">
-              {user?.fullName?.split(' ').map(n => n[0]).join('').slice(0, 2) || 'U'}
-            </div>
-            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-green-500 border-2 border-background animate-pulse" />
-          </div>
+          <div 
+            className={cn(
+              "w-2 h-2 rounded-full bg-success animate-pulse",
+              isCollapsed && "w-3 h-3"
+            )}
+          />
           {!isCollapsed && (
-            <div className="flex-1 min-w-0">
-              <p className="text-xs text-muted-foreground">متصل الآن</p>
-              <p className="text-sm font-semibold text-foreground truncate">
+            <div className="flex-1">
+              <p className="text-xs text-muted-foreground dark:text-gray-400">متصل كـ</p>
+              <p className="text-sm font-medium text-foreground dark:text-white truncate">
                 {user?.fullName}
               </p>
-              <p className="text-xs text-muted-foreground truncate">
-                {user?.department}
-              </p>
             </div>
           )}
-        </motion.div>
+        </div>
       </div>
     </div>
   );
@@ -443,23 +479,274 @@ export default function Sidebar() {
     <>
       {isMobile ? (
         <Sheet open={isMobileOpen} onOpenChange={setIsMobileOpen}>
-          <SheetContent side="right" className="w-72 p-0 border-l-0">
+          <SheetContent side="right" className="w-64 p-0">
             {sidebarContent}
           </SheetContent>
         </Sheet>
       ) : (
-        <motion.div 
+        <div 
           className={cn(
-            "hidden md:block fixed right-0 top-16 z-40 h-[calc(100vh-4rem)] bg-card/95 backdrop-blur-sm border-l border-border/50 transition-all duration-300 shadow-lg"
+            "hidden md:block fixed right-0 top-16 z-40 h-[calc(100vh-4rem)] bg-card border-l border-border transition-all duration-300",
+            isCollapsed ? "w-16" : "w-64"
           )}
-          animate={{ 
-            width: isCollapsed ? "4rem" : "18rem" 
-          }}
-          transition={{ type: "spring", damping: 25, stiffness: 200 }}
         >
           {sidebarContent}
-        </motion.div>
+        </div>
       )}
+
+      <Dialog open={showMeetingDialog} onOpenChange={setShowMeetingDialog}>
+        <DialogContent className="sm:max-w-md" dir="rtl">
+          <DialogHeader>
+            <DialogTitle className="text-right">جدولة اجتماع</DialogTitle>
+            <DialogDescription className="text-right">
+              أدخل عنوان الاجتماع واختر المشاركين
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            {isLoadingCalendarStatus ? (
+              <Alert data-testid="alert-calendar-loading">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription className="text-right">
+                  جاري التحقق من اتصال Google Calendar...
+                </AlertDescription>
+              </Alert>
+            ) : calendarStatus && !calendarStatus.connected ? (
+              <Alert variant="destructive" data-testid="alert-calendar-disconnected">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription className="text-right space-y-3">
+                  <p className="font-semibold">Google Calendar غير متصل</p>
+                  <p className="text-sm">
+                    لجدولة اجتماعات Google Meet، يجب ربط حساب Google Calendar الخاص بك أولاً.
+                  </p>
+                  <Button
+                    onClick={handleConnectGoogleCalendar}
+                    variant="outline"
+                    className="w-full"
+                    data-testid="button-connect-google-calendar"
+                  >
+                    ربط Google Calendar
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            ) : calendarStatus?.connected ? (
+              <Alert className="bg-success/10 border-success text-success" data-testid="alert-calendar-connected">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription className="text-right">
+                  ✓ Google Calendar متصل - سيتم إنشاء رابط Google Meet تلقائياً
+                </AlertDescription>
+              </Alert>
+            ) : null}
+
+            <div className="space-y-2">
+              <Label htmlFor="meeting-title" className="text-right">عنوان الاجتماع</Label>
+              <Input
+                id="meeting-title"
+                value={meetingTitle}
+                onChange={(e) => setMeetingTitle(e.target.value)}
+                placeholder="مثال: اجتماع فريق التطوير"
+                data-testid="input-meeting-title"
+              />
+            </div>
+            {isLoadingUsers ? (
+              <div className="text-center text-muted-foreground py-8" data-testid="loading-users">
+                جاري تحميل المستخدمين...
+              </div>
+            ) : allUsers.length === 0 ? (
+              <div className="text-center text-muted-foreground py-8" data-testid="no-users">
+                لا يوجد مستخدمين متاحين
+              </div>
+            ) : (
+              <ScrollArea className="h-[300px] pr-4">
+                <div className="space-y-2">
+                  {allUsers
+                    .filter(u => u.id !== user?.id)
+                    .map((u) => (
+                      <motion.div
+                        key={u.id}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="flex items-center space-x-3 space-x-reverse p-3 rounded-lg border border-border hover:bg-accent transition-colors"
+                        data-testid={`user-item-${u.id}`}
+                      >
+                        <Checkbox
+                          id={`user-${u.id}`}
+                          checked={selectedUsers.includes(u.id)}
+                          onCheckedChange={() => handleToggleUser(u.id)}
+                          data-testid={`checkbox-user-${u.id}`}
+                        />
+                        <label
+                          htmlFor={`user-${u.id}`}
+                          className="flex-1 flex items-center gap-3 cursor-pointer"
+                        >
+                          <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                            {u.profilePicture ? (
+                              <img
+                                src={u.profilePicture}
+                                alt={u.fullName}
+                                className="w-10 h-10 rounded-full object-cover"
+                              />
+                            ) : (
+                              <span className="text-primary font-semibold">
+                                {u.fullName.charAt(0)}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-foreground truncate" data-testid={`text-username-${u.id}`}>
+                              {u.fullName}
+                            </p>
+                            <p className="text-sm text-muted-foreground truncate" data-testid={`text-email-${u.id}`}>
+                              {u.email}
+                            </p>
+                            {u.department && (
+                              <p className="text-xs text-muted-foreground truncate">
+                                {u.department} {u.jobTitle && `- ${u.jobTitle}`}
+                              </p>
+                            )}
+                          </div>
+                        </label>
+                      </motion.div>
+                    ))}
+                </div>
+              </ScrollArea>
+            )}
+          </div>
+
+          <DialogFooter className="flex-row-reverse gap-2">
+            <Button
+              onClick={handleScheduleMeeting}
+              disabled={selectedUsers.length === 0}
+              data-testid="button-schedule-meeting"
+            >
+              <Calendar className="ml-2 h-4 w-4" />
+              جدولة الاجتماع ({selectedUsers.length})
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowMeetingDialog(false);
+                setSelectedUsers([]);
+              }}
+              data-testid="button-cancel-meeting"
+            >
+              إلغاء
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showTaskDialog} onOpenChange={setShowTaskDialog}>
+        <DialogContent className="sm:max-w-[500px]" dir="rtl" data-testid="dialog-create-task">
+          <DialogHeader>
+            <DialogTitle className="text-right">إنشاء مهمة جديدة</DialogTitle>
+          </DialogHeader>
+          
+          <form onSubmit={handleCreateTask} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="task-title">عنوان المهمة *</Label>
+              <Input
+                id="task-title"
+                placeholder="أدخل عنوان المهمة"
+                value={newTask.title}
+                onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                required
+                data-testid="input-task-title"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="task-description">الوصف</Label>
+              <Textarea
+                id="task-description"
+                placeholder="وصف تفصيلي للمهمة..."
+                value={newTask.description}
+                onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                rows={3}
+                data-testid="input-task-description"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="task-company">الشركة</Label>
+              <Select
+                value={newTask.companyId}
+                onValueChange={(value) => setNewTask({ ...newTask, companyId: value })}
+              >
+                <SelectTrigger id="task-company" data-testid="select-task-company">
+                  <SelectValue placeholder="اختر الشركة (اختياري)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">بدون شركة</SelectItem>
+                  {companies.map((company) => (
+                    <SelectItem key={company.id} value={company.id}>
+                      {company.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="task-priority">الأولوية</Label>
+                <Select
+                  value={newTask.priority}
+                  onValueChange={(value) => setNewTask({ ...newTask, priority: value })}
+                >
+                  <SelectTrigger id="task-priority" data-testid="select-task-priority">
+                    <SelectValue placeholder="اختر الأولوية" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">منخفضة</SelectItem>
+                    <SelectItem value="medium">متوسطة</SelectItem>
+                    <SelectItem value="high">عالية</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="task-due-date">تاريخ الاستحقاق</Label>
+                <Input
+                  id="task-due-date"
+                  type="date"
+                  value={newTask.dueDate}
+                  onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
+                  data-testid="input-task-due-date"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="task-assign">تعيين إلى</Label>
+              <Select
+                value={newTask.assignedTo}
+                onValueChange={(value) => setNewTask({ ...newTask, assignedTo: value })}
+              >
+                <SelectTrigger id="task-assign" data-testid="select-task-assign">
+                  <SelectValue placeholder="اختر مستخدم (اختياري)" />
+                </SelectTrigger>
+                <SelectContent>
+                  {users.map((u) => (
+                    <SelectItem key={u.id} value={u.id}>
+                      {u.fullName} - {u.department}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <DialogFooter className="flex-row-reverse gap-2">
+              <Button type="submit" disabled={createTaskMutation.isPending} data-testid="button-create-task">
+                {createTaskMutation.isPending ? "جاري الإنشاء..." : "إنشاء المهمة"}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowTaskDialog(false)}
+                data-testid="button-cancel-task"
+              >
+                إلغاء
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

@@ -230,40 +230,33 @@ export default function Navigation() {
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ type: "spring", stiffness: 100 }}
-      className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-md shadow-sm"
+      className="sticky top-0 z-50 w-full border-b border-border bg-white dark:bg-gray-900"
     >
-      <div className="container flex h-16 items-center justify-between px-4">
-        <div className="flex items-center gap-4">
+      <div className="container flex h-16 items-center justify-between px-4 bg-white dark:bg-gray-900">
+        <div className="flex items-center gap-3">
           <motion.div whileTap={{ scale: 0.95 }}>
             <Button
               variant="ghost"
-              size="icon"
+              size="sm"
               onClick={() => setIsMobileOpen(true)}
-              className="md:hidden hover-elevate"
+              className="md:hidden h-11 w-11"
               data-testid="nav-mobile-menu-toggle"
             >
               <Menu className="h-5 w-5" />
             </Button>
           </motion.div>
           <motion.div 
-            className="flex items-center gap-3"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-accent"
+            whileHover={{ rotate: 360 }}
+            transition={{ duration: 0.5 }}
           >
-            <motion.div
-              className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent shadow-lg"
-              whileHover={{ rotate: 360, scale: 1.05 }}
-              transition={{ duration: 0.6 }}
-            >
-              <CheckSquare className="w-6 h-6 text-white" />
-            </motion.div>
-            <div className="hidden sm:block">
-              <h1 className="text-lg font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                GWT إدارة المهام
-              </h1>
-              <p className="text-xs text-muted-foreground">نظام شامل لإدارة المهام والموظفين</p>
-            </div>
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+            </svg>
           </motion.div>
+          <div className="hidden sm:block">
+            <h1 className="text-xl font-bold text-foreground">GWT إدارة المهام</h1>
+          </div>
         </div>
 
         <div className="hidden md:flex flex-1 max-w-sm mx-8">
@@ -371,14 +364,14 @@ export default function Navigation() {
           </Popover>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 md:gap-3">
           <Popover>
             <PopoverTrigger asChild>
               <motion.div whileTap={{ scale: 0.95 }}>
                 <Button 
                   variant="ghost" 
-                  size="icon" 
-                  className="relative hover-elevate" 
+                  size="sm" 
+                  className="relative h-11 w-11 md:h-10 md:w-10" 
                   data-testid="nav-notifications-button"
                 >
                   <Bell className="h-5 w-5" />
@@ -388,9 +381,9 @@ export default function Navigation() {
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
                         exit={{ scale: 0 }}
-                        className="absolute -top-1 -right-1 min-w-[1.25rem] h-5 px-1.5 rounded-full bg-gradient-to-r from-red-500 to-red-600 text-[10px] font-bold text-white flex items-center justify-center shadow-lg"
+                        className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-destructive text-[10px] font-medium text-destructive-foreground flex items-center justify-center"
                       >
-                        {unreadNotifications.length > 9 ? '9+' : unreadNotifications.length}
+                        {unreadNotifications.length}
                       </motion.span>
                     )}
                   </AnimatePresence>
@@ -454,17 +447,17 @@ export default function Navigation() {
           <motion.div whileTap={{ scale: 0.95 }}>
             <Button 
               variant="ghost" 
-              size="icon" 
+              size="sm" 
               onClick={toggleDarkMode} 
-              className="hover-elevate"
+              className="h-11 w-11 md:h-10 md:w-10"
               data-testid="nav-dark-mode-toggle"
             >
               <motion.div
                 initial={false}
-                animate={{ rotate: isDark ? 360 : 0 }}
-                transition={{ duration: 0.5, type: "spring" }}
+                animate={{ rotate: isDark ? 180 : 0 }}
+                transition={{ duration: 0.3 }}
               >
-                {isDark ? <Sun className="h-5 w-5 text-yellow-500" /> : <Moon className="h-5 w-5 text-slate-700 dark:text-slate-300" />}
+                {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
               </motion.div>
             </Button>
           </motion.div>
@@ -474,18 +467,15 @@ export default function Navigation() {
               <motion.div whileTap={{ scale: 0.95 }}>
                 <Button 
                   variant="ghost" 
-                  className="relative h-10 w-10 rounded-full p-0 hover-elevate ring-2 ring-transparent hover:ring-primary/20 transition-all" 
+                  className="relative h-11 w-11 md:h-10 md:w-10 rounded-full" 
                   data-testid="nav-user-menu"
                 >
-                  <div className="relative">
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage src={getMediaUrl(user?.profilePicture)} alt={user?.fullName} />
-                      <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-white font-bold">
-                        {user?.fullName?.split(' ').map(n => n[0]).join('').slice(0, 2) || 'U'}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-green-500 border-2 border-background" />
-                  </div>
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src={getMediaUrl(user?.profilePicture)} alt={user?.fullName} />
+                    <AvatarFallback>
+                      {user?.fullName?.split(' ').map(n => n[0]).join('').slice(0, 2) || 'ND'}
+                    </AvatarFallback>
+                  </Avatar>
                 </Button>
               </motion.div>
             </DropdownMenuTrigger>
