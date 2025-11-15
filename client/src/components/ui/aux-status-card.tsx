@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./card";
 import { Button } from "./button";
 import { Badge } from "./badge";
-import { Textarea } from "./textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select";
 import { 
   Play, 
@@ -12,9 +11,12 @@ import {
   CheckCircle, 
   Coffee, 
   User,
-  Edit3
+  Edit3,
+  CheckSquare
 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { formatDuration, auxStatusLabels } from "@/lib/arabic-utils";
+import type { Task } from "@shared/schema";
 
 interface AuxStatusCardProps {
   currentStatus: string;
@@ -31,9 +33,12 @@ export default function AuxStatusCard({
   onStatusChange,
   onEndShift
 }: AuxStatusCardProps) {
-  const [currentNote, setCurrentNote] = useState("");
-  const [noteStatus, setNoteStatus] = useState("in_progress");
-  const [isEditingNote, setIsEditingNote] = useState(false);
+  const [selectedTaskId, setSelectedTaskId] = useState<string>("");
+  const [isSelectingTask, setIsSelectingTask] = useState(false);
+
+  const { data: userTasks = [] } = useQuery<Task[]>({
+    queryKey: ["/api/tasks/my"],
+  });
 
   const auxStatuses = [
     { id: "ready", label: "جاهز", icon: CheckCircle, color: "bg-chart-1", textColor: "text-chart-1" },
@@ -49,24 +54,6 @@ export default function AuxStatusCard({
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const saveNote = async () => {
-    try {
-      await fetch("/api/aux/note", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          note: currentNote,
-          status: noteStatus,
-          auxStatus: currentStatus,
-        }),
-        credentials: "include",
-      });
-      setIsEditingNote(false);
-    } catch (error) {
-      console.error("Failed to save note:", error);
-    }
   };
 
   return (
@@ -143,67 +130,84 @@ export default function AuxStatusCard({
           ))}
         </div>
 
-        {/* Current Task Note */}
+        {/* Current Task Selector */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h4 className="font-semibold text-foreground">شغال على إيه دلوقتي؟</h4>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => setIsEditingNote(!isEditingNote)}
-              data-testid="button-edit-note"
-            >
-              <Edit3 className="w-4 h-4 ml-2" />
-              {isEditingNote ? "إلغاء" : "تعديل"}
-            </Button>
+            <h4 className="font-semibold text-foreground flex items-center gap-2">
+              <CheckSquare className="w-4 h-4" />
+              المهمة الحالية
+            </h4>
           </div>
           
-          {isEditingNote ? (
-            <div className="space-y-3">
-              <Textarea
-                value={currentNote}
-                onChange={(e) => setCurrentNote(e.target.value)}
-                placeholder="اكتب تفاصيل المهمة أو النشاط الحالي..."
-                className="min-h-[100px] resize-none text-right"
-                data-testid="textarea-task-note"
-              />
-              
-              <div className="flex items-center justify-between">
-                <Select value={noteStatus} onValueChange={setNoteStatus}>
-                  <SelectTrigger className="w-48" data-testid="select-note-status">
-                    <SelectValue placeholder="حالة المهمة" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="in_progress">قيد التنفيذ</SelectItem>
-                    <SelectItem value="completed">مكتمل</SelectItem>
-                    <SelectItem value="pending">معلق</SelectItem>
-                  </SelectContent>
-                </Select>
-                
-                <Button onClick={saveNote} data-testid="button-save-note">
-                  حفظ الملاحظة
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <div className="p-4 rounded-lg bg-muted/50 border border-border">
-              <p className="text-sm text-foreground mb-2">
-                {currentNote || "تطوير واجهة المستخدم لصفحة التقارير الجديدة"}
-              </p>
-              <div className="flex items-center gap-2">
-                <Badge 
-                  variant="secondary"
-                  className={
-                    noteStatus === "completed" ? "bg-chart-1/20 text-chart-1" :
-                    noteStatus === "in_progress" ? "bg-chart-4/20 text-chart-4" :
-                    "bg-chart-2/20 text-chart-2"
-                  }
-                >
-                  {noteStatus === "completed" ? "مكتمل" :
-                   noteStatus === "in_progress" ? "قيد التنفيذ" : "معلق"}
-                </Badge>
-                <span className="text-xs text-muted-foreground">منذ 45 دقيقة</span>
-              </div>
+          <Select value={selectedTaskId} onValueChange={setSelectedTaskId}>
+            <SelectTrigger className="w-full" data-testid="select-current-task">
+              <SelectValue placeholder="اختر المهمة التي تعمل عليها..." />
+            </SelectTrigger>
+            <SelectContent className="max-h-[300px]">
+              <SelectItem value="none">لا أعمل على مهمة محددة</SelectItem>
+              {userTasks
+                .filter((task) => task.status !== 'completed')
+                .map((task) => (
+                  <SelectItem key={task.id} value={task.id}>
+                    <div className="flex items-center gap-2 py-1">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">{task.title}</p>
+                        {task.description && (
+                          <p className="text-xs text-muted-foreground truncate">
+                            {task.description.substring(0, 50)}...
+                          </p>
+                        )}
+                      </div>
+                      <Badge 
+                        variant="outline" 
+                        className={
+                          task.status === 'in_progress' ? 'bg-blue-500/10 text-blue-700 dark:text-blue-400' :
+                          task.status === 'under_review' ? 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400' :
+                          'bg-gray-500/10 text-gray-700 dark:text-gray-400'
+                        }
+                      >
+                        {task.status === 'in_progress' ? 'قيد التنفيذ' :
+                         task.status === 'under_review' ? 'قيد المراجعة' :
+                         'قيد الانتظار'}
+                      </Badge>
+                    </div>
+                  </SelectItem>
+                ))}
+            </SelectContent>
+          </Select>
+
+          {selectedTaskId && selectedTaskId !== 'none' && (
+            <div className="p-3 rounded-lg bg-muted/50 border border-border">
+              {(() => {
+                const selectedTask = userTasks.find(t => t.id === selectedTaskId);
+                if (!selectedTask) return null;
+                return (
+                  <>
+                    <p className="text-sm font-medium text-foreground mb-1">
+                      {selectedTask.title}
+                    </p>
+                    {selectedTask.description && (
+                      <p className="text-xs text-muted-foreground mb-2">
+                        {selectedTask.description}
+                      </p>
+                    )}
+                    <div className="flex items-center gap-2">
+                      <Badge 
+                        variant="secondary"
+                        className={
+                          selectedTask.priority === "high" ? "bg-red-500/20 text-red-700 dark:text-red-400" :
+                          selectedTask.priority === "medium" ? "bg-yellow-500/20 text-yellow-700 dark:text-yellow-400" :
+                          "bg-blue-500/20 text-blue-700 dark:text-blue-400"
+                        }
+                      >
+                        {selectedTask.priority === "high" ? "أولوية عالية" :
+                         selectedTask.priority === "medium" ? "أولوية متوسطة" :
+                         "أولوية منخفضة"}
+                      </Badge>
+                    </div>
+                  </>
+                );
+              })()}
             </div>
           )}
         </div>
