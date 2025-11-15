@@ -474,7 +474,7 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
     });
 
     return (
-      <div className="flex-shrink-0 w-full lg:w-[280px]" ref={setNodeRef}>
+      <div className="flex-shrink-0 w-full lg:w-[240px] xl:w-[280px]" ref={setNodeRef}>
         <div className={cn(
           "rounded-xl bg-muted/30 p-2.5 h-full flex flex-col",
           isOver && "ring-2 ring-primary bg-primary/5"
@@ -518,10 +518,10 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
-        {/* Mobile/Tablet Tabs View (Hidden on lg+) */}
-        <div className="lg:hidden w-full" data-testid="kanban-board-tabs">
+        {/* Mobile/Tablet Tabs View (Hidden on xl+) */}
+        <div className="xl:hidden w-full" data-testid="kanban-board-tabs">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4 mb-4">
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 mb-4">
               <TabsTrigger value="pending" className="flex items-center gap-1 text-xs" data-testid="tab-pending">
                 <Clock className="w-3 h-3" />
                 <span className="hidden sm:inline">قيد الانتظار</span>
@@ -587,9 +587,9 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
           </Tabs>
         </div>
 
-        {/* Desktop Horizontal Kanban View (Visible on lg+) */}
-        <div className="hidden lg:block w-full overflow-x-auto pb-4" data-testid="kanban-board-trello-style">
-          <div className="flex gap-3 min-w-min">
+        {/* Desktop Horizontal Kanban View (Visible on xl+) */}
+        <div className="hidden xl:block w-full overflow-x-auto pb-4" data-testid="kanban-board-trello-style">
+          <div className="flex gap-3 min-w-min px-1">
             <DroppableColumn
               id="pending"
               title="قيد الانتظار"
