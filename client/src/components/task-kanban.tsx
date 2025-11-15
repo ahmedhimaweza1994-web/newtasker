@@ -472,7 +472,7 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
     });
 
     return (
-      <div className="flex-shrink-0 w-[240px] sm:w-[260px] md:w-[280px] lg:w-[300px]" ref={setNodeRef}>
+      <div className="w-full lg:flex-shrink-0 lg:w-[280px] xl:w-[300px]" ref={setNodeRef}>
         <div className={cn(
           "rounded-xl bg-muted/30 p-2.5 h-full flex flex-col",
           isOver && "ring-2 ring-primary bg-primary/5"
@@ -486,7 +486,7 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
               {tasks.length}
             </Badge>
           </div>
-          <div className="flex-1 overflow-y-auto space-y-2 min-h-0 pr-1" style={{ maxHeight: 'calc(100vh - 240px)' }}>
+          <div className="flex-1 overflow-y-auto space-y-2 min-h-0 pr-1" style={{ maxHeight: 'calc(50vh - 120px)' }} data-max-height="responsive-column">
             {tasks.length > 0 ? (
               tasks.map((task) => (
                 <DraggableTaskCard key={task.id} task={task} />
@@ -516,9 +516,9 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
-        {/* Horizontal Kanban View (All screen sizes) */}
-        <div className="w-full overflow-x-auto pb-4" data-testid="kanban-board-trello-style">
-          <div className="flex gap-3 min-w-min px-1">
+        {/* Responsive Kanban View - 2x2 grid on small/medium, horizontal on large */}
+        <div className="w-full pb-4" data-testid="kanban-board-trello-style">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-row gap-3 px-1">
             <DroppableColumn
               id="pending"
               title="قيد الانتظار"
