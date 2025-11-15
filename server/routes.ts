@@ -419,6 +419,7 @@ export function registerRoutes(app: Express): Server {
         userId: req.user!.id,
         status: req.body.status,
         notes: req.body.notes,
+        selectedTaskId: req.body.selectedTaskId,
       });
       res.json(session);
     } catch (error) {
@@ -428,7 +429,7 @@ export function registerRoutes(app: Express): Server {
 
   app.post("/api/aux/end/:id", requireAuth, async (req, res) => {
     try {
-      const session = await storage.endAuxSession(req.params.id, req.body.notes);
+      const session = await storage.endAuxSession(req.params.id, req.body.notes, req.body.selectedTaskId);
       if (!session) {
         return res.status(404).json({ message: "الجلسة غير موجودة" });
       }
@@ -455,6 +456,18 @@ export function registerRoutes(app: Express): Server {
       res.json(sessions);
     } catch (error) {
       res.status(500).json({ message: "حدث خطأ في جلب الجلسات" });
+    }
+  });
+
+  app.patch("/api/aux/current-task", requireAuth, async (req, res) => {
+    try {
+      const session = await storage.updateCurrentSessionTask(req.user!.id, req.body.selectedTaskId);
+      if (!session) {
+        return res.status(404).json({ message: "لا توجد جلسة نشطة" });
+      }
+      res.json(session);
+    } catch (error) {
+      res.status(500).json({ message: "حدث خطأ في تحديث المهمة" });
     }
   });
 

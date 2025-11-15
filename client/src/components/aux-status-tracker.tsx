@@ -9,12 +9,14 @@ interface AuxSession {
   startTime: string;
   endTime: string | null;
   duration: number | null;
+  selectedTaskId?: string | null;
 }
 
 export default function AuxStatusTracker() {
   const [currentStatus, setCurrentStatus] = useState("ready");
   const [timer, setTimer] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const [selectedTaskId, setSelectedTaskId] = useState<string>("");
 
   const { data: currentSession } = useQuery<AuxSession>({
     queryKey: ["/api/aux/current"],
@@ -28,10 +30,17 @@ export default function AuxStatusTracker() {
       const startTime = new Date(currentSession.startTime).getTime();
       const elapsed = Math.floor((Date.now() - startTime) / 1000);
       setTimer(elapsed);
+      // Initialize selectedTaskId from current session
+      if (currentSession.selectedTaskId) {
+        setSelectedTaskId(currentSession.selectedTaskId);
+      } else {
+        setSelectedTaskId("");
+      }
     } else {
       setIsTimerRunning(false);
       setTimer(0);
       setCurrentStatus("ready");
+      setSelectedTaskId("");
     }
   }, [currentSession]);
 
@@ -47,7 +56,10 @@ export default function AuxStatusTracker() {
 
   const startSessionMutation = useMutation({
     mutationFn: async (status: string) => {
-      const res = await apiRequest("POST", "/api/aux/start", { status });
+      const res = await apiRequest("POST", "/api/aux/start", { 
+        status,
+        selectedTaskId: selectedTaskId === "none" ? null : selectedTaskId || null
+      });
       return res.json();
     },
     onSuccess: () => {
@@ -57,7 +69,9 @@ export default function AuxStatusTracker() {
 
   const endSessionMutation = useMutation({
     mutationFn: async (sessionId: string) => {
-      const res = await apiRequest("POST", `/api/aux/end/${sessionId}`, {});
+      const res = await apiRequest("POST", `/api/aux/end/${sessionId}`, {
+        selectedTaskId: selectedTaskId === "none" ? null : selectedTaskId || null
+      });
       return res.json();
     },
     onSuccess: async () => {
@@ -92,6 +106,9 @@ export default function AuxStatusTracker() {
       isTimerRunning={isTimerRunning}
       onStatusChange={handleStatusChange}
       onEndShift={handleEndShift}
+      selectedTaskId={selectedTaskId}
+      onTaskChange={setSelectedTaskId}
+      hasActiveSession={!!(currentSession && !currentSession.endTime)}
     />
   );
 }

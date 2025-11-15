@@ -59,6 +59,7 @@ export const auxSessions = pgTable("aux_sessions", {
   endTime: timestamp("end_time"),
   duration: integer("duration"), // in seconds
   notes: text("notes"),
+  selectedTaskId: uuid("selected_task_id").references(() => tasks.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -440,6 +441,7 @@ export const usersRelations = relations(users, ({ many, one }) => ({
 
 export const auxSessionsRelations = relations(auxSessions, ({ one }) => ({
   user: one(users, { fields: [auxSessions.userId], references: [users.id] }),
+  selectedTask: one(tasks, { fields: [auxSessions.selectedTaskId], references: [tasks.id] }),
 }));
 
 export const tasksRelations = relations(tasks, ({ one, many }) => ({
@@ -918,3 +920,7 @@ export type AiChatRequest = z.infer<typeof aiChatRequestSchema>;
 export type AiConversationCreate = z.infer<typeof aiConversationCreateSchema>;
 export type AiModelSettingsCreate = z.infer<typeof aiModelSettingsCreateSchema>;
 export type AiModelSettingsUpdate = z.infer<typeof aiModelSettingsUpdateSchema>;
+
+// Shared constants for frontend/backend alignment
+export const AUX_STATUS_VALUES = ['ready', 'working_on_project', 'personal', 'break', 'waiting'] as const;
+export type AuxStatusValue = typeof AUX_STATUS_VALUES[number];

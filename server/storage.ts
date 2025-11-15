@@ -145,8 +145,9 @@ export interface IStorage {
  
   // AUX Sessions
   createAuxSession(session: InsertAuxSession): Promise<AuxSession>;
-  startAuxSession(data: { userId: string; status: string; notes?: string }): Promise<AuxSession>;
-  endAuxSession(sessionId: string, notes?: string): Promise<AuxSession | undefined>;
+  startAuxSession(data: { userId: string; status: string; notes?: string; selectedTaskId?: string }): Promise<AuxSession>;
+  endAuxSession(sessionId: string, notes?: string, selectedTaskId?: string): Promise<AuxSession | undefined>;
+  updateCurrentSessionTask(userId: string, selectedTaskId: string | null): Promise<AuxSession | undefined>;
   getUserAuxSessions(userId: string, startDate?: Date, endDate?: Date): Promise<AuxSession[]>;
   getAllAuxSessions(): Promise<AuxSession[]>;
   getActiveAuxSession(userId: string): Promise<AuxSession | undefined>;
@@ -699,7 +700,7 @@ export class MemStorage implements IStorage {
     return newSession;
   }
 
-  async startAuxSession(data: { userId: string; status: string; notes?: string }): Promise<AuxSession> {
+  async startAuxSession(data: { userId: string; status: string; notes?: string; selectedTaskId?: string }): Promise<AuxSession> {
     const activeSession = await this.getActiveAuxSession(data.userId);
     if (activeSession) {
       await this.endAuxSession(activeSession.id);
@@ -709,10 +710,11 @@ export class MemStorage implements IStorage {
       userId: data.userId,
       status: data.status as any,
       notes: data.notes,
+      selectedTaskId: data.selectedTaskId || null,
     });
   }
 
-  async endAuxSession(sessionId: string, notes?: string): Promise<AuxSession | undefined> {
+  async endAuxSession(sessionId: string, notes?: string, selectedTaskId?: string): Promise<AuxSession | undefined> {
     const [session] = await db
       .select()
       .from(auxSessions)
@@ -725,8 +727,26 @@ export class MemStorage implements IStorage {
 
     const [updatedSession] = await db
       .update(auxSessions)
-      .set({ endTime, duration, notes: notes || session.notes })
+      .set({ 
+        endTime, 
+        duration, 
+        notes: notes !== undefined ? notes : session.notes,
+        selectedTaskId: selectedTaskId !== undefined ? selectedTaskId : session.selectedTaskId
+      })
       .where(eq(auxSessions.id, sessionId))
+      .returning();
+
+    return updatedSession || undefined;
+  }
+
+  async updateCurrentSessionTask(userId: string, selectedTaskId: string | null): Promise<AuxSession | undefined> {
+    const activeSession = await this.getActiveAuxSession(userId);
+    if (!activeSession) return undefined;
+
+    const [updatedSession] = await db
+      .update(auxSessions)
+      .set({ selectedTaskId })
+      .where(eq(auxSessions.id, activeSession.id))
       .returning();
 
     return updatedSession || undefined;
@@ -781,15 +801,24 @@ export class MemStorage implements IStorage {
       .select({
         session: auxSessions,
         user: userPublicFields,
+        selectedTask: {
+          id: tasks.id,
+          title: tasks.title,
+          description: tasks.description,
+          status: tasks.status,
+          priority: tasks.priority,
+        }
       })
       .from(auxSessions)
       .innerJoin(users, eq(auxSessions.userId, users.id))
+      .leftJoin(tasks, eq(auxSessions.selectedTaskId, tasks.id))
       .where(isNull(auxSessions.endTime))
       .orderBy(desc(auxSessions.startTime));
 
-    return activeSessions.map(({ session, user }) => ({
+    return activeSessions.map(({ session, user, selectedTask }) => ({
       ...session,
       user,
+      selectedTask,
     }));
   }
 

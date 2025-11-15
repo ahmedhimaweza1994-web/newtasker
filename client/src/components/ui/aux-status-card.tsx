@@ -14,9 +14,11 @@ import {
   Edit3,
   CheckSquare
 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { formatDuration, auxStatusLabels } from "@/lib/arabic-utils";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { Task } from "@shared/schema";
+import { AUX_STATUS_VALUES } from "@shared/schema";
 
 interface AuxStatusCardProps {
   currentStatus: string;
@@ -24,6 +26,9 @@ interface AuxStatusCardProps {
   isTimerRunning: boolean;
   onStatusChange: (status: string) => void;
   onEndShift: () => void;
+  selectedTaskId: string;
+  onTaskChange: (taskId: string) => void;
+  hasActiveSession: boolean;
 }
 
 export default function AuxStatusCard({
@@ -31,18 +36,38 @@ export default function AuxStatusCard({
   timer,
   isTimerRunning,
   onStatusChange,
-  onEndShift
+  onEndShift,
+  selectedTaskId,
+  onTaskChange,
+  hasActiveSession
 }: AuxStatusCardProps) {
-  const [selectedTaskId, setSelectedTaskId] = useState<string>("");
-  const [isSelectingTask, setIsSelectingTask] = useState(false);
 
   const { data: userTasks = [] } = useQuery<Task[]>({
     queryKey: ["/api/tasks/my"],
   });
 
+  const updateTaskMutation = useMutation({
+    mutationFn: async (taskId: string) => {
+      const res = await apiRequest("PATCH", "/api/aux/current-task", { 
+        selectedTaskId: taskId === "none" ? null : taskId || null
+      });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/aux/current"] });
+    },
+  });
+
+  const handleTaskChange = (taskId: string) => {
+    onTaskChange(taskId);
+    if (hasActiveSession) {
+      updateTaskMutation.mutate(taskId);
+    }
+  };
+
   const auxStatuses = [
     { id: "ready", label: "جاهز", icon: CheckCircle, color: "bg-chart-1", textColor: "text-chart-1" },
-    { id: "working", label: "عمل على مشروع", icon: Play, color: "bg-primary", textColor: "text-primary" },
+    { id: "working_on_project", label: "عمل على مشروع", icon: Play, color: "bg-primary", textColor: "text-primary" },
     { id: "personal", label: "شخصي", icon: User, color: "bg-chart-4", textColor: "text-chart-4" },
     { id: "break", label: "استراحة", icon: Coffee, color: "bg-chart-2", textColor: "text-chart-2" },
   ];
@@ -139,7 +164,7 @@ export default function AuxStatusCard({
             </h4>
           </div>
           
-          <Select value={selectedTaskId} onValueChange={setSelectedTaskId}>
+          <Select value={selectedTaskId} onValueChange={handleTaskChange}>
             <SelectTrigger className="w-full" data-testid="select-current-task">
               <SelectValue placeholder="اختر المهمة التي تعمل عليها..." />
             </SelectTrigger>
