@@ -33,7 +33,33 @@ const multerStorage = multer.diskStorage({
   }
 });
 
-const upload = multer({ storage: multerStorage });
+const fileFilter = (req: any, file: any, cb: any) => {
+  const allowedMimes = [
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'image/webp',
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  ];
+  
+  if (allowedMimes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('نوع الملف غير مسموح. الرجاء رفع صور أو مستندات فقط.'), false);
+  }
+};
+
+const upload = multer({ 
+  storage: multerStorage,
+  fileFilter: fileFilter,
+  limits: {
+    fileSize: 10 * 1024 * 1024 // 10MB limit
+  }
+});
 
 function requireAuth(req: any, res: any, next: any) {
   if (!req.isAuthenticated()) {
@@ -53,6 +79,39 @@ function requireRole(roles: string[]) {
 
 export function registerRoutes(app: Express): Server {
   setupAuth(app);
+
+  // File upload routes
+  app.post("/api/upload", requireAuth, upload.single('file'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "لم يتم رفع ملف" });
+      }
+      const fileUrl = `/uploads/${req.file.filename}`;
+      res.json({ url: fileUrl, filename: req.file.filename });
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      res.status(500).json({ message: "حدث خطأ في رفع الملف" });
+    }
+  });
+
+  app.post("/api/upload/multiple", requireAuth, upload.array('files', 10), async (req, res) => {
+    try {
+      if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
+        return res.status(400).json({ message: "لم يتم رفع أي ملفات" });
+      }
+      const files = req.files.map(file => ({
+        url: `/uploads/${file.filename}`,
+        filename: file.filename,
+        originalName: file.originalname,
+        size: file.size,
+        type: file.mimetype
+      }));
+      res.json({ files });
+    } catch (error) {
+      console.error("Error uploading files:", error);
+      res.status(500).json({ message: "حدث خطأ في رفع الملفات" });
+    }
+  });
 
   // Task routes
   app.get("/api/tasks", requireAuth, requireRole(['admin', 'sub-admin']), async (req, res) => {
@@ -2408,6 +2467,7 @@ export function registerRoutes(app: Express): Server {
       const updateData = {
         ...req.body,
         startDate: req.body.startDate ? new Date(req.body.startDate) : undefined,
+        endDate: req.body.endDate ? new Date(req.body.endDate) : undefined,
       };
 
       const company = await storage.updateCompany(req.params.id, updateData);

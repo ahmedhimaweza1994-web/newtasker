@@ -509,7 +509,7 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
               {tasks.length}
             </Badge>
           </div>
-          <div className="flex-1 overflow-y-auto space-y-2 min-h-0 pr-1" style={{ maxHeight: 'calc(50vh - 120px)' }} data-max-height="responsive-column">
+          <div className="flex-1 overflow-y-auto space-y-2 min-h-0 pr-1" style={{ maxHeight: 'calc(80vh - 120px)' }} data-max-height="responsive-column">
             {tasks.length > 0 ? (
               tasks.map((task) => (
                 <DraggableTaskCard key={task.id} task={task} />

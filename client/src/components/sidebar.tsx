@@ -542,7 +542,7 @@ export default function Sidebar() {
       ) : (
         <div 
           className={cn(
-            "hidden md:block fixed right-0 top-16 z-40 h-[calc(100vh-4rem)] bg-card border-l border-border transition-all duration-300",
+            "hidden md:block fixed right-0 top-16 z-40 h-[calc(100vh-4rem)] bg-card transition-all duration-300",
             isCollapsed ? "w-16" : "w-64"
           )}
         >
