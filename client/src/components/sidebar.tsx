@@ -102,107 +102,146 @@ export default function Sidebar() {
   const pendingLeaves = leaveRequests.length;
   const unreadMessages = notifications.filter(n => !n.isRead && n.category === 'message').length;
 
-  const navigation = [
+  // Organized navigation sections for better UX
+  const navigationSections = [
     {
-      name: "لوحة التحكم",
-      href: "/",
-      icon: Home,
-      badge: null,
+      title: "مساحة العمل",
+      items: [
+        {
+          name: "لوحة التحكم",
+          href: "/",
+          icon: Home,
+          badge: null,
+        },
+      ],
     },
     {
-      name: "المهام",
-      href: "/tasks",
-      icon: CheckSquare,
-      badge: totalTasks > 0 ? totalTasks.toString() : null,
+      title: "إدارة العمل",
+      items: [
+        {
+          name: "المهام",
+          href: "/tasks",
+          icon: CheckSquare,
+          badge: totalTasks > 0 ? totalTasks.toString() : null,
+        },
+        {
+          name: "الشركات",
+          href: "/companies",
+          icon: Building,
+          badge: null,
+        },
+      ],
     },
     {
-      name: "الدردشة",
-      href: "/chat",
-      icon: MessageSquare,
-      badge: unreadMessages > 0 ? unreadMessages.toString() : null,
+      title: "التواصل",
+      items: [
+        {
+          name: "الدردشة",
+          href: "/chat",
+          icon: MessageSquare,
+          badge: unreadMessages > 0 ? unreadMessages.toString() : null,
+        },
+        {
+          name: "سجل المكالمات",
+          href: "/call-history",
+          icon: Phone,
+          badge: null,
+        },
+      ],
     },
     {
-      name: "سجل المكالمات",
-      href: "/call-history",
-      icon: Phone,
-      badge: null,
+      title: "الموارد البشرية والمالية",
+      items: [
+        {
+          name: "طلباتي",
+          href: "/my-requests",
+          icon: DollarSign,
+          badge: null,
+        },
+        {
+          name: "خصومات الراتب",
+          href: "/my-deductions",
+          icon: TrendingDown,
+          badge: null,
+        },
+      ],
     },
     {
-      name: "طلباتي",
-      href: "/my-requests",
-      icon: DollarSign,
-      badge: null,
+      title: "التقارير والتحليلات",
+      items: [
+        {
+          name: "التقارير",
+          href: "/reports",
+          icon: BarChart3,
+          badge: null,
+        },
+      ],
     },
     {
-      name: "خصومات الراتب",
-      href: "/my-deductions",
-      icon: TrendingDown,
-      badge: null,
+      title: "الذكاء الاصطناعي",
+      items: [
+        {
+          name: "مركز AI",
+          href: "/ai-center",
+          icon: Brain,
+          badge: null,
+        },
+      ],
     },
     {
-      name: "التقارير",
-      href: "/reports",
-      icon: BarChart3,
-      badge: null,
-    },
-    {
-      name: "الشركات",
-      href: "/companies",
-      icon: Building,
-      badge: null,
-    },
-    {
-      name: "الملف الشخصي",
-      href: `/profile/${user?.id}`,
-      icon: Users,
-      badge: null,
-    },
-    {
-      name: "منصة الذكاء الاصطناعي",
-      href: "/ai-center",
-      icon: Brain,
-      badge: null,
-    },
-    {
-      name: "صفحة المقترحات",
-      href: "/suggestions",
-      icon: Lightbulb,
-      badge: null,
-    },
-    {
-      name: "الإعدادات",
-      href: "/ai/settings",
-      icon: Settings,
-      badge: null,
+      title: "أخرى",
+      items: [
+        {
+          name: "المقترحات",
+          href: "/suggestions",
+          icon: Lightbulb,
+          badge: null,
+        },
+        {
+          name: "الملف الشخصي",
+          href: `/profile/${user?.id}`,
+          icon: Users,
+          badge: null,
+        },
+        {
+          name: "الإعدادات",
+          href: "/ai/settings",
+          icon: Settings,
+          badge: null,
+        },
+      ],
     },
   ];
 
-  const adminNavigation = [
-    {
-      name: "لوحة المدير",
-      href: "/admin",
-      icon: Building,
-      badge: null,
-    },
-    {
-      name: "إدارة المستخدمين",
-      href: "/user-management",
-      icon: UserCog,
-      badge: null,
-    },
-    {
-      name: "الموارد البشرية",
-      href: "/hr",
-      icon: Briefcase,
-      badge: pendingLeaves > 0 ? pendingLeaves.toString() : null,
-    },
-    {
-      name: "إدارة الخصومات",
-      href: "/admin-deductions",
-      icon: TrendingDown,
-      badge: null,
-    },
-  ];
+  const adminSection = {
+    title: "لوحة الإدارة",
+    items: [
+      {
+        name: "لوحة المدير",
+        href: "/admin",
+        icon: Building,
+        badge: null,
+      },
+      {
+        name: "إدارة المستخدمين",
+        href: "/user-management",
+        icon: UserCog,
+        badge: null,
+      },
+      {
+        name: "الموارد البشرية",
+        href: "/hr",
+        icon: Briefcase,
+        badge: pendingLeaves > 0 ? pendingLeaves.toString() : null,
+      },
+      {
+        name: "إدارة الخصومات",
+        href: "/admin-deductions",
+        icon: TrendingDown,
+        badge: null,
+      },
+    ],
+  };
 
   const isActive = (href: string) => {
     if (href === "/") {
@@ -211,9 +250,9 @@ export default function Sidebar() {
     return location.startsWith(href);
   };
 
-  const allNavigation = [
-    ...navigation,
-    ...(user?.role === 'admin' || user?.role === 'sub-admin' ? adminNavigation : []),
+  const allNavigationSections = [
+    ...navigationSections,
+    ...(user?.role === 'admin' || user?.role === 'sub-admin' ? [adminSection] : []),
   ];
 
   const handleToggleUser = (userId: string) => {
@@ -371,78 +410,95 @@ export default function Sidebar() {
       </div>
 
       <ScrollArea className="flex-1 px-3 py-4">
-        <nav className="space-y-2">
-          {allNavigation.map((item) => (
-            <div key={item.name}>
-              {item.external ? (
-                <a
-                  href={item.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={cn(
-                    "flex items-center w-full justify-start gap-3 text-right h-11 md:h-10 transition-all duration-200 rounded-md px-3 hover:bg-accent text-foreground dark:text-foreground",
-                    isCollapsed && "justify-center px-2"
-                  )}
-                  data-testid={`sidebar-link-${item.href.replace('/', '')}`}
-                >
-                  <item.icon className="h-5 w-5 flex-shrink-0 text-foreground dark:text-foreground" />
-                  {!isCollapsed && (
-                    <div className="flex flex-1 items-center justify-between overflow-hidden">
-                      <span className="flex-1 text-foreground dark:text-foreground">{item.name}</span>
-                      {item.badge && (
-                        <Badge variant="secondary" className="mr-auto">
-                          {item.badge}
-                        </Badge>
-                      )}
-                    </div>
-                  )}
-                </a>
-              ) : (
-                <Button
-                  variant={isActive(item.href) ? "default" : "ghost"}
-                  className={cn(
-                    "w-full justify-start gap-3 text-right h-11 md:h-10 transition-all duration-200",
-                    isCollapsed && "justify-center px-2",
-                    isActive(item.href) && "shadow-md"
-                  )}
-                  onClick={() => {
-                    setLocation(item.href);
-                    if (isMobile) setIsMobileOpen(false);
-                  }}
-                  data-testid={`sidebar-link-${item.href.replace('/', '')}`}
-                >
-                  <item.icon className="h-5 w-5 flex-shrink-0" />
-                  {!isCollapsed && (
-                    <div className="flex flex-1 items-center justify-between overflow-hidden">
-                      <span className="flex-1">{item.name}</span>
-                      {item.badge && (
-                        <Badge variant="secondary" className="mr-auto">
-                          {item.badge}
-                        </Badge>
-                      )}
-                    </div>
-                  )}
-                </Button>
+        <nav className="space-y-6">
+          {allNavigationSections.map((section) => (
+            <div key={section.title}>
+              {!isCollapsed && (
+                <h3 className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  {section.title}
+                </h3>
               )}
+              <div className="space-y-1">
+                {section.items.map((item) => (
+                  <div key={item.name}>
+                    {item.external ? (
+                      <a
+                        href={item.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={cn(
+                          "flex items-center w-full justify-start gap-3 text-right h-10 transition-all duration-200 rounded-md px-3 hover-elevate active-elevate-2 text-foreground",
+                          isCollapsed && "justify-center px-2"
+                        )}
+                        data-testid={`sidebar-link-${item.href.replace('/', '')}`}
+                      >
+                        <item.icon className="h-5 w-5 flex-shrink-0" />
+                        {!isCollapsed && (
+                          <div className="flex flex-1 items-center justify-between overflow-hidden">
+                            <span className="flex-1 text-sm font-medium">{item.name}</span>
+                            {item.badge && (
+                              <Badge variant="secondary" className="mr-auto text-xs">
+                                {item.badge}
+                              </Badge>
+                            )}
+                          </div>
+                        )}
+                      </a>
+                    ) : (
+                      <Button
+                        variant={isActive(item.href) ? "default" : "ghost"}
+                        className={cn(
+                          "w-full justify-start gap-3 text-right h-10 transition-all duration-200 text-sm font-medium",
+                          isCollapsed && "justify-center px-2",
+                          isActive(item.href) && "bg-primary text-primary-foreground hover:bg-primary/90"
+                        )}
+                        onClick={() => {
+                          setLocation(item.href);
+                          if (isMobile) setIsMobileOpen(false);
+                        }}
+                        data-testid={`sidebar-link-${item.href.replace('/', '')}`}
+                      >
+                        <item.icon className="h-5 w-5 flex-shrink-0" />
+                        {!isCollapsed && (
+                          <div className="flex flex-1 items-center justify-between overflow-hidden">
+                            <span className="flex-1">{item.name}</span>
+                            {item.badge && (
+                              <Badge 
+                                variant={isActive(item.href) ? "secondary" : "secondary"} 
+                                className={cn(
+                                  "mr-auto text-xs",
+                                  isActive(item.href) && "bg-primary-foreground/20 text-primary-foreground"
+                                )}
+                              >
+                                {item.badge}
+                              </Badge>
+                            )}
+                          </div>
+                        )}
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           ))}
         </nav>
 
         {!isCollapsed && (
           <div className="mt-8 space-y-2">
-            <h3 className="px-3 text-xs font-semibold text-muted-foreground dark:text-muted-foreground uppercase tracking-wider">
+            <h3 className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               إجراءات سريعة
             </h3>
             <div className="space-y-1">
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="w-full justify-start gap-3 h-11 md:h-10 text-foreground dark:text-foreground" 
+                className="w-full justify-start gap-3 h-10 hover-elevate active-elevate-2" 
                 onClick={() => window.open('https://meet.google.com/new', '_blank')}
                 data-testid="sidebar-quick-schedule"
               >
-                <Calendar className="h-4 w-4 dark:text-foreground" />
-                <span className="dark:text-foreground">جدولة اجتماع</span>
+                <Calendar className="h-4 w-4" />
+                <span className="text-sm">جدولة اجتماع</span>
               </Button>
             </div>
           </div>

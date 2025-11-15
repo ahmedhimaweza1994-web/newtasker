@@ -282,11 +282,11 @@ export default function Dashboard() {
         <Sidebar />
        
         <main className={cn("flex-1 p-4 sm:p-6 transition-all duration-300", "md:mr-16" , !isCollapsed && "md:mr-64")}>
-          {/* Hero Section with Gradient */}
+          {/* Hero Section with Modern Gradient */}
           <MotionSection
-            className="relative overflow-hidden bg-[hsl(167,70%,48%)] rounded-[20px]">
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzRjMC0yLjIxIDEuNzktNCA0LTRzNCAxLjc5IDQgNC0xLjc5IDQtNCA0LTQtMS43OS00LTR6bTAgNGMwLTIuMjEgMS43OS00IDQtNHM0IDEuNzkgNCA0LTEuNzkgNC00IDQtNC0xLjc5LTQtNHptLTIwIDRjMC0yLjIxIDEuNzktNCA0LTRzNCAxLjc5IDQgNC0xLjc5IDQtNCA0LTQtMS43OS00LTR6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-30"></div>
-            <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+            className="relative overflow-hidden bg-gradient-to-br from-primary via-primary/90 to-secondary/80 rounded-xl">
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0YzAtMi4yMSAxLjc5LTQgNC00czQgMS43OSA0IDQtMS43OSA0LTQgNC00LTEuNzktNC00em0wIDRjMC0yLjIxIDEuNzktNCA0LTRzNCAxLjc5IDQgNC0xLjc5IDQtNCA0LTQtMS43OS00LTR6bS0yMCA0YzAtMi4yMSAxLjc5LTQgNC00czQgMS43OSA0IDQtMS43OSA0LTQgNC00LTEuNzktNC00eiIvPjwvZz48L2c+PC9zdmc+')] opacity-50"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-black/20"></div>
             
             <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
               <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
@@ -321,69 +321,61 @@ export default function Dashboard() {
 
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
               <MotionCardWrapper>
-              <Card className="border-l-4 border-l-blue-500 hover:shadow-lg transition-all hover:scale-105" data-testid="card-total-time">
-                <CardContent className="p-4 md:p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs md:text-sm text-muted-foreground mb-1">إجمالي الوقت</p>
-                      <p className="text-xl md:text-2xl font-bold text-foreground">{currentSession ? currentDuration : '00:00:00'}</p>
-                    </div>
-                    <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
-                      <Clock className="w-5 h-5 md:w-6 md:h-6 text-blue-600 dark:text-blue-400" />
+              <Card className="transition-shadow hover:shadow-md" data-testid="card-total-time">
+                <CardContent className="p-5 md:p-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="w-11 h-11 bg-primary/10 rounded-xl flex items-center justify-center">
+                      <Clock className="w-6 h-6 text-primary" />
                     </div>
                   </div>
+                  <p className="text-sm text-muted-foreground mb-1">إجمالي الوقت</p>
+                  <p className="text-2xl font-bold text-foreground">{currentSession ? currentDuration : '00:00:00'}</p>
                 </CardContent>
               </Card>
               </MotionCardWrapper>
 
               <MotionCardWrapper>
-              <Card className="border-l-4 border-l-green-500 hover:shadow-lg transition-all hover:scale-105" data-testid="card-completed-tasks">
-                <CardContent className="p-4 md:p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs md:text-sm text-muted-foreground mb-1">مهام مكتملة</p>
-                      <p className="text-xl md:text-2xl font-bold text-foreground">{completedTasks.length}</p>
-                    </div>
-                    <div className="w-10 h-10 md:w-12 md:h-12 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
-                      <CheckCircle className="w-5 h-5 md:w-6 md:h-6 text-green-600 dark:text-green-400" />
+              <Card className="transition-shadow hover:shadow-md" data-testid="card-completed-tasks">
+                <CardContent className="p-5 md:p-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="w-11 h-11 bg-success/10 rounded-xl flex items-center justify-center">
+                      <CheckCircle className="w-6 h-6 text-success" />
                     </div>
                   </div>
+                  <p className="text-sm text-muted-foreground mb-1">مهام مكتملة</p>
+                  <p className="text-2xl font-bold text-foreground">{completedTasks.length}</p>
                 </CardContent>
               </Card>
               </MotionCardWrapper>
 
               <MotionCardWrapper>
-              <Card className="border-l-4 border-l-orange-500 hover:shadow-lg transition-all hover:scale-105" data-testid="card-pending-tasks">
-                <CardContent className="p-4 md:p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs md:text-sm text-muted-foreground mb-1">مهام معلقة</p>
-                      <p className="text-xl md:text-2xl font-bold text-foreground">{pendingTasks.length}</p>
-                    </div>
-                    <div className="w-10 h-10 md:w-12 md:h-12 bg-orange-100 dark:bg-orange-900/20 rounded-lg flex items-center justify-center">
-                      <AlertCircle className="w-5 h-5 md:w-6 md:h-6 text-orange-600 dark:text-orange-400" />
+              <Card className="transition-shadow hover:shadow-md" data-testid="card-pending-tasks">
+                <CardContent className="p-5 md:p-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="w-11 h-11 bg-warning/10 rounded-xl flex items-center justify-center">
+                      <AlertCircle className="w-6 h-6 text-warning" />
                     </div>
                   </div>
+                  <p className="text-sm text-muted-foreground mb-1">مهام معلقة</p>
+                  <p className="text-2xl font-bold text-foreground">{pendingTasks.length}</p>
                 </CardContent>
               </Card>
               </MotionCardWrapper>
 
               <MotionCardWrapper>
-              <Card className="border-l-4 border-l-purple-500 hover:shadow-lg transition-all hover:scale-105" data-testid="card-productivity">
-                <CardContent className="p-4 md:p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs md:text-sm text-muted-foreground mb-1">الإنتاجية</p>
-                      <p className="text-xl md:text-2xl font-bold text-foreground">
-                        {productivityStats?.productivityPercentage != null ? `${Math.round(productivityStats.productivityPercentage)}%` : '-'}
-                      </p>
-                    </div>
-                    <div className="w-10 h-10 md:w-12 md:h-12 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
-                      <TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-purple-600 dark:text-purple-400" />
+              <Card className="transition-shadow hover:shadow-md" data-testid="card-productivity">
+                <CardContent className="p-5 md:p-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="w-11 h-11 bg-secondary/10 rounded-xl flex items-center justify-center">
+                      <TrendingUp className="w-6 h-6 text-secondary" />
                     </div>
                   </div>
+                  <p className="text-sm text-muted-foreground mb-1">الإنتاجية</p>
+                  <p className="text-2xl font-bold text-foreground">
+                    {productivityStats?.productivityPercentage != null ? `${Math.round(productivityStats.productivityPercentage)}%` : '-'}
+                  </p>
                 </CardContent>
               </Card>
               </MotionCardWrapper>
