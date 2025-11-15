@@ -39,14 +39,14 @@ export default function EmployeeDashboard() {
       <div className="flex">
         <Sidebar />
         
-        <main className={cn("flex-1 p-6 sm:p-8 transition-all duration-300 bg-muted/30", "md:mr-16", !isCollapsed && "md:mr-64")}>
-          {/* Welcome Section - Modern Hero */}
+        <main className={cn("flex-1 p-6 sm:p-8 transition-all duration-300 bg-neural-gradient particle-bg bg-noise", "md:mr-16", !isCollapsed && "md:mr-64")}>
+          {/* AI-Inspired Hero with Glass Effect */}
           <motion.div 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-8"
+            className="mb-8 glass-panel p-6 rounded-lg neon-edge-green"
           >
-            <h1 className="text-display-md mb-2 bg-gradient-to-l from-primary to-accent bg-clip-text text-transparent">
+            <h1 className="text-display-md mb-2 gradient-text-green font-bold">
               مرحباً، {user?.fullName}
             </h1>
             <p className="text-body text-muted-foreground">
@@ -102,46 +102,48 @@ export default function EmployeeDashboard() {
           {/* Tasks and Activity */}
           <MotionSection delay={0.5}>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-              {/* Today's Tasks - Modern Design */}
-              <Card data-testid="card-todays-tasks" className="overflow-hidden border-border/40 shadow-sm">
-                <CardHeader className="border-b border-border/40 bg-muted/20">
-                  <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                    <span className="text-heading-md">مهام اليوم</span>
-                    <span className="text-body-sm text-muted-foreground font-medium">
+              {/* Today's Tasks - AI Glass Design */}
+              <div data-testid="card-todays-tasks" className="card-neural overflow-hidden">
+                <div className="border-b border-border/20 bg-gradient-green-teal p-4">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                    <span className="text-heading-md text-foreground font-semibold">مهام اليوم</span>
+                    <span className="px-3 py-1 rounded-full bg-primary/20 text-primary text-xs font-medium border border-primary/30">
                       {pendingTasks.length} قيد التنفيذ
                     </span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2 p-4">
+                  </div>
+                </div>
+                <div className="space-y-2 p-4">
                   {pendingTasks.slice(0, 5).map((task, index) => (
                     <MotionListItem key={task.id} index={index} testId={`task-item-${task.id}`}>
-                      <div className="group flex items-start gap-3 p-3 rounded-md border border-transparent hover:border-border/60 hover:bg-muted/40 transition-all duration-150">
-                        <input 
-                          type="checkbox" 
-                          className="mt-1 w-4 h-4 text-primary rounded border-border/60 focus:ring-2 focus:ring-primary/20 transition-all" 
-                          data-testid={`checkbox-task-${task.id}`} 
-                        />
-                        <div className="flex-1 min-w-0">
-                          <h4 className="text-body font-medium text-foreground break-words group-hover:text-primary transition-colors">{task.title}</h4>
-                          {task.description && (
-                            <p className="text-body-sm text-muted-foreground mt-1 break-words line-clamp-2">
-                              {task.description}
-                            </p>
-                          )}
-                          <div className="flex flex-wrap items-center gap-2 mt-2">
-                            <span className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
-                              task.priority === 'high' ? 'bg-destructive/10 text-destructive border border-destructive/20' :
-                              task.priority === 'medium' ? 'bg-warning/10 text-warning border border-warning/20' :
-                              'bg-muted text-muted-foreground border border-border/40'
-                            }`}>
-                              {task.priority === 'high' ? 'عالي' : task.priority === 'medium' ? 'متوسط' : 'منخفض'}
-                            </span>
-                            {task.dueDate && (
-                              <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                <Clock className="w-3 h-3" />
-                                {formatArabicDate(task.dueDate)}
-                              </span>
+                      <div className="group glass-panel p-3 rounded-md hover:neon-edge-green transition-all duration-200 hover-lift">
+                        <div className="flex items-start gap-3">
+                          <input 
+                            type="checkbox" 
+                            className="mt-1 w-4 h-4 text-primary rounded border-primary/30 focus:ring-2 focus:ring-primary/30 transition-all accent-primary" 
+                            data-testid={`checkbox-task-${task.id}`} 
+                          />
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-body font-medium text-foreground break-words group-hover:text-primary transition-colors">{task.title}</h4>
+                            {task.description && (
+                              <p className="text-body-sm text-muted-foreground mt-1 break-words line-clamp-2">
+                                {task.description}
+                              </p>
                             )}
+                            <div className="flex flex-wrap items-center gap-2 mt-2">
+                              <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+                                task.priority === 'high' ? 'bg-destructive/20 text-destructive border border-destructive/30 glow-primary-sm' :
+                                task.priority === 'medium' ? 'bg-warning/20 text-warning border border-warning/30' :
+                                'bg-muted/50 text-muted-foreground border border-border/30'
+                              }`}>
+                                {task.priority === 'high' ? 'عالي' : task.priority === 'medium' ? 'متوسط' : 'منخفض'}
+                              </span>
+                              {task.dueDate && (
+                                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                  <Clock className="w-3 h-3" />
+                                  {formatArabicDate(task.dueDate)}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -161,24 +163,27 @@ export default function EmployeeDashboard() {
                 </CardContent>
               </Card>
 
-              {/* Recent Activity - Modern Design */}
-              <Card data-testid="card-recent-activity" className="overflow-hidden border-border/40 shadow-sm">
-                <CardHeader className="border-b border-border/40 bg-muted/20">
-                  <CardTitle className="text-heading-md">النشاط الأخير</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 p-4">
+              {/* Recent Activity - AI Glass Design */}
+              <div data-testid="card-recent-activity" className="card-neural overflow-hidden">
+                <div className="border-b border-border/20 bg-gradient-green-teal p-4">
+                  <span className="text-heading-md text-foreground font-semibold">النشاط الأخير</span>
+                </div>
+                <div className="space-y-3 p-4">
                   {notifications.slice(0, 5).map((notification, index) => (
                     <MotionListItem key={notification.id} index={index} testId={`notification-${notification.id}`}>
-                      <div className="flex items-start gap-3 p-3 rounded-md hover:bg-muted/40 transition-all duration-150">
-                        <div className="w-9 h-9 bg-gradient-to-br from-primary/10 to-teal/10 rounded-lg flex items-center justify-center flex-shrink-0 border border-primary/10">
-                          <CheckCircle2 className="w-4 h-4 text-primary" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-body font-medium text-foreground break-words">{notification.title}</p>
-                          <p className="text-body-sm text-muted-foreground mt-1 break-words line-clamp-2">{notification.message}</p>
-                          <p className="text-xs text-tertiary mt-1.5">
-                            {formatArabicDate(notification.createdAt)}
-                          </p>
+                      <div className="glass-panel p-3 rounded-md hover:neon-edge-teal transition-all duration-200 hover-lift">
+                        <div className="flex items-start gap-3">
+                          <div className="w-9 h-9 bg-gradient-to-br from-primary/20 to-accent/20 rounded-lg flex items-center justify-center flex-shrink-0 border border-primary/30 glow-primary-sm">
+                            <CheckCircle2 className="w-4 h-4 text-primary" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-body font-medium text-foreground break-words">{notification.title}</p>
+                            <p className="text-body-sm text-muted-foreground mt-1 break-words line-clamp-2">{notification.message}</p>
+                            <p className="text-xs text-tertiary mt-1.5 flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              {formatArabicDate(notification.createdAt)}
+                            </p>
+                          </div>
                         </div>
                       </div>
                     </MotionListItem>

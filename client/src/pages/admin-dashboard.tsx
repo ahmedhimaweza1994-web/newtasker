@@ -136,27 +136,29 @@ export default function AdminDashboard() {
       <div className="flex">
         <Sidebar />
        
-        <main className={cn("flex-1 p-6 sm:p-8 transition-all duration-300 bg-muted/30", "md:mr-16", !isCollapsed && "md:mr-64")}>
-          {/* Header - Modern Design */}
+        <main className={cn("flex-1 p-6 sm:p-8 transition-all duration-300 bg-neural-gradient particle-bg bg-noise", "md:mr-16", !isCollapsed && "md:mr-64")}>
+          {/* AI-Inspired Hero Header */}
           <motion.div 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4"
+            className="glass-panel p-6 rounded-lg neon-edge-green mb-8"
           >
-            <div>
-              <h1 className="text-display-md mb-2 bg-gradient-to-l from-primary to-accent bg-clip-text text-transparent">
-                لوحة تحكم المدير
-              </h1>
-              <p className="text-body text-muted-foreground">
-                مراقبة وإدارة جميع الموظفين في الوقت الفعلي
-              </p>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h1 className="text-display-md mb-2 gradient-text-green font-bold">
+                  لوحة تحكم المدير
+                </h1>
+                <p className="text-body text-muted-foreground">
+                  مراقبة وإدارة جميع الموظفين في الوقت الفعلي
+                </p>
+              </div>
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <Button data-testid="button-add-employee" className="w-full sm:w-auto shadow-lg glow-primary-sm">
+                  <Users className="w-4 h-4 ml-2" />
+                  إضافة موظف
+                </Button>
+              </motion.div>
             </div>
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <Button data-testid="button-add-employee" className="w-full sm:w-auto shadow-sm">
-                <Users className="w-4 h-4 ml-2" />
-                إضافة موظف
-              </Button>
-            </motion.div>
           </motion.div>
 
           {/* Stats Overview */}
@@ -199,23 +201,22 @@ export default function AdminDashboard() {
             />
           </ResponsiveGrid>
 
-          {/* Filters */}
+          {/* Filters - Glass Panel */}
           <MotionSection delay={0.4} className="mb-4 md:mb-6">
-            <Card data-testid="card-employee-filters">
-              <CardContent className="p-3 sm:p-4">
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="relative">
-                      <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input
-                        placeholder="البحث عن موظف..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pr-10 h-11 sm:h-10"
-                        data-testid="input-search-employees"
-                      />
-                    </div>
+            <div data-testid="card-employee-filters" className="glass-panel p-4 rounded-lg">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="relative">
+                    <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-primary" />
+                    <Input
+                      placeholder="البحث عن موظف..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pr-10 h-11 sm:h-10 glass-panel border-primary/30"
+                      data-testid="input-search-employees"
+                    />
                   </div>
+                </div>
                  
                   <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
                     <SelectTrigger className="w-full sm:w-[150px] h-11 sm:h-10" data-testid="select-filter-department">
@@ -250,15 +251,15 @@ export default function AdminDashboard() {
                       setDepartmentFilter("all");
                       setStatusFilter("all");
                     }} 
-                    className="h-11 sm:h-10"
+                    className="h-11 sm:h-10 glass-panel border-primary/30"
                     data-testid="button-reset-filters"
                   >
                     <Filter className="w-4 h-4 ml-2" />
                     إعادة تعيين
                   </Button>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </MotionSection>
 
           {/* Employee Grid - Desktop Table View */}
