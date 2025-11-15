@@ -1,14 +1,11 @@
-import { useState } from "react";
-import { Switch, Route, useLocation } from "wouter";
+import { Switch, Route } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
-import { AuthProvider, useAuth } from "@/hooks/use-auth";
+import { AuthProvider } from "@/hooks/use-auth";
 import { SidebarProvider } from "@/contexts/sidebar-context";
 import { ProtectedRoute } from "@/lib/protected-route";
 import { Toaster } from "@/components/ui/toaster";
 import { GlobalCallManager } from "@/components/call/GlobalCallManager";
-import TrelloCommandBar from "@/components/trello-command-bar";
-import TrelloSidebar from "@/components/trello-sidebar";
 import AuthPage from "@/pages/auth-page";
 import Dashboard from "@/pages/dashboard";
 import AdminDashboard from "@/pages/admin-dashboard";
@@ -33,28 +30,6 @@ import AISettings from "@/pages/ai-settings";
 import Companies from "@/pages/companies";
 import CompanyProfile from "@/pages/company-profile";
 import NotFound from "@/pages/not-found";
-
-function TrelloLayout({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
-  const [location] = useLocation();
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-
-  if (!user || location === '/auth') {
-    return <>{children}</>;
-  }
-
-  return (
-    <div className="h-screen flex flex-col bg-background rtl-grid">
-      <TrelloCommandBar onSidebarToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)} />
-      <div className="flex-1 flex overflow-hidden">
-        <TrelloSidebar isCollapsed={isSidebarCollapsed} />
-        <main className="flex-1 overflow-auto bg-gradient-to-br from-background via-background to-accent/5">
-          {children}
-        </main>
-      </div>
-    </div>
-  );
-}
 
 function Router() {
   return (
@@ -96,11 +71,11 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <SidebarProvider>
-          <TrelloLayout>
+          <div className="min-h-screen bg-background rtl-grid">
             <Router />
-          </TrelloLayout>
-          <Toaster />
-          <GlobalCallManager />
+            <Toaster />
+            <GlobalCallManager />
+          </div>
         </SidebarProvider>
       </AuthProvider>
     </QueryClientProvider>
