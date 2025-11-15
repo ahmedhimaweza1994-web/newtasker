@@ -180,17 +180,14 @@ export default function Dashboard() {
   const [selectedTaskId, setSelectedTaskId] = useState<string>("");
   
   const handleStatusChange = (status: string) => {
-    const taskId = selectedTaskId && selectedTaskId !== 'none' ? selectedTaskId : undefined;
-    
-    // Validate: working_on_project requires a task selection
-    if (status === "working_on_project" && !taskId) {
-      toast({
-        title: "يجب اختيار مهمة",
-        description: "عند العمل على مشروع، يجب اختيار المهمة التي تعمل عليها",
-        variant: "destructive",
-      });
+    // If clicking working_on_project, just update UI to show it's selected
+    // User will then select a task before it's actually submitted
+    if (status === "working_on_project") {
+      setSelectedStatus(status);
       return;
     }
+    
+    const taskId = selectedTaskId && selectedTaskId !== 'none' ? selectedTaskId : undefined;
     
     if (currentSession && !currentSession.endTime) {
       endSessionMutation.mutate({
@@ -214,6 +211,45 @@ export default function Dashboard() {
       });
     }
     setSelectedStatus(status);
+    setCurrentNotes("");
+    setSelectedTaskId("");
+  };
+
+  const handleConfirmWorkingOnProject = () => {
+    const taskId = selectedTaskId && selectedTaskId !== 'none' ? selectedTaskId : undefined;
+    
+    // Validate: working_on_project requires a task selection
+    if (!taskId) {
+      toast({
+        title: "يجب اختيار مهمة",
+        description: "عند العمل على مشروع، يجب اختيار المهمة التي تعمل عليها",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (currentSession && !currentSession.endTime) {
+      endSessionMutation.mutate({
+        id: currentSession.id,
+        notes: currentNotes,
+        selectedTaskId: taskId
+      }, {
+        onSuccess: () => {
+          startSessionMutation.mutate({
+            status: "working_on_project",
+            notes: currentNotes,
+            selectedTaskId: taskId
+          });
+        }
+      });
+    } else {
+      startSessionMutation.mutate({
+        status: "working_on_project",
+        notes: currentNotes,
+        selectedTaskId: taskId
+      });
+    }
+    setSelectedStatus("working_on_project");
     setCurrentNotes("");
     setSelectedTaskId("");
   };
@@ -533,7 +569,14 @@ export default function Dashboard() {
                       </div>
 
                       <div className="space-y-2 text-right">
-                        <label className="text-sm font-medium text-right">المهمة الحالية (اختياري)</label>
+                        <label className="text-sm font-medium text-right">
+                          المهمة الحالية {selectedStatus === 'working_on_project' && <span className="text-destructive">*</span>}
+                        </label>
+                        {selectedStatus === 'working_on_project' && (
+                          <p className="text-xs text-muted-foreground">
+                            يجب اختيار مهمة عند العمل على مشروع
+                          </p>
+                        )}
                         <Select value={selectedTaskId} onValueChange={setSelectedTaskId}>
                           <SelectTrigger className="w-full" data-testid="select-current-task-dashboard">
                             <SelectValue placeholder="اختر المهمة التي تعمل عليها..." />
@@ -606,6 +649,17 @@ export default function Dashboard() {
                           </div>
                         )}
                       </div>
+                      
+                      {selectedStatus === 'working_on_project' && (
+                        <Button
+                          onClick={handleConfirmWorkingOnProject}
+                          className="w-full"
+                          disabled={startSessionMutation.isPending || endSessionMutation.isPending || !selectedTaskId || selectedTaskId === 'none'}
+                          data-testid="button-confirm-working-on-project"
+                        >
+                          {startSessionMutation.isPending || endSessionMutation.isPending ? 'جاري التحديث...' : 'تأكيد العمل على المشروع'}
+                        </Button>
+                      )}
                     </CardContent>
                   </Card>
                 </div>
