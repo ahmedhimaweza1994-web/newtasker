@@ -298,11 +298,11 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
         {...attributes}
       >
         <div {...listeners} className="cursor-grab active:cursor-grabbing">
-          <Card className="p-3 hover:shadow-md hover-elevate transition-all bg-card max-w-full overflow-hidden">
+          <Card className="p-3 hover:shadow-md hover-elevate transition-all bg-card w-full overflow-hidden">
             <div className="space-y-2">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-medium text-sm line-clamp-2 leading-snug" data-testid={`task-title-${task.id}`}>
+                  <h4 className="font-medium text-sm line-clamp-1 leading-snug truncate" data-testid={`task-title-${task.id}`}>
                     {task.title}
                   </h4>
                 </div>
@@ -378,15 +378,15 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
               </div>
 
               {task.description && (
-                <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed" data-testid={`task-description-${task.id}`}>
+                <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed truncate" data-testid={`task-description-${task.id}`}>
                   {task.description}
                 </p>
               )}
 
               {task.companyId && getCompanyName(task.companyId) && (
-                <div className="flex items-center gap-1 text-xs text-muted-foreground" data-testid={`task-company-${task.id}`}>
+                <div className="flex items-center gap-1 text-xs text-muted-foreground w-full" data-testid={`task-company-${task.id}`}>
                   <Building2 className="w-3 h-3 flex-shrink-0" />
-                  <span className="truncate">{getCompanyName(task.companyId)}</span>
+                  <span className="truncate flex-1 min-w-0">{getCompanyName(task.companyId)}</span>
                 </div>
               )}
 
@@ -403,16 +403,16 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
               </div>
 
               {task.dueDate && (
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground" data-testid={`task-due-date-${task.id}`}>
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground w-full" data-testid={`task-due-date-${task.id}`}>
                   <Clock className="w-3 h-3 flex-shrink-0" />
-                  <span className="truncate">{formatArabicDate(task.dueDate)}</span>
+                  <span className="truncate flex-1 min-w-0">{formatArabicDate(task.dueDate)}</span>
                 </div>
               )}
 
               {((task as any).createdForUser || task.assignedToUser) && (
-                <div className="flex items-center gap-2 pt-2 border-t border-border/40">
+                <div className="flex items-center gap-2 pt-2 border-t border-border/40 w-full min-w-0">
                   {(task as any).createdForUser && (
-                    <div className="flex items-center gap-1 flex-1 min-w-0" data-testid={`task-created-for-${task.id}`}>
+                    <div className="flex items-center gap-1 flex-1 min-w-0 overflow-hidden" data-testid={`task-created-for-${task.id}`}>
                       <Avatar className="h-5 w-5 flex-shrink-0">
                         <AvatarImage 
                           src={(task as any).createdForUser.profilePicture || undefined} 
@@ -420,7 +420,7 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
                         />
                         <AvatarFallback className="text-xs">{(task as any).createdForUser.fullName?.[0]}</AvatarFallback>
                       </Avatar>
-                      <span className="text-xs text-muted-foreground truncate">{(task as any).createdForUser.fullName}</span>
+                      <span className="text-xs text-muted-foreground truncate flex-1 min-w-0">{(task as any).createdForUser.fullName}</span>
                     </div>
                   )}
                   {task.assignedToUser && (
@@ -463,7 +463,7 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
     });
 
     return (
-      <div className="flex-shrink-0 w-80" ref={setNodeRef}>
+      <div className="flex-shrink-0 w-72" ref={setNodeRef}>
         <div className={cn(
           "rounded-lg bg-muted/40 p-3 h-full flex flex-col",
           isOver && "ring-2 ring-primary bg-primary/5"
@@ -546,8 +546,8 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
 
         <DragOverlay>
           {activeTask ? (
-            <Card className="p-3 shadow-2xl opacity-90 w-80">
-              <div className="font-medium text-sm line-clamp-2">{activeTask.title}</div>
+            <Card className="p-3 shadow-2xl opacity-90 w-72">
+              <div className="font-medium text-sm line-clamp-1 truncate">{activeTask.title}</div>
             </Card>
           ) : null}
         </DragOverlay>
