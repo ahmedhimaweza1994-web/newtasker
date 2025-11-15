@@ -408,11 +408,16 @@ export default function TaskManagement() {
                         <SelectContent>
                           <SelectItem value="all">كل الموظفين</SelectItem>
                           <SelectItem value="my">مهامي</SelectItem>
-                          {users.map((user) => (
-                            <SelectItem key={user.id} value={user.id}>
-                              {user.fullName} - {user.department}
-                            </SelectItem>
-                          ))}
+                          {users.map((u) => {
+                            const userTaskCount = tasks.filter(
+                              t => t.createdBy === u.id || t.assignedTo === u.id || t.createdFor === u.id
+                            ).length;
+                            return (
+                              <SelectItem key={u.id} value={u.id}>
+                                {u.fullName} - {u.department} ({userTaskCount})
+                              </SelectItem>
+                            );
+                          })}
                         </SelectContent>
                       </Select>
                       <Select value={departmentFilter} onValueChange={setDepartmentFilter}>

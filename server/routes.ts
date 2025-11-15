@@ -3006,5 +3006,65 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Contract Expiry Reminder System - Check daily
+  // Note: In production, consider using a proper job scheduler instead of setInterval
+  const checkContractExpiry = async () => {
+    try {
+      const companies = await storage.getCompanies();
+      const now = new Date();
+      now.setHours(0, 0, 0, 0); // Reset to start of day for consistent comparison
+      
+      for (const company of companies) {
+        if (!company.endDate) continue;
+        
+        const endDate = new Date(company.endDate);
+        endDate.setHours(0, 0, 0, 0);
+        const daysDiff = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+        
+        // Send notification at 7 and 14 days before expiry
+        if (daysDiff === 7 || daysDiff === 14) {
+          // Get all admins and project managers
+          const users = await storage.getUsers();
+          const notifyUsers = users.filter(u => 
+            u.role === 'admin' || 
+            u.role === 'sub-admin' || 
+            u.id === company.managerId
+          );
+          
+          for (const user of notifyUsers) {
+            // Check if notification already exists for this user/company/threshold combination today
+            const notifications = await storage.getUserNotifications(user.id);
+            const alreadyNotified = notifications.some(n => 
+              n.metadata?.companyId === company.id &&
+              n.metadata?.daysRemaining === daysDiff &&
+              n.createdAt && new Date(n.createdAt).setHours(0, 0, 0, 0) === now.getTime()
+            );
+            
+            if (!alreadyNotified) {
+              await storage.createNotification({
+                userId: user.id,
+                title: "تنبيه: اقتراب انتهاء عقد شركة",
+                message: `عقد شركة "${company.name}" سينتهي خلال ${daysDiff} يوم`,
+                type: "warning",
+                category: "system",
+                metadata: {
+                  companyId: company.id,
+                  companyName: company.name,
+                  endDate: company.endDate,
+                  daysRemaining: daysDiff
+                }
+              });
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error checking contract expiry:", error);
+    }
+  };
+
+  // Run daily - in production, use a proper cron job or task scheduler
+  setInterval(checkContractExpiry, 24 * 60 * 60 * 1000);
+
   return httpServer;
 }

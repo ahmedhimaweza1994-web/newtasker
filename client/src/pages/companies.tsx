@@ -38,6 +38,8 @@ export default function Companies() {
     status: "active" as "active" | "inactive" | "pending",
     managerId: "",
     startDate: "",
+    endDate: "",
+    logo: "",
   });
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -68,6 +70,8 @@ export default function Companies() {
         status: "active",
         managerId: "",
         startDate: "",
+        endDate: "",
+        logo: "",
       });
       toast({
         title: "تم إنشاء الشركة بنجاح",
@@ -136,19 +140,26 @@ export default function Companies() {
     };
 
     if (newCompany.startDate) {
-      const selectedDate = new Date(newCompany.startDate);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      companyData.startDate = new Date(newCompany.startDate).toISOString();
+    }
+
+    if (newCompany.endDate) {
+      const endDate = new Date(newCompany.endDate);
+      const startDate = newCompany.startDate ? new Date(newCompany.startDate) : new Date();
       
-      if (selectedDate < today) {
+      if (endDate <= startDate) {
         toast({
           title: "خطأ في التاريخ",
-          description: "لا يمكن اختيار تاريخ في الماضي",
+          description: "يجب أن يكون تاريخ انتهاء العقد بعد تاريخ البدء",
           variant: "destructive",
         });
         return;
       }
-      companyData.startDate = selectedDate.toISOString();
+      companyData.endDate = endDate.toISOString();
+    }
+
+    if (newCompany.logo) {
+      companyData.logo = newCompany.logo;
     }
 
     createCompanyMutation.mutate(companyData);
@@ -168,6 +179,14 @@ export default function Companies() {
 
     if (editingCompany.startDate) {
       companyData.startDate = new Date(editingCompany.startDate).toISOString();
+    }
+
+    if (editingCompany.endDate) {
+      companyData.endDate = new Date(editingCompany.endDate).toISOString();
+    }
+
+    if (editingCompany.logo) {
+      companyData.logo = editingCompany.logo;
     }
 
     updateCompanyMutation.mutate({ id: editingCompany.id, data: companyData });
@@ -324,14 +343,38 @@ export default function Companies() {
                         </div>
                       </div>
 
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="company-start-date">تاريخ البدء</Label>
+                          <Input
+                            id="company-start-date"
+                            type="date"
+                            value={newCompany.startDate}
+                            onChange={(e) => setNewCompany({ ...newCompany, startDate: e.target.value })}
+                            data-testid="input-company-start-date"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="company-end-date">تاريخ انتهاء العقد</Label>
+                          <Input
+                            id="company-end-date"
+                            type="date"
+                            value={newCompany.endDate}
+                            onChange={(e) => setNewCompany({ ...newCompany, endDate: e.target.value })}
+                            data-testid="input-company-end-date"
+                          />
+                        </div>
+                      </div>
+
                       <div className="space-y-2">
-                        <Label htmlFor="company-start-date">تاريخ البدء</Label>
+                        <Label htmlFor="company-logo">رابط الشعار (URL)</Label>
                         <Input
-                          id="company-start-date"
-                          type="date"
-                          value={newCompany.startDate}
-                          onChange={(e) => setNewCompany({ ...newCompany, startDate: e.target.value })}
-                          data-testid="input-company-start-date"
+                          id="company-logo"
+                          type="url"
+                          value={newCompany.logo}
+                          onChange={(e) => setNewCompany({ ...newCompany, logo: e.target.value })}
+                          placeholder="https://example.com/logo.png"
+                          data-testid="input-company-logo"
                         />
                       </div>
 
@@ -448,7 +491,14 @@ export default function Companies() {
                   >
                     <Card className="h-full" data-testid={`card-company-${company.id}`}>
                       <CardHeader>
-                        <div className="flex items-start justify-between">
+                        <div className="flex items-start justify-between gap-3">
+                          {company.logo && (
+                            <img
+                              src={company.logo}
+                              alt={company.name}
+                              className="w-12 h-12 rounded-md object-cover"
+                            />
+                          )}
                           <div className="flex-1">
                             <CardTitle className="text-lg mb-2 line-clamp-1">{company.name}</CardTitle>
                             {getStatusBadge(company.status)}
@@ -596,6 +646,41 @@ export default function Companies() {
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-company-start-date">تاريخ البدء</Label>
+                  <Input
+                    id="edit-company-start-date"
+                    type="date"
+                    value={editingCompany.startDate ? new Date(editingCompany.startDate).toISOString().split('T')[0] : ""}
+                    onChange={(e) => setEditingCompany({ ...editingCompany, startDate: e.target.value ? new Date(e.target.value).toISOString() : null })}
+                    data-testid="input-edit-start-date"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-company-end-date">تاريخ انتهاء العقد</Label>
+                  <Input
+                    id="edit-company-end-date"
+                    type="date"
+                    value={editingCompany.endDate ? new Date(editingCompany.endDate).toISOString().split('T')[0] : ""}
+                    onChange={(e) => setEditingCompany({ ...editingCompany, endDate: e.target.value ? new Date(e.target.value).toISOString() : null })}
+                    data-testid="input-edit-end-date"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-company-logo">رابط الشعار (URL)</Label>
+                <Input
+                  id="edit-company-logo"
+                  type="url"
+                  value={editingCompany.logo || ""}
+                  onChange={(e) => setEditingCompany({ ...editingCompany, logo: e.target.value })}
+                  placeholder="https://example.com/logo.png"
+                  data-testid="input-edit-logo"
+                />
               </div>
 
               <div className="flex gap-2 justify-end pt-4">
