@@ -29,6 +29,8 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -327,53 +329,74 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48">
+                    {/* View Group */}
+                    <DropdownMenuLabel>العرض</DropdownMenuLabel>
                     <DropdownMenuItem onClick={() => setTaskDetailsDialog({ open: true, taskId: task.id })} data-testid={`menu-view-task-${task.id}`}>
                       <Eye className="w-4 h-4 ml-2" />
                       عرض التفاصيل
                     </DropdownMenuItem>
-                    {task.status === 'pending' && (
-                      <DropdownMenuItem onClick={() => handleMoveTask(task.id, 'in_progress')} data-testid={`menu-move-to-progress-${task.id}`}>
-                        <ArrowRight className="w-4 h-4 ml-2" />
-                        نقل إلى قيد التنفيذ
-                      </DropdownMenuItem>
-                    )}
-                    {task.status === 'in_progress' && (
+
+                    {/* Move Actions Group */}
+                    {(task.status === 'pending' || task.status === 'in_progress' || task.status === 'under_review') && (
                       <>
-                        <DropdownMenuItem onClick={() => handleMoveTask(task.id, 'under_review')} data-testid={`menu-move-to-review-${task.id}`}>
-                          <ArrowRight className="w-4 h-4 ml-2" />
-                          نقل للمراجعة
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleMoveTask(task.id, 'pending')} data-testid={`menu-move-to-pending-${task.id}`}>
-                          <ArrowRight className="w-4 h-4 ml-2" />
-                          إرجاع للانتظار
-                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuLabel>نقل المهمة</DropdownMenuLabel>
+                        {task.status === 'pending' && (
+                          <DropdownMenuItem onClick={() => handleMoveTask(task.id, 'in_progress')} data-testid={`menu-move-to-progress-${task.id}`}>
+                            <ArrowRight className="w-4 h-4 ml-2" />
+                            نقل إلى قيد التنفيذ
+                          </DropdownMenuItem>
+                        )}
+                        {task.status === 'in_progress' && (
+                          <>
+                            <DropdownMenuItem onClick={() => handleMoveTask(task.id, 'under_review')} data-testid={`menu-move-to-review-${task.id}`}>
+                              <ArrowRight className="w-4 h-4 ml-2" />
+                              نقل للمراجعة
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleMoveTask(task.id, 'pending')} data-testid={`menu-move-to-pending-${task.id}`}>
+                              <ArrowRight className="w-4 h-4 ml-2" />
+                              إرجاع للانتظار
+                            </DropdownMenuItem>
+                          </>
+                        )}
+                        {task.status === 'under_review' && (
+                          <DropdownMenuItem onClick={() => handleMoveTask(task.id, 'in_progress')} data-testid={`menu-move-back-to-progress-${task.id}`}>
+                            <ArrowRight className="w-4 h-4 ml-2" />
+                            إرجاع لقيد التنفيذ
+                          </DropdownMenuItem>
+                        )}
                       </>
                     )}
-                    {task.status === 'under_review' && (
+
+                    {/* Admin Actions Group */}
+                    {((task.status === 'under_review' && user?.role === 'admin') || (task.status === 'completed' && user?.role === 'admin' && !task.rewardPoints)) && (
                       <>
-                        {user?.role === 'admin' && (
+                        <DropdownMenuSeparator />
+                        <DropdownMenuLabel>إجراءات الإدارة</DropdownMenuLabel>
+                        {task.status === 'under_review' && user?.role === 'admin' && (
                           <DropdownMenuItem onClick={() => handleApproveTask(task.id)} data-testid={`menu-approve-task-${task.id}`}>
                             <CheckCircle className="w-4 h-4 ml-2" />
                             الموافقة والإكمال
                           </DropdownMenuItem>
                         )}
-                        <DropdownMenuItem onClick={() => handleMoveTask(task.id, 'in_progress')} data-testid={`menu-move-back-to-progress-${task.id}`}>
-                          <ArrowRight className="w-4 h-4 ml-2" />
-                          إرجاع لقيد التنفيذ
-                        </DropdownMenuItem>
+                        {task.status === 'completed' && user?.role === 'admin' && !task.rewardPoints && (
+                          <DropdownMenuItem onClick={() => setAssignPointsDialog({ open: true, taskId: task.id })} data-testid={`menu-assign-points-${task.id}`}>
+                            <Star className="w-4 h-4 ml-2" />
+                            تعيين نقاط
+                          </DropdownMenuItem>
+                        )}
                       </>
                     )}
-                    {task.status === 'completed' && user?.role === 'admin' && !task.rewardPoints && (
-                      <DropdownMenuItem onClick={() => setAssignPointsDialog({ open: true, taskId: task.id })} data-testid={`menu-assign-points-${task.id}`}>
-                        <Star className="w-4 h-4 ml-2" />
-                        تعيين نقاط
-                      </DropdownMenuItem>
-                    )}
+
+                    {/* Delete Group */}
                     {(task.createdBy === user?.id || user?.role === 'admin' || user?.role === 'sub-admin') && (
-                      <DropdownMenuItem className="text-destructive" onClick={() => deleteTaskMutation.mutate(task.id)} data-testid={`menu-delete-task-${task.id}`}>
-                        <Trash2 className="w-4 h-4 ml-2" />
-                        حذف المهمة
-                      </DropdownMenuItem>
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem className="text-destructive" onClick={() => deleteTaskMutation.mutate(task.id)} data-testid={`menu-delete-task-${task.id}`}>
+                          <Trash2 className="w-4 h-4 ml-2" />
+                          حذف المهمة
+                        </DropdownMenuItem>
+                      </>
                     )}
                   </DropdownMenuContent>
                 </DropdownMenu>
