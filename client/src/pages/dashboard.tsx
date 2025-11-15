@@ -182,6 +182,16 @@ export default function Dashboard() {
   const handleStatusChange = (status: string) => {
     const taskId = selectedTaskId && selectedTaskId !== 'none' ? selectedTaskId : undefined;
     
+    // Validate: working_on_project requires a task selection
+    if (status === "working_on_project" && !taskId) {
+      toast({
+        title: "يجب اختيار مهمة",
+        description: "عند العمل على مشروع، يجب اختيار المهمة التي تعمل عليها",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     if (currentSession && !currentSession.endTime) {
       endSessionMutation.mutate({
         id: currentSession.id,

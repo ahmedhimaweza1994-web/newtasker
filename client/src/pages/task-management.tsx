@@ -36,6 +36,8 @@ export default function TaskManagement() {
     dueDate: "",
     companyId: "",
   });
+  const [attachments, setAttachments] = useState<Array<{ name: string; url: string; type: string }>>([]);
+  const [newAttachment, setNewAttachment] = useState({ name: "", url: "", type: "link" });
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
@@ -83,6 +85,8 @@ export default function TaskManagement() {
         dueDate: "",
         companyId: "",
       });
+      setAttachments([]);
+      setNewAttachment({ name: "", url: "", type: "link" });
       toast({
         title: "تم إنشاء المهمة بنجاح",
         description: "تمت إضافة المهمة الجديدة",
@@ -138,6 +142,7 @@ export default function TaskManagement() {
       createdFor: newTask.createdFor,
       assignedTo: newTask.assignedTo || undefined,
       companyId: newTask.companyId || undefined,
+      attachments: attachments.length > 0 ? attachments : undefined,
     };
     
     if (newTask.dueDate) {
@@ -145,6 +150,23 @@ export default function TaskManagement() {
     }
     
     createTaskMutation.mutate(taskData);
+  };
+
+  const handleAddAttachment = () => {
+    if (!newAttachment.name || !newAttachment.url) {
+      toast({
+        title: "خطأ",
+        description: "يرجى ملء اسم المرفق والرابط",
+        variant: "destructive",
+      });
+      return;
+    }
+    setAttachments([...attachments, newAttachment]);
+    setNewAttachment({ name: "", url: "", type: "link" });
+  };
+
+  const handleRemoveAttachment = (index: number) => {
+    setAttachments(attachments.filter((_, i) => i !== index));
   };
 
   // Deduplicate tasks by ID (prevents duplicate display when user both creates and is assigned to same task)
@@ -335,6 +357,63 @@ export default function TaskManagement() {
                         </SelectContent>
                       </Select>
                     </div>
+                    
+                    {/* Attachments Section */}
+                    <div className="space-y-3 pt-2 border-t">
+                      <Label className="text-sm sm:text-base font-medium flex items-center gap-2">
+                        <Plus className="w-4 h-4" />
+                        المرفقات (روابط/ملفات)
+                      </Label>
+                      
+                      {attachments.length > 0 && (
+                        <div className="space-y-2">
+                          {attachments.map((att, idx) => (
+                            <div key={idx} className="flex items-center justify-between p-2 bg-muted rounded-md">
+                              <div className="flex items-center gap-2 flex-1 min-w-0">
+                                <Plus className="w-4 h-4 flex-shrink-0" />
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium truncate">{att.name}</p>
+                                  <p className="text-xs text-muted-foreground truncate">{att.url}</p>
+                                </div>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleRemoveAttachment(idx)}
+                              >
+                                <X className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <Input
+                          placeholder="اسم المرفق"
+                          value={newAttachment.name}
+                          onChange={(e) => setNewAttachment({ ...newAttachment, name: e.target.value })}
+                          className="h-10"
+                        />
+                        <Input
+                          placeholder="رابط المرفق (URL)"
+                          value={newAttachment.url}
+                          onChange={(e) => setNewAttachment({ ...newAttachment, url: e.target.value })}
+                          className="h-10"
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleAddAttachment}
+                        className="w-full h-10"
+                      >
+                        <Plus className="w-4 h-4 ml-2" />
+                        إضافة مرفق
+                      </Button>
+                    </div>
+                    
                     <div className="flex gap-3 pt-4">
                       <Button
                         type="submit"
