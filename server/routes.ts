@@ -2363,6 +2363,7 @@ export function registerRoutes(app: Express): Server {
       const validationResult = insertCompanySchema.safeParse({
         ...req.body,
         startDate: req.body.startDate ? new Date(req.body.startDate) : undefined,
+        endDate: req.body.endDate ? new Date(req.body.endDate) : undefined,
       });
 
       if (!validationResult.success) {

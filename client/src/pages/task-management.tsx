@@ -182,11 +182,18 @@ export default function TaskManagement() {
     const matchesStatus = statusFilter === "all" || task.status === statusFilter;
     const matchesPriority = priorityFilter === "all" || task.priority === priorityFilter;
     const matchesUser = userFilter === "all" ||
-                        (userFilter === "my" && (task.createdBy === user?.id || task.assignedTo === user?.id)) ||
+                        (userFilter === "my" && (task.createdBy === user?.id || task.assignedTo === user?.id || task.createdFor === user?.id)) ||
                         task.createdBy === userFilter ||
-                        task.assignedTo === userFilter;
-    const matchesDepartment = departmentFilter === "all" ||
-                              (users.find(u => u.id === task.createdBy || u.id === task.assignedTo)?.department === departmentFilter);
+                        task.assignedTo === userFilter ||
+                        task.createdFor === userFilter;
+    const matchesDepartment = departmentFilter === "all" || (() => {
+                              const creatorUser = users.find(u => u.id === task.createdBy);
+                              const assignedUser = users.find(u => u.id === task.assignedTo);
+                              const createdForUser = users.find(u => u.id === task.createdFor);
+                              return (creatorUser?.department === departmentFilter) || 
+                                     (assignedUser?.department === departmentFilter) ||
+                                     (createdForUser?.department === departmentFilter);
+                            })();
     return matchesSearch && matchesStatus && matchesPriority && matchesUser && matchesDepartment;
   });
 

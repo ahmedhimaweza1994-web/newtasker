@@ -30,11 +30,10 @@ export default function AuxStatusTracker() {
       const startTime = new Date(currentSession.startTime).getTime();
       const elapsed = Math.floor((Date.now() - startTime) / 1000);
       setTimer(elapsed);
-      // Initialize selectedTaskId from current session
+      // Only update selectedTaskId from session if it has a value
+      // This preserves user selection when switching status
       if (currentSession.selectedTaskId) {
         setSelectedTaskId(currentSession.selectedTaskId);
-      } else {
-        setSelectedTaskId("");
       }
     } else {
       setIsTimerRunning(false);
