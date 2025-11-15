@@ -294,6 +294,7 @@ export const companies = pgTable("companies", {
   logo: text("logo"),
   description: text("description"),
   startDate: timestamp("start_date"),
+  endDate: timestamp("end_date"),
   status: companyStatusEnum("status").notNull().default('active'),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),

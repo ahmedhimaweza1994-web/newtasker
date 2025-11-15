@@ -29,6 +29,7 @@ import AICodeAssistant from "@/pages/ai-code-assistant";
 import AISettings from "@/pages/ai-settings";
 import Companies from "@/pages/companies";
 import CompanyProfile from "@/pages/company-profile";
+import Settings from "@/pages/settings";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -60,7 +61,7 @@ function Router() {
       <ProtectedRoute path="/ai/settings" component={AISettings} />
       <ProtectedRoute path="/companies" component={Companies} />
       <ProtectedRoute path="/companies/:id" component={CompanyProfile} />
-      <ProtectedRoute path="/settings" component={Dashboard} />
+      <ProtectedRoute path="/settings" component={Settings} />
       <Route component={NotFound} />
     </Switch>
   );

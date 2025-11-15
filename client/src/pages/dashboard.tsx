@@ -282,37 +282,48 @@ export default function Dashboard() {
         <Sidebar />
        
         <main className={cn("flex-1 p-4 sm:p-6 transition-all duration-300", "md:mr-16" , !isCollapsed && "md:mr-64")}>
-          {/* Hero Section with Modern Gradient */}
-          <MotionSection
-            className="relative overflow-hidden bg-gradient-to-br from-primary via-primary/90 to-secondary/80 rounded-xl">
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0YzAtMi4yMSAxLjc5LTQgNC00czQgMS43OSA0IDQtMS43OSA0LTQgNC00LTEuNzktNC00em0wIDRjMC0yLjIxIDEuNzktNCA0LTRzNCAxLjc5IDQgNC0xLjc5IDQtNCA0LTQtMS43OS00LTR6bS0yMCA0YzAtMi4yMSAxLjc5LTQgNC00czQgMS43OSA0IDQtMS43OSA0LTQgNC00LTEuNzktNC00eiIvPjwvZz48L2c+PC9zdmc+')] opacity-50"></div>
-            <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-black/20"></div>
+          {/* Hero Section with Enhanced Glassmorphism & Gradient */}
+          <MotionSection className="relative overflow-hidden rounded-2xl mb-6">
+            {/* Animated gradient background with blur */}
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-accent/20 to-primary/30 blur-3xl"></div>
+            <div className="absolute inset-0 bg-gradient-to-tr from-teal/20 via-transparent to-magenta/20 blur-2xl animate-pulse"></div>
             
-            <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
-              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                <div className="flex items-center gap-4">
-                  <Avatar className="w-16 h-16 md:w-20 md:h-20 border-4 border-white/20 shadow-2xl">
-                    <AvatarImage src={getMediaUrl(user?.profilePicture)} alt={user?.fullName} />
-                    <AvatarFallback className="text-2xl font-bold bg-white/10 backdrop-blur text-white">
-                      {user?.fullName?.split(" ")[0]?.charAt(0) || "م"}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-1">
-                      مرحباً، {user?.fullName?.split(' ')[0]}! 👋
-                    </h1>
-                    <p className="text-white/80 text-sm md:text-base">
-                      إليك نظرة عامة على يومك ونشاطك الحالي
-                    </p>
+            {/* Glass morphism card */}
+            <div className="relative backdrop-blur-xl bg-gradient-to-br from-card/40 via-card/60 to-card/40 border border-white/10 shadow-2xl">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5"></div>
+              
+              <div className="relative px-6 sm:px-8 py-8 md:py-12">
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                  <div className="flex items-center gap-5">
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-primary/30 blur-xl rounded-full"></div>
+                      <Avatar className="relative w-20 h-20 md:w-24 md:h-24 border-2 border-primary/30 shadow-2xl ring-4 ring-primary/10">
+                        <AvatarImage src={getMediaUrl(user?.profilePicture)} alt={user?.fullName} />
+                        <AvatarFallback className="text-3xl font-bold bg-gradient-to-br from-primary to-accent text-white">
+                          {user?.fullName?.split(" ")[0]?.charAt(0) || "م"}
+                        </AvatarFallback>
+                      </Avatar>
+                    </div>
+                    <div>
+                      <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-foreground via-primary to-accent bg-clip-text text-transparent mb-2">
+                        مرحباً، {user?.fullName?.split(' ')[0]}! 👋
+                      </h1>
+                      <p className="text-muted-foreground text-base md:text-lg">
+                        إليك نظرة عامة على يومك ونشاطك الحالي
+                      </p>
+                    </div>
                   </div>
-                </div>
 
-                {/* Current Status Badge */}
-                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-lg rounded-xl px-4 py-3 border border-white/20">
-                  <div className={cn("w-3 h-3 rounded-full", currentStatusInfo.color, "animate-pulse")}></div>
-                  <div>
-                    <p className="text-xs text-white/60">الحالة الحالية</p>
-                    <p className="text-white font-semibold">{currentStatusInfo.label}</p>
+                  {/* Current Status Badge with enhanced glassmorphism */}
+                  <div className="relative group">
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 blur-xl group-hover:blur-2xl transition-all"></div>
+                    <div className="relative flex items-center gap-4 backdrop-blur-2xl bg-white/5 dark:bg-white/10 rounded-2xl px-6 py-4 border border-white/20 shadow-xl">
+                      <div className={cn("w-4 h-4 rounded-full", currentStatusInfo.color, "animate-pulse shadow-lg")}></div>
+                      <div>
+                        <p className="text-xs text-muted-foreground uppercase tracking-wider">الحالة الحالية</p>
+                        <p className="text-lg font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">{currentStatusInfo.label}</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

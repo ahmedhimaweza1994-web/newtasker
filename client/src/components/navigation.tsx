@@ -18,7 +18,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bell, Search, Moon, Sun, LogOut, User, Settings, FileText, Users as UsersIcon, CheckSquare, Menu } from "lucide-react";
+import { Bell, Search, LogOut, User, Settings, FileText, Users as UsersIcon, CheckSquare, Menu } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -35,7 +35,6 @@ export default function Navigation() {
   const { user, logoutMutation } = useAuth();
   const { setIsMobileOpen } = useSidebar();
   const [location, setLocation] = useLocation();
-  const [isDark, setIsDark] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showSearchResults, setShowSearchResults] = useState(false);
   const processedNotificationIds = useRef<Set<string>>(new Set());
@@ -166,24 +165,10 @@ export default function Navigation() {
     }
   }, [permission, user, ensureBrowserNotificationPermission]);
 
+  // Force dark mode permanently
   useEffect(() => {
-    const darkMode = localStorage.getItem('darkMode') === 'true';
-    setIsDark(darkMode);
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-    }
+    document.documentElement.classList.add('dark');
   }, []);
-
-  const toggleDarkMode = () => {
-    const newDarkMode = !isDark;
-    setIsDark(newDarkMode);
-    localStorage.setItem('darkMode', newDarkMode.toString());
-    if (newDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  };
 
   const handleLogout = () => {
     logoutMutation.mutate();
@@ -443,24 +428,6 @@ export default function Navigation() {
               </motion.div>
             </PopoverContent>
           </Popover>
-
-          <motion.div whileTap={{ scale: 0.95 }}>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={toggleDarkMode} 
-              className="h-11 w-11 md:h-10 md:w-10"
-              data-testid="nav-dark-mode-toggle"
-            >
-              <motion.div
-                initial={false}
-                animate={{ rotate: isDark ? 180 : 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-              </motion.div>
-            </Button>
-          </motion.div>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

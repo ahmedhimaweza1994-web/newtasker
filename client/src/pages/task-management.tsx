@@ -300,7 +300,7 @@ export default function TaskManagement() {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="task-created-for" className="text-sm sm:text-base font-medium">المُنشأة لـ <span className="text-destructive">*</span></Label>
+                      <Label htmlFor="task-created-for" className="text-sm sm:text-base font-medium">مكلفه لـ <span className="text-destructive">*</span></Label>
                       <Select
                         value={newTask.createdFor}
                         onValueChange={(value) => setNewTask({ ...newTask, createdFor: value })}
