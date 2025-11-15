@@ -92,15 +92,15 @@ export default function AdminDashboard() {
   const getStatusInfo = (status: string) => {
     switch (status) {
       case "ready":
-        return { label: "جاهز", color: "bg-green-500", variant: "default" as const };
+        return { label: "جاهز", color: "bg-success/10 text-success border border-success/20", variant: "default" as const };
       case "working_on_project":
-        return { label: "عمل على مشروع", color: "bg-blue-500", variant: "default" as const };
+        return { label: "عمل على مشروع", color: "bg-primary/10 text-primary border border-primary/20", variant: "default" as const };
       case "personal":
-        return { label: "شخصي", color: "bg-yellow-500", variant: "secondary" as const };
+        return { label: "شخصي", color: "bg-warning/10 text-warning border border-warning/20", variant: "secondary" as const };
       case "break":
-        return { label: "استراحة", color: "bg-red-500", variant: "destructive" as const };
+        return { label: "استراحة", color: "bg-destructive/10 text-destructive border border-destructive/20", variant: "destructive" as const };
       default:
-        return { label: "غير محدد", color: "bg-gray-500", variant: "outline" as const };
+        return { label: "غير محدد", color: "bg-muted text-muted-foreground border border-border/40", variant: "outline" as const };
     }
   };
 
@@ -136,23 +136,23 @@ export default function AdminDashboard() {
       <div className="flex">
         <Sidebar />
        
-        <main className={cn("flex-1 p-4 sm:p-6 transition-all duration-300", "md:mr-16", !isCollapsed && "md:mr-64")}>
-          {/* Header */}
+        <main className={cn("flex-1 p-6 sm:p-8 transition-all duration-300 bg-muted/30", "md:mr-16", !isCollapsed && "md:mr-64")}>
+          {/* Header - Modern Design */}
           <motion.div 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 md:mb-8 gap-4"
+            className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4"
           >
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
+              <h1 className="text-display-md mb-2 bg-gradient-to-l from-primary to-accent bg-clip-text text-transparent">
                 لوحة تحكم المدير
               </h1>
-              <p className="text-sm md:text-base text-muted-foreground">
+              <p className="text-body text-muted-foreground">
                 مراقبة وإدارة جميع الموظفين في الوقت الفعلي
               </p>
             </div>
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button data-testid="button-add-employee" className="w-full sm:w-auto">
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <Button data-testid="button-add-employee" className="w-full sm:w-auto shadow-sm">
                 <Users className="w-4 h-4 ml-2" />
                 إضافة موظف
               </Button>

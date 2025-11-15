@@ -39,21 +39,19 @@ export default function EmployeeDashboard() {
       <div className="flex">
         <Sidebar />
         
-        <main className={cn("flex-1 p-4 sm:p-6 transition-all duration-300", "md:mr-16", !isCollapsed && "md:mr-64")}>
-          {/* Welcome Section */}
+        <main className={cn("flex-1 p-6 sm:p-8 transition-all duration-300 bg-muted/30", "md:mr-16", !isCollapsed && "md:mr-64")}>
+          {/* Welcome Section - Modern Hero */}
           <motion.div 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 md:mb-8 gap-4"
+            className="mb-8"
           >
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
-                مرحباً، {user?.fullName}! 👋
-              </h1>
-              <p className="text-sm md:text-base text-muted-foreground">
-                إليك ملخص يومك وأنشطتك الحالية
-              </p>
-            </div>
+            <h1 className="text-display-md mb-2 bg-gradient-to-l from-primary to-accent bg-clip-text text-transparent">
+              مرحباً، {user?.fullName}
+            </h1>
+            <p className="text-body text-muted-foreground">
+              {formatArabicDate(new Date())} • إليك ملخص يومك وأنشطتك الحالية
+            </p>
           </motion.div>
 
           {/* Quick Stats */}
@@ -104,39 +102,44 @@ export default function EmployeeDashboard() {
           {/* Tasks and Activity */}
           <MotionSection delay={0.5}>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-              {/* Today's Tasks */}
-              <Card data-testid="card-todays-tasks" className="overflow-hidden">
-                <CardHeader>
+              {/* Today's Tasks - Modern Design */}
+              <Card data-testid="card-todays-tasks" className="overflow-hidden border-border/40 shadow-sm">
+                <CardHeader className="border-b border-border/40 bg-muted/20">
                   <CardTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                    <span>مهام اليوم</span>
-                    <span className="text-sm text-muted-foreground">
+                    <span className="text-heading-md">مهام اليوم</span>
+                    <span className="text-body-sm text-muted-foreground font-medium">
                       {pendingTasks.length} قيد التنفيذ
                     </span>
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="space-y-2 p-4">
                   {pendingTasks.slice(0, 5).map((task, index) => (
                     <MotionListItem key={task.id} index={index} testId={`task-item-${task.id}`}>
-                      <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
-                        <input type="checkbox" className="mt-1 w-4 h-4 text-primary rounded" data-testid={`checkbox-task-${task.id}`} />
+                      <div className="group flex items-start gap-3 p-3 rounded-md border border-transparent hover:border-border/60 hover:bg-muted/40 transition-all duration-150">
+                        <input 
+                          type="checkbox" 
+                          className="mt-1 w-4 h-4 text-primary rounded border-border/60 focus:ring-2 focus:ring-primary/20 transition-all" 
+                          data-testid={`checkbox-task-${task.id}`} 
+                        />
                         <div className="flex-1 min-w-0">
-                          <h4 className="text-sm font-medium text-foreground break-words">{task.title}</h4>
+                          <h4 className="text-body font-medium text-foreground break-words group-hover:text-primary transition-colors">{task.title}</h4>
                           {task.description && (
-                            <p className="text-xs text-muted-foreground mt-1 break-words">
-                              {task.description.substring(0, 100)}...
+                            <p className="text-body-sm text-muted-foreground mt-1 break-words line-clamp-2">
+                              {task.description}
                             </p>
                           )}
                           <div className="flex flex-wrap items-center gap-2 mt-2">
-                            <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                              task.priority === 'high' ? 'bg-destructive/20 text-destructive' :
-                              task.priority === 'medium' ? 'bg-warning/20 text-warning' :
-                              'bg-muted text-muted-foreground'
+                            <span className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
+                              task.priority === 'high' ? 'bg-destructive/10 text-destructive border border-destructive/20' :
+                              task.priority === 'medium' ? 'bg-warning/10 text-warning border border-warning/20' :
+                              'bg-muted text-muted-foreground border border-border/40'
                             }`}>
                               {task.priority === 'high' ? 'عالي' : task.priority === 'medium' ? 'متوسط' : 'منخفض'}
                             </span>
                             {task.dueDate && (
-                              <span className="text-xs text-muted-foreground">
-                                موعد: {formatArabicDate(task.dueDate)}
+                              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                {formatArabicDate(task.dueDate)}
                               </span>
                             )}
                           </div>
@@ -158,22 +161,22 @@ export default function EmployeeDashboard() {
                 </CardContent>
               </Card>
 
-              {/* Recent Activity */}
-              <Card data-testid="card-recent-activity" className="overflow-hidden">
-                <CardHeader>
-                  <CardTitle>النشاط الأخير</CardTitle>
+              {/* Recent Activity - Modern Design */}
+              <Card data-testid="card-recent-activity" className="overflow-hidden border-border/40 shadow-sm">
+                <CardHeader className="border-b border-border/40 bg-muted/20">
+                  <CardTitle className="text-heading-md">النشاط الأخير</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-3 p-4">
                   {notifications.slice(0, 5).map((notification, index) => (
                     <MotionListItem key={notification.id} index={index} testId={`notification-${notification.id}`}>
-                      <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                      <div className="flex items-start gap-3 p-3 rounded-md hover:bg-muted/40 transition-all duration-150">
+                        <div className="w-9 h-9 bg-gradient-to-br from-primary/10 to-teal/10 rounded-lg flex items-center justify-center flex-shrink-0 border border-primary/10">
                           <CheckCircle2 className="w-4 h-4 text-primary" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm text-foreground break-words">{notification.title}</p>
-                          <p className="text-xs text-muted-foreground mt-1 break-words">{notification.message}</p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-body font-medium text-foreground break-words">{notification.title}</p>
+                          <p className="text-body-sm text-muted-foreground mt-1 break-words line-clamp-2">{notification.message}</p>
+                          <p className="text-xs text-tertiary mt-1.5">
                             {formatArabicDate(notification.createdAt)}
                           </p>
                         </div>

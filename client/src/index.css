@@ -1,125 +1,140 @@
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  /* Modern Trello-inspired color palette */
-  --background: 240 24% 96%;
-  --foreground: 222 47% 11%;
+  /* Modern Linear-inspired color system */
+  /* Base: Neutral stone/graphite for clean backgrounds */
+  --background: 240 4% 98%;
+  --foreground: 240 10% 10%;
   
+  /* Cards: Subtle elevation with soft shadows */
   --card: 0 0% 100%;
-  --card-foreground: 222 47% 11%;
-  --card-border: 220 13% 91%;
+  --card-foreground: 240 10% 10%;
+  --card-border: 240 6% 90%;
   
+  /* Popovers */
   --popover: 0 0% 100%;
-  --popover-foreground: 222 47% 11%;
+  --popover-foreground: 240 10% 10%;
   
-  /* Primary: Professional blue inspired by Trello */
-  --primary: 213 94% 55%;
+  /* Primary: Electric blue - vibrant and modern */
+  --primary: 217 91% 60%;
   --primary-foreground: 0 0% 100%;
-  --primary-hover: 213 94% 48%;
+  --primary-hover: 217 91% 52%;
   
-  /* Secondary: Vibrant purple for accents */
-  --secondary: 262 83% 58%;
-  --secondary-foreground: 0 0% 100%;
+  /* Secondary: Sophisticated slate */
+  --secondary: 240 6% 92%;
+  --secondary-foreground: 240 10% 10%;
   
-  /* Muted: Subtle backgrounds */
-  --muted: 220 14% 96%;
-  --muted-foreground: 220 9% 46%;
+  /* Muted: Very subtle backgrounds for layering */
+  --muted: 240 4% 96%;
+  --muted-foreground: 240 6% 46%;
   
-  /* Accent: Teal for highlights */
-  --accent: 177 70% 41%;
-  --accent-foreground: 0 0% 100%;
+  /* Accent: Amber/gold for important highlights */
+  --accent: 38 95% 62%;
+  --accent-foreground: 240 10% 10%;
+  --accent-border: 38 95% 52%;
   
-  /* Status colors */
+  /* Teal accent for secondary highlights */
+  --teal: 174 72% 56%;
+  --teal-foreground: 0 0% 100%;
+  
+  /* Status colors - refined and modern */
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
   
-  --success: 142 71% 45%;
+  --success: 142 76% 46%;
   --success-foreground: 0 0% 100%;
   
-  --warning: 38 92% 50%;
-  --warning-foreground: 0 0% 100%;
+  --warning: 38 95% 58%;
+  --warning-foreground: 240 10% 10%;
   
-  --info: 199 89% 48%;
+  --info: 217 91% 60%;
   --info-foreground: 0 0% 100%;
   
   /* UI Elements */
-  --border: 220 13% 91%;
-  --input: 220 13% 91%;
-  --ring: 213 94% 55%;
+  --border: 240 6% 90%;
+  --input: 240 6% 90%;
+  --ring: 217 91% 60%;
   --radius: 0.5rem;
   
-  /* Sidebar - Professional gray-blue */
-  --sidebar: 220 17% 17%;
-  --sidebar-foreground: 220 9% 95%;
-  --sidebar-accent: 220 17% 24%;
-  --sidebar-accent-foreground: 220 9% 95%;
-  --sidebar-border: 220 17% 24%;
+  /* Sidebar - Modern dark slate */
+  --sidebar: 240 10% 10%;
+  --sidebar-foreground: 240 5% 96%;
+  --sidebar-accent: 240 8% 16%;
+  --sidebar-accent-foreground: 240 5% 96%;
+  --sidebar-border: 240 8% 16%;
   
-  /* Chart colors */
-  --chart-1: 213 94% 55%;
-  --chart-2: 262 83% 58%;
-  --chart-3: 177 70% 41%;
-  --chart-4: 38 92% 50%;
+  /* Chart colors - cohesive palette */
+  --chart-1: 217 91% 60%;
+  --chart-2: 38 95% 62%;
+  --chart-3: 174 72% 56%;
+  --chart-4: 262 83% 64%;
   --chart-5: 0 84% 60%;
 }
 
 
 .dark {
-  /* Dark mode: Deep, professional colors */
-  --background: 222 47% 11%;
-  --foreground: 210 40% 98%;
+  /* Dark mode: Deep graphite with vibrant accents */
+  --background: 240 10% 8%;
+  --foreground: 240 5% 96%;
   
-  --card: 222 47% 15%;
-  --card-foreground: 210 40% 98%;
-  --card-border: 217 32% 24%;
+  /* Cards: Layered depth */
+  --card: 240 10% 12%;
+  --card-foreground: 240 5% 96%;
+  --card-border: 240 8% 18%;
   
-  --popover: 222 47% 15%;
-  --popover-foreground: 210 40% 98%;
+  /* Popovers */
+  --popover: 240 10% 12%;
+  --popover-foreground: 240 5% 96%;
   
-  /* Primary: Brighter blue for dark mode */
-  --primary: 213 94% 58%;
+  /* Primary: Bright electric blue */
+  --primary: 217 91% 64%;
   --primary-foreground: 0 0% 100%;
-  --primary-hover: 213 94% 65%;
+  --primary-hover: 217 91% 72%;
   
-  /* Secondary: Vibrant purple */
-  --secondary: 262 83% 65%;
-  --secondary-foreground: 0 0% 100%;
+  /* Secondary: Elevated dark slate */
+  --secondary: 240 8% 16%;
+  --secondary-foreground: 240 5% 96%;
   
-  /* Muted: Dark backgrounds */
-  --muted: 217 32% 17%;
-  --muted-foreground: 215 20% 65%;
+  /* Muted: Subtle dark backgrounds */
+  --muted: 240 8% 14%;
+  --muted-foreground: 240 5% 64%;
   
-  /* Accent: Bright teal */
-  --accent: 177 70% 45%;
-  --accent-foreground: 0 0% 100%;
+  /* Accent: Amber glow in dark */
+  --accent: 38 95% 64%;
+  --accent-foreground: 240 10% 8%;
+  --accent-border: 38 95% 54%;
   
-  /* Status colors - adjusted for dark mode */
-  --destructive: 0 84% 60%;
+  /* Teal accent */
+  --teal: 174 72% 60%;
+  --teal-foreground: 240 10% 8%;
+  
+  /* Status colors - vibrant in dark mode */
+  --destructive: 0 84% 62%;
   --destructive-foreground: 0 0% 100%;
   
-  --success: 142 71% 48%;
+  --success: 142 76% 52%;
   --success-foreground: 0 0% 100%;
   
-  --warning: 38 92% 54%;
-  --warning-foreground: 0 0% 100%;
+  --warning: 38 95% 62%;
+  --warning-foreground: 240 10% 8%;
   
-  --info: 199 89% 52%;
+  --info: 217 91% 64%;
   --info-foreground: 0 0% 100%;
   
   /* UI Elements */
-  --border: 217 32% 24%;
-  --input: 217 32% 24%;
-  --ring: 213 94% 58%;
+  --border: 240 8% 18%;
+  --input: 240 8% 18%;
+  --ring: 217 91% 64%;
   
-  /* Sidebar - Even darker for contrast */
-  --sidebar: 222 47% 8%;
-  --sidebar-foreground: 210 40% 98%;
-  --sidebar-accent: 222 47% 15%;
-  --sidebar-accent-foreground: 210 40% 98%;
-  --sidebar-border: 217 32% 17%;
+  /* Sidebar - Deepest layer */
+  --sidebar: 240 10% 6%;
+  --sidebar-foreground: 240 5% 96%;
+  --sidebar-accent: 240 10% 12%;
+  --sidebar-accent-foreground: 240 5% 96%;
+  --sidebar-border: 240 8% 12%;
 }
 
 @layer base {
@@ -129,12 +144,70 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Typography scale - 8pt system */
+  h1, .text-display-lg {
+    @apply text-4xl font-bold tracking-tight;
+    line-height: 1.2;
+  }
+  h2, .text-display-md {
+    @apply text-3xl font-semibold tracking-tight;
+    line-height: 1.25;
+  }
+  h3, .text-display-sm {
+    @apply text-2xl font-semibold;
+    line-height: 1.3;
+  }
+  h4, .text-heading-lg {
+    @apply text-xl font-semibold;
+    line-height: 1.4;
+  }
+  h5, .text-heading-md {
+    @apply text-lg font-medium;
+    line-height: 1.5;
+  }
+  h6, .text-heading-sm {
+    @apply text-base font-medium;
+    line-height: 1.5;
+  }
+  
+  .text-body-lg {
+    @apply text-base;
+    line-height: 1.6;
+  }
+  .text-body {
+    @apply text-sm;
+    line-height: 1.6;
+  }
+  .text-body-sm {
+    @apply text-xs;
+    line-height: 1.5;
+  }
+  
+  /* Text hierarchy colors */
+  .text-tertiary {
+    @apply text-muted-foreground/70;
+  }
 }
 
 @layer utilities {
-  /* Hover elevation utility */
+  /* 8pt spacing system utilities */
+  .space-8pt {
+    gap: 0.5rem; /* 8px */
+  }
+  .space-16pt {
+    gap: 1rem; /* 16px */
+  }
+  .space-24pt {
+    gap: 1.5rem; /* 24px */
+  }
+  .space-32pt {
+    gap: 2rem; /* 32px */
+  }
+  
+  /* Hover elevation utility - Modern smooth transitions */
   .hover-elevate {
-    @apply transition-all duration-200 ease-in-out;
+    @apply transition-all duration-150 ease-out;
   }
   .hover-elevate:hover {
     @apply brightness-95 dark:brightness-110;
@@ -142,7 +215,7 @@
   
   /* Active elevation utility (press down) */
   .active-elevate-2 {
-    @apply transition-all duration-100 ease-in-out;
+    @apply transition-all duration-100 ease-out;
   }
   .active-elevate-2:active {
     @apply brightness-90 dark:brightness-125 scale-[0.98];
@@ -150,7 +223,7 @@
   
   /* Toggle elevation utilities */
   .toggle-elevate {
-    @apply transition-all duration-200 ease-in-out;
+    @apply transition-all duration-150 ease-out;
   }
   .toggle-elevated {
     @apply brightness-90 dark:brightness-115;
@@ -162,6 +235,33 @@
   }
   .no-default-active-elevate:active {
     @apply brightness-100 scale-100;
+  }
+  
+  /* Modern card with subtle shadow */
+  .card-modern {
+    @apply bg-card border border-border/50 rounded-lg shadow-sm;
+  }
+  
+  /* Glass morphism effect - enhanced */
+  .glass-effect {
+    @apply backdrop-blur-xl bg-background/60 border border-border/40;
+  }
+  
+  /* Skeleton shimmer animation */
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      hsl(var(--muted-foreground) / 0.05) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+  }
+  
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
   }
 }
 body {
