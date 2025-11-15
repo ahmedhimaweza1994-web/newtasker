@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   MoreHorizontal,
   Calendar,
@@ -74,6 +75,7 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
   const [editMode, setEditMode] = useState(false);
   const [rewardPoints, setRewardPoints] = useState("");
   const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("pending");
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -463,7 +465,7 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
     });
 
     return (
-      <div className="flex-shrink-0 w-72" ref={setNodeRef}>
+      <div className="flex-shrink-0 w-full lg:w-64" ref={setNodeRef}>
         <div className={cn(
           "rounded-lg bg-muted/40 p-3 h-full flex flex-col",
           isOver && "ring-2 ring-primary bg-primary/5"
@@ -507,7 +509,77 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
-        <div className="w-full overflow-x-auto pb-4 -mx-4 px-4" data-testid="kanban-board-trello-style">
+        {/* Mobile/Tablet Tabs View (Hidden on lg+) */}
+        <div className="lg:hidden w-full" data-testid="kanban-board-tabs">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-4 mb-4">
+              <TabsTrigger value="pending" className="flex items-center gap-1 text-xs" data-testid="tab-pending">
+                <Clock className="w-3 h-3" />
+                <span className="hidden sm:inline">قيد الانتظار</span>
+                <Badge variant="secondary" className="text-xs h-4 px-1 ml-1">{pendingTasks.length}</Badge>
+              </TabsTrigger>
+              <TabsTrigger value="in_progress" className="flex items-center gap-1 text-xs" data-testid="tab-in-progress">
+                <AlertCircle className="w-3 h-3" />
+                <span className="hidden sm:inline">قيد التنفيذ</span>
+                <Badge variant="secondary" className="text-xs h-4 px-1 ml-1">{inProgressTasks.length}</Badge>
+              </TabsTrigger>
+              <TabsTrigger value="under_review" className="flex items-center gap-1 text-xs" data-testid="tab-under-review">
+                <Eye className="w-3 h-3" />
+                <span className="hidden sm:inline">المراجعة</span>
+                <Badge variant="secondary" className="text-xs h-4 px-1 ml-1">{underReviewTasks.length}</Badge>
+              </TabsTrigger>
+              <TabsTrigger value="completed" className="flex items-center gap-1 text-xs" data-testid="tab-completed">
+                <CheckCircle className="w-3 h-3" />
+                <span className="hidden sm:inline">مكتمل</span>
+                <Badge variant="secondary" className="text-xs h-4 px-1 ml-1">{completedTasks.length}</Badge>
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="pending" className="mt-0">
+              <DroppableColumn
+                id="pending"
+                title="قيد الانتظار"
+                tasks={pendingTasks}
+                icon={<Clock className="w-4 h-4 text-yellow-600" />}
+                color="border-t-yellow-500"
+                testId="column-pending"
+              />
+            </TabsContent>
+            <TabsContent value="in_progress" className="mt-0">
+              <DroppableColumn
+                id="in_progress"
+                title="قيد التنفيذ"
+                tasks={inProgressTasks}
+                icon={<AlertCircle className="w-4 h-4 text-blue-600" />}
+                color="border-t-blue-500"
+                testId="column-in-progress"
+              />
+            </TabsContent>
+            <TabsContent value="under_review" className="mt-0">
+              <DroppableColumn
+                id="under_review"
+                title="تحت المراجعة"
+                tasks={underReviewTasks}
+                icon={<Eye className="w-4 h-4 text-purple-600" />}
+                color="border-t-purple-500"
+                testId="column-under-review"
+              />
+            </TabsContent>
+            <TabsContent value="completed" className="mt-0">
+              <DroppableColumn
+                id="completed"
+                title="مكتمل"
+                tasks={completedTasks}
+                icon={<CheckCircle className="w-4 h-4 text-green-600" />}
+                color="border-t-green-500"
+                testId="column-completed"
+              />
+            </TabsContent>
+          </Tabs>
+        </div>
+
+        {/* Desktop Horizontal Kanban View (Visible on lg+) */}
+        <div className="hidden lg:block w-full overflow-x-auto pb-4" data-testid="kanban-board-trello-style">
           <div className="flex gap-3 min-w-min">
             <DroppableColumn
               id="pending"
@@ -546,7 +618,7 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
 
         <DragOverlay>
           {activeTask ? (
-            <Card className="p-3 shadow-2xl opacity-90 w-72">
+            <Card className="p-3 shadow-2xl opacity-90 w-64">
               <div className="font-medium text-sm line-clamp-1 truncate">{activeTask.title}</div>
             </Card>
           ) : null}
