@@ -586,20 +586,24 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
         </DragOverlay>
       </DndContext>
 
-      {taskDetailsDialog.taskId && (
-        <TaskDetailsDialog
-          taskId={taskDetailsDialog.taskId}
-          open={taskDetailsDialog.open}
-          onOpenChange={(open) => {
-            setTaskDetailsDialog({ open, taskId: null });
+      <TaskDetailsDialog
+        taskId={taskDetailsDialog.taskId}
+        open={taskDetailsDialog.open}
+        onOpenChange={(open) => {
+          setTaskDetailsDialog({ open, taskId: open ? taskDetailsDialog.taskId : null });
+          if (!open) {
             setEditMode(false);
-          }}
-          editMode={editMode}
-          setEditMode={setEditMode}
-          users={users}
-          onDelete={() => deleteTaskMutation.mutate(taskDetailsDialog.taskId!)}
-        />
-      )}
+          }
+        }}
+        editMode={editMode}
+        setEditMode={setEditMode}
+        users={users}
+        onDelete={() => {
+          if (taskDetailsDialog.taskId) {
+            deleteTaskMutation.mutate(taskDetailsDialog.taskId);
+          }
+        }}
+      />
 
       <Dialog open={assignPointsDialog.open} onOpenChange={(open) => setAssignPointsDialog({ open, taskId: null })} data-testid="dialog-assign-points">
         <DialogContent className="sm:max-w-[425px]">

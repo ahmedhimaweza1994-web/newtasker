@@ -709,15 +709,52 @@ export default function Companies() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="edit-company-logo">رابط الشعار (URL)</Label>
+                <Label htmlFor="edit-company-logo">شعار الشركة</Label>
                 <Input
                   id="edit-company-logo"
-                  type="url"
-                  value={editingCompany.logo || ""}
-                  onChange={(e) => setEditingCompany({ ...editingCompany, logo: e.target.value })}
-                  placeholder="https://example.com/logo.png"
+                  type="file"
+                  accept="image/*"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      try {
+                        const formData = new FormData();
+                        formData.append('file', file);
+                        const res = await fetch('/api/upload', {
+                          method: 'POST',
+                          body: formData,
+                          credentials: 'include',
+                        });
+                        const data = await res.json();
+                        if (res.ok) {
+                          setEditingCompany({ ...editingCompany, logo: data.url });
+                          toast({
+                            title: "تم رفع الشعار",
+                            description: "تم رفع شعار الشركة بنجاح",
+                          });
+                        } else {
+                          toast({
+                            title: "خطأ في رفع الشعار",
+                            description: data.message || "حدث خطأ",
+                            variant: "destructive",
+                          });
+                        }
+                      } catch (error) {
+                        toast({
+                          title: "خطأ في رفع الشعار",
+                          description: "حدث خطأ غير متوقع",
+                          variant: "destructive",
+                        });
+                      }
+                    }
+                  }}
                   data-testid="input-edit-logo"
                 />
+                {editingCompany.logo && (
+                  <div className="mt-2">
+                    <img src={editingCompany.logo} alt="Logo preview" className="w-20 h-20 object-cover rounded-md" />
+                  </div>
+                )}
               </div>
 
               <div className="flex gap-2 justify-end pt-4">

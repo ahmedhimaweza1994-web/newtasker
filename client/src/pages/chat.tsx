@@ -17,7 +17,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { 
   Send, MessageSquare, Users, Smile, Paperclip, Mic, 
   X, Reply, Image as ImageIcon, File, Download, AtSign,
-  Phone, PhoneOff, MoreVertical, Search, Video, Trash2, Menu
+  Phone, PhoneOff, MoreVertical, Search, Video, Trash2, Menu, FileImage
 } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -26,6 +26,7 @@ import { useCallManager } from "@/hooks/use-call-manager";
 import { CallWindow } from "@/components/call/CallWindow";
 import { IncomingCallDialog } from "@/components/call/IncomingCallDialog";
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
+import GifPicker from 'gif-picker-react';
 import {
   Dialog,
   DialogContent,
@@ -120,6 +121,7 @@ export default function Chat() {
   const [incomingCallFrom, setIncomingCallFrom] = useState<User | null>(null);
   const [incomingCallType, setIncomingCallType] = useState<'audio' | 'video'>('audio');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showGifPicker, setShowGifPicker] = useState(false);
   const [imageViewerOpen, setImageViewerOpen] = useState(false);
   const [selectedImageUrl, setSelectedImageUrl] = useState("");
   const [recordingTime, setRecordingTime] = useState(0);
@@ -452,6 +454,52 @@ export default function Chat() {
   const handleEmojiClick = (emojiData: EmojiClickData) => {
     setMessageText((prev) => prev + emojiData.emoji);
     setShowEmojiPicker(false);
+  };
+
+  const handleGifClick = async (gif: any) => {
+    try {
+      if (!selectedRoom || !user) return;
+      
+      let gifUrl: string | undefined;
+      
+      if (gif.media_formats) {
+        gifUrl = gif.media_formats.gif?.url || 
+                 gif.media_formats.tinygif?.url || 
+                 gif.media_formats.mediumgif?.url;
+      } else if (gif.url) {
+        gifUrl = gif.url;
+      }
+      
+      if (!gifUrl) {
+        toast({
+          title: "خطأ",
+          description: "فشل تحميل الصورة المتحركة",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      await sendMessageMutation.mutateAsync({ 
+        content: `[GIF] ${gif.title || gif.description || ''}`,
+        attachments: [{ 
+          name: gif.title || gif.description || 'GIF',
+          url: gifUrl,
+          type: 'image/gif'
+        }]
+      });
+      
+      setShowGifPicker(false);
+      toast({
+        title: "تم الإرسال",
+        description: "تم إرسال الصورة المتحركة",
+      });
+    } catch (error) {
+      toast({
+        title: "خطأ",
+        description: "فشل إرسال الصورة المتحركة",
+        variant: "destructive",
+      });
+    }
   };
 
   useEffect(() => {
@@ -1234,6 +1282,29 @@ export default function Chat() {
                             onEmojiClick={handleEmojiClick}
                             autoFocusSearch={false}
                             theme="auto"
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <Popover open={showGifPicker} onOpenChange={setShowGifPicker}>
+                        <PopoverTrigger asChild>
+                          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              data-testid="button-gif"
+                              className="hover:bg-primary/10"
+                            >
+                              <FileImage className="w-4 h-4" />
+                            </Button>
+                          </motion.div>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0 border-0 shadow-lg" align="start" side="top">
+                          <GifPicker 
+                            tenorApiKey={import.meta.env.VITE_TENOR_API_KEY || ""}
+                            onGifClick={handleGifClick}
+                            theme="auto"
+                            width={350}
+                            height={400}
                           />
                         </PopoverContent>
                       </Popover>
