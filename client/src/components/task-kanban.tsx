@@ -598,6 +598,8 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
         editMode={editMode}
         setEditMode={setEditMode}
         users={users}
+        companies={companies}
+        getCompanyName={getCompanyName}
         onDelete={() => {
           if (taskDetailsDialog.taskId) {
             deleteTaskMutation.mutate(taskDetailsDialog.taskId);
@@ -667,6 +669,8 @@ function TaskDetailsDialog({
   editMode, 
   setEditMode, 
   users,
+  companies,
+  getCompanyName,
   onDelete 
 }: {
   taskId: string;
@@ -675,6 +679,8 @@ function TaskDetailsDialog({
   editMode: boolean;
   setEditMode: (mode: boolean) => void;
   users: UserType[];
+  companies: SelectCompany[];
+  getCompanyName: (companyId: string | null) => string | null;
   onDelete: () => void;
 }) {
   const { toast } = useToast();
