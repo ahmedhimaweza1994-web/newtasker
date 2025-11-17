@@ -35,6 +35,13 @@ interface SystemStats {
 
 interface ActiveEmployee extends AuxSession {
   user: User;
+  selectedTask?: {
+    id: string;
+    title: string;
+    description?: string;
+    status: string;
+    priority: string;
+  } | null;
 }
 
 export default function AdminDashboard() {
@@ -283,7 +290,7 @@ export default function AdminDashboard() {
                         <th className="text-right py-3 px-4 text-sm font-semibold text-foreground">القسم</th>
                         <th className="text-right py-3 px-4 text-sm font-semibold text-foreground">الحالة</th>
                         <th className="text-right py-3 px-4 text-sm font-semibold text-foreground">المدة</th>
-                        <th className="text-right py-3 px-4 text-sm font-semibold text-foreground">الملاحظات</th>
+                        <th className="text-right py-3 px-4 text-sm font-semibold text-foreground">المهمة الحالية</th>
                         <th className="text-right py-3 px-4 text-sm font-semibold text-foreground">الإجراءات</th>
                       </tr>
                     </thead>
@@ -328,8 +335,8 @@ export default function AdminDashboard() {
                               </span>
                             </td>
                             <td className="py-3 px-4">
-                              <p className="text-sm text-muted-foreground max-w-xs truncate">
-                                {employee.notes || "—"}
+                              <p className="text-sm text-foreground max-w-xs truncate">
+                                {employee.selectedTask?.title || "—"}
                               </p>
                             </td>
                             <td className="py-3 px-4">
@@ -389,6 +396,10 @@ export default function AdminDashboard() {
                                   <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>
                                 </div>
                               </div>
+                            </div>
+                            <div className="mb-3">
+                              <p className="text-xs text-muted-foreground">المهمة الحالية</p>
+                              <p className="text-sm font-medium truncate mt-1">{employee.selectedTask?.title || "—"}</p>
                             </div>
                             <div className="flex items-center justify-between">
                               <div>
@@ -511,14 +522,17 @@ export default function AdminDashboard() {
                     </p>
                   </div>
                 </div>
-                {selectedEmployee.notes && (
-                  <div className="mt-3">
-                    <span className="text-sm text-muted-foreground">الملاحظات</span>
-                    <p className="text-sm mt-1 p-3 bg-muted rounded-md" data-testid="text-employee-notes">
-                      {selectedEmployee.notes}
+                <div className="mt-3">
+                  <span className="text-sm text-muted-foreground">المهمة الحالية</span>
+                  <p className="text-sm mt-1 p-3 bg-muted rounded-md" data-testid="text-employee-current-task">
+                    {selectedEmployee.selectedTask?.title || "لا توجد مهمة حالية"}
+                  </p>
+                  {selectedEmployee.selectedTask?.description && (
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {selectedEmployee.selectedTask.description}
                     </p>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
 
               {/* Actions */}
