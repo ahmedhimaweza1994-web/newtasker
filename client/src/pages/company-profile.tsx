@@ -188,13 +188,26 @@ export default function CompanyProfile() {
 
             <Card className="mb-6" data-testid="card-company-header">
               <CardHeader className="pb-4">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <Building2 className="w-8 h-8 text-primary" />
-                      <CardTitle className="text-2xl sm:text-3xl">{company.name}</CardTitle>
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-start gap-4 flex-1">
+                    {company.logo ? (
+                      <img 
+                        src={company.logo} 
+                        alt={`${company.name} logo`} 
+                        className="w-16 h-16 sm:w-20 sm:h-20 rounded-md object-cover border"
+                        data-testid="img-company-logo"
+                      />
+                    ) : (
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-md bg-muted flex items-center justify-center border" data-testid="placeholder-company-logo">
+                        <Building2 className="w-8 h-8 text-muted-foreground" />
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <CardTitle className="text-2xl sm:text-3xl">{company.name}</CardTitle>
+                      </div>
+                      {getStatusBadge(company.status)}
                     </div>
-                    {getStatusBadge(company.status)}
                   </div>
                 </div>
               </CardHeader>
