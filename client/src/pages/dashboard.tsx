@@ -179,6 +179,16 @@ export default function Dashboard() {
   const [currentNotes, setCurrentNotes] = useState("");
   const [selectedTaskId, setSelectedTaskId] = useState<string>("");
   
+  // Sync selectedTaskId with currentSession.selectedTaskId
+  useEffect(() => {
+    if (currentSession?.selectedTaskId) {
+      setSelectedTaskId(currentSession.selectedTaskId);
+    } else if (currentSession?.endTime) {
+      // Only reset if session has ended
+      setSelectedTaskId("");
+    }
+  }, [currentSession?.selectedTaskId, currentSession?.endTime]);
+  
   const handleStatusChange = (status: string) => {
     // If clicking working_on_project, just update UI to show it's selected
     // User will then select a task before it's actually submitted
@@ -212,7 +222,7 @@ export default function Dashboard() {
     }
     setSelectedStatus(status);
     setCurrentNotes("");
-    setSelectedTaskId("");
+    // Don't reset selectedTaskId - it will be synced from currentSession
   };
 
   const handleConfirmWorkingOnProject = () => {
@@ -251,13 +261,13 @@ export default function Dashboard() {
     }
     setSelectedStatus("working_on_project");
     setCurrentNotes("");
-    setSelectedTaskId("");
+    // Don't reset selectedTaskId - it will be synced from currentSession
   };
 
   const handleToggleShift = () => {
     toggleShiftMutation.mutate(currentNotes);
     setCurrentNotes("");
-    setSelectedTaskId("");
+    // Don't reset selectedTaskId - it will be synced from currentSession
   };
 
   const getStatusInfo = (status: string) => {
