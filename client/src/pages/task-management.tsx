@@ -234,7 +234,7 @@ export default function TaskManagement() {
                   </motion.div>
                 </DialogTrigger>
             
-                <DialogContent className="sm:max-w-[550px]" data-testid="dialog-create-task">
+                <DialogContent className="sm:max-w-[550px] max-h-[85vh] overflow-y-auto" data-testid="dialog-create-task">
                   <DialogHeader>
                     <DialogTitle className="text-xl sm:text-2xl">إنشاء مهمة جديدة</DialogTitle>
                   </DialogHeader>
@@ -468,8 +468,8 @@ export default function TaskManagement() {
           <MotionSection delay={0.2}>
             <Card className="mb-6" data-testid="card-task-filters">
               <CardContent className="p-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
-                  <div className="sm:col-span-2 lg:col-span-3 xl:col-span-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-3">
+                  <div className="lg:col-span-1 xl:col-span-2">
                     <div className="relative">
                       <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                       <Input
