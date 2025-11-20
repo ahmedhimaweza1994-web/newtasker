@@ -328,7 +328,7 @@ export default function Dashboard() {
   const pendingTasks = allTasks.filter(task => task.status === 'pending');
   const inProgressTasks = allTasks.filter(task => task.status === 'in_progress');
   const completedTasks = allTasks.filter(task => task.status === 'completed');
-  const totalPoints = userRewards.reduce((sum, r) => sum + r.task.rewardPoints, 0);
+  const totalPoints = userRewards.reduce((sum, r) => sum + (r?.task?.rewardPoints || 0), 0);
 
   return (
     <div className="min-h-screen bg-background">

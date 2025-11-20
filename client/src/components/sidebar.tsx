@@ -257,10 +257,15 @@ export default function Sidebar() {
     return location.startsWith(href);
   };
 
-  const allNavigationSections = [
-    ...navigationSections,
-    ...(user?.role === 'admin' || user?.role === 'sub-admin' ? [adminSection] : []),
-  ];
+  // Insert admin section after "إدارة العمل" section (index 1)
+  const allNavigationSections = user?.role === 'admin' || user?.role === 'sub-admin'
+    ? [
+        navigationSections[0], // مساحة العمل
+        navigationSections[1], // إدارة العمل
+        adminSection,          // لوحة الإدارة (moved here)
+        ...navigationSections.slice(2), // Rest of sections
+      ]
+    : navigationSections;
 
   const handleToggleUser = (userId: string) => {
     setSelectedUsers(prev => 
