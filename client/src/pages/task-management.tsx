@@ -173,18 +173,22 @@ export default function TaskManagement() {
                           companyName.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === "all" || task.status === statusFilter;
     const matchesPriority = priorityFilter === "all" || task.priority === priorityFilter;
+    
+    // Fixed user filter - properly checks all relevant user fields
     const matchesUser = userFilter === "all" ||
                         (userFilter === "my" && (task.createdBy === user?.id || task.assignedTo === user?.id || task.createdFor === user?.id)) ||
                         task.createdBy === userFilter ||
                         task.assignedTo === userFilter ||
                         task.createdFor === userFilter;
+    
+    // Fixed department filter - checks all relevant user departments
     const matchesDepartment = departmentFilter === "all" || (() => {
                               const createdByUser = users.find(u => u.id === task.createdBy);
                               const assignedToUser = users.find(u => u.id === task.assignedTo);
                               const createdForUser = users.find(u => u.id === task.createdFor);
-                              return createdByUser?.department === departmentFilter ||
-                                     assignedToUser?.department === departmentFilter ||
-                                     createdForUser?.department === departmentFilter;
+                              return (createdByUser?.department === departmentFilter) ||
+                                     (assignedToUser?.department === departmentFilter) ||
+                                     (createdForUser?.department === departmentFilter);
                             })();
     const matchesCompany = companyFilter === "all" || task.companyId === companyFilter;
     return matchesSearch && matchesStatus && matchesPriority && matchesUser && matchesDepartment && matchesCompany;

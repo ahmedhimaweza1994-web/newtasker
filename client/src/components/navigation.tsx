@@ -30,6 +30,7 @@ import { useAutoMarkRead } from "@/hooks/use-auto-mark-read";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Notification, Task, User as UserType, SelectCompany } from "@shared/schema";
 import { formatArabicDate } from "@/lib/arabic-date";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function Navigation() {
   const { user, logoutMutation } = useAuth();
@@ -164,11 +165,6 @@ export default function Navigation() {
       ensureBrowserNotificationPermission();
     }
   }, [permission, user, ensureBrowserNotificationPermission]);
-
-  // Force dark mode permanently
-  useEffect(() => {
-    document.documentElement.classList.add('dark');
-  }, []);
 
   const handleLogout = () => {
     logoutMutation.mutate();
@@ -350,6 +346,7 @@ export default function Navigation() {
         </div>
 
         <div className="flex items-center gap-2 md:gap-3">
+          <ThemeToggle />
           <Popover>
             <PopoverTrigger asChild>
               <motion.div whileTap={{ scale: 0.95 }}>

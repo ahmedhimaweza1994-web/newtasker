@@ -95,7 +95,150 @@
   --glow-magenta: 318 70% 60%;
 }
 
-/* Light mode removed - Application now uses dark mode permanently */
+/* Light mode support */
+.dark {
+  /* Dark mode keeps the same colors as root */
+  --background: 218 24% 12%;
+  --foreground: 210 20% 98%;
+  
+  --card: 218 20% 16%;
+  --card-foreground: 210 20% 98%;
+  --card-border: 218 16% 22%;
+  
+  --popover: 218 20% 14%;
+  --popover-foreground: 210 20% 98%;
+  
+  --primary: 148 72% 52%;
+  --primary-foreground: 218 24% 12%;
+  --primary-hover: 148 72% 60%;
+  --primary-focus: 148 72% 42%;
+  
+  --secondary: 220 14% 20%;
+  --secondary-foreground: 210 20% 98%;
+  
+  --muted: 220 14% 18%;
+  --muted-foreground: 220 10% 60%;
+  
+  --accent: 164 70% 56%;
+  --accent-foreground: 218 24% 12%;
+  --accent-border: 164 70% 48%;
+  
+  --magenta: 318 70% 60%;
+  --magenta-foreground: 218 24% 12%;
+  
+  --amber: 38 92% 58%;
+  --amber-foreground: 218 24% 12%;
+  
+  --destructive: 0 84% 62%;
+  --destructive-foreground: 210 20% 98%;
+  
+  --success: 148 72% 52%;
+  --success-foreground: 218 24% 12%;
+  
+  --warning: 38 92% 58%;
+  --warning-foreground: 218 24% 12%;
+  
+  --info: 164 70% 56%;
+  --info-foreground: 218 24% 12%;
+  
+  --border: 220 14% 24%;
+  --input: 220 14% 20%;
+  --ring: 148 72% 52%;
+  
+  --sidebar: 218 24% 10%;
+  --sidebar-foreground: 210 20% 98%;
+  --sidebar-accent: 218 20% 16%;
+  --sidebar-accent-foreground: 210 20% 98%;
+  --sidebar-border: 148 72% 52%;
+  
+  --teal: 164 70% 56%;
+  --teal-foreground: 218 24% 12%;
+  
+  --chart-1: 148 72% 52%;
+  --chart-2: 164 70% 56%;
+  --chart-3: 318 70% 60%;
+  --chart-4: 38 92% 58%;
+  --chart-5: 217 91% 60%;
+  
+  --glass-bg: 218 20% 16%;
+  --glass-border: 220 14% 28%;
+  
+  --glow-primary: 148 72% 52%;
+  --glow-accent: 164 70% 56%;
+  --glow-magenta: 318 70% 60%;
+}
+
+/* Light mode - clean and professional */
+:root:not(.dark) {
+  --background: 0 0% 100%;
+  --foreground: 222 47% 11%;
+  
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  --card-border: 214 32% 91%;
+  
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+  
+  --primary: 148 72% 42%;
+  --primary-foreground: 0 0% 100%;
+  --primary-hover: 148 72% 38%;
+  --primary-focus: 148 72% 48%;
+  
+  --secondary: 210 40% 96%;
+  --secondary-foreground: 222 47% 11%;
+  
+  --muted: 210 40% 96%;
+  --muted-foreground: 215 16% 47%;
+  
+  --accent: 164 70% 46%;
+  --accent-foreground: 0 0% 100%;
+  --accent-border: 164 70% 40%;
+  
+  --magenta: 318 70% 50%;
+  --magenta-foreground: 0 0% 100%;
+  
+  --amber: 38 92% 50%;
+  --amber-foreground: 0 0% 100%;
+  
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  
+  --success: 148 72% 42%;
+  --success-foreground: 0 0% 100%;
+  
+  --warning: 38 92% 50%;
+  --warning-foreground: 0 0% 100%;
+  
+  --info: 164 70% 46%;
+  --info-foreground: 0 0% 100%;
+  
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  --ring: 148 72% 42%;
+  
+  --sidebar: 0 0% 98%;
+  --sidebar-foreground: 222 47% 11%;
+  --sidebar-accent: 210 40% 96%;
+  --sidebar-accent-foreground: 222 47% 11%;
+  --sidebar-border: 214 32% 91%;
+  
+  --teal: 164 70% 46%;
+  --teal-foreground: 0 0% 100%;
+  
+  --chart-1: 148 72% 42%;
+  --chart-2: 164 70% 46%;
+  --chart-3: 318 70% 50%;
+  --chart-4: 38 92% 50%;
+  --chart-5: 217 91% 50%;
+  
+  --glass-bg: 0 0% 100%;
+  --glass-border: 214 32% 91%;
+  
+  --glow-primary: 148 72% 42%;
+  --glow-accent: 164 70% 46%;
+  --glow-magenta: 318 70% 50%;
+}
 
 @layer base {
   * {
