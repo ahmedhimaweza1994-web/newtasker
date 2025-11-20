@@ -732,13 +732,13 @@ export default function Sidebar() {
               <Label htmlFor="task-company">الشركة</Label>
               <Select
                 value={newTask.companyId}
-                onValueChange={(value) => setNewTask({ ...newTask, companyId: value })}
+                onValueChange={(value) => setNewTask({ ...newTask, companyId: value === "none" ? "" : value })}
               >
                 <SelectTrigger id="task-company" data-testid="select-task-company">
                   <SelectValue placeholder="اختر الشركة (اختياري)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">بدون شركة</SelectItem>
+                  <SelectItem value="none">بدون شركة</SelectItem>
                   {companies.map((company) => (
                     <SelectItem key={company.id} value={company.id}>
                       {company.name}

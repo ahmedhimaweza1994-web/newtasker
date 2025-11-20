@@ -941,12 +941,12 @@ function TaskDetailsDialog({
 
                 <div className="space-y-2">
                   <Label htmlFor="edit-company">الشركة</Label>
-                  <Select value={editedTask.companyId} onValueChange={(value) => setEditedTask({ ...editedTask, companyId: value })}>
+                  <Select value={editedTask.companyId || "none"} onValueChange={(value) => setEditedTask({ ...editedTask, companyId: value === "none" ? "" : value })}>
                     <SelectTrigger id="edit-company" data-testid="select-edit-company">
                       <SelectValue placeholder="اختر الشركة" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">بدون شركة</SelectItem>
+                      <SelectItem value="none">بدون شركة</SelectItem>
                       {companies.map((company) => (
                         <SelectItem key={company.id} value={company.id}>{company.name}</SelectItem>
                       ))}
