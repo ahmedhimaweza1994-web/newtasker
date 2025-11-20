@@ -132,7 +132,7 @@ export interface IStorage {
   deleteTask(id: string, companyId?: string): Promise<boolean>;
   getAllTasks(): Promise<Task[]>;
   getArchivedTasks(companyId: string): Promise<Task[]>;
-  archiveCompletedTasks(companyId: string): Promise<number>;
+  archiveCompletedTasks(companyId: string | null): Promise<number>;
   unarchiveTask(id: string, companyId: string): Promise<Task | undefined>;
   deleteAllArchivedTasks(companyId: string): Promise<number>;
   getTasksByIds(taskIds: string[], companyId?: string): Promise<Task[]>;
@@ -600,16 +600,21 @@ export class MemStorage implements IStorage {
     return archivedTasks as Task[];
   }
 
-  async archiveCompletedTasks(companyId: string): Promise<number> {
+  async archiveCompletedTasks(companyId: string | null): Promise<number> {
+    const conditions = [eq(tasks.status, 'completed')];
+    
+    // If companyId is provided, filter by it
+    // If companyId is null, archive tasks with null companyId (tasks without company)
+    if (companyId) {
+      conditions.push(eq(tasks.companyId, companyId));
+    } else {
+      conditions.push(isNull(tasks.companyId));
+    }
+    
     const result = await db
       .update(tasks)
       .set({ status: 'archived', archivedAt: new Date() })
-      .where(
-        and(
-          eq(tasks.status, 'completed'),
-          eq(tasks.companyId, companyId)
-        )
-      );
+      .where(and(...conditions));
     return result.rowCount || 0;
   }
 

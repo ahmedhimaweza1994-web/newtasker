@@ -322,13 +322,8 @@ export function registerRoutes(app: Express): Server {
 
   app.post("/api/tasks/archive-completed", requireAuth, requireRole(['admin', 'sub-admin']), async (req, res) => {
     try {
-      // Require companyId for safety - prevent archiving all tasks system-wide
-      if (!req.user!.companyId) {
-        return res.status(400).json({ 
-          message: "لا يمكن أرشفة المهام بدون تحديد الشركة" 
-        });
-      }
-      const count = await storage.archiveCompletedTasks(req.user!.companyId);
+      // Allow archiving for users with or without company
+      const count = await storage.archiveCompletedTasks(req.user!.companyId || null);
       res.json({ message: `تم أرشفة ${count} مهمة`, count });
     } catch (error) {
       console.error("Error archiving completed tasks:", error);
