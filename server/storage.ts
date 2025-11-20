@@ -131,10 +131,10 @@ export interface IStorage {
   updateTask(id: string, updates: Partial<Task>): Promise<Task | undefined>;
   deleteTask(id: string, companyId?: string): Promise<boolean>;
   getAllTasks(): Promise<Task[]>;
-  getArchivedTasks(companyId: string): Promise<Task[]>;
+  getArchivedTasks(companyId: string | null): Promise<Task[]>;
   archiveCompletedTasks(companyId: string | null): Promise<number>;
-  unarchiveTask(id: string, companyId: string): Promise<Task | undefined>;
-  deleteAllArchivedTasks(companyId: string): Promise<number>;
+  unarchiveTask(id: string, companyId: string | null): Promise<Task | undefined>;
+  deleteAllArchivedTasks(companyId: string | null): Promise<number>;
   getTasksByIds(taskIds: string[], companyId?: string): Promise<Task[]>;
   deleteMultipleTasks(taskIds: string[]): Promise<number>;
   rateTask(taskId: string, rating: number, ratedBy: string): Promise<Task>;
@@ -549,12 +549,19 @@ export class MemStorage implements IStorage {
     return result.rowCount! > 0;
   }
 
-  async getArchivedTasks(companyId: string): Promise<Task[]> {
+  async getArchivedTasks(companyId: string | null): Promise<Task[]> {
+    const conditions = [eq(tasks.status, 'archived')];
+    
+    // If companyId is provided, filter by it
+    // If companyId is null, get tasks with null companyId
+    if (companyId) {
+      conditions.push(eq(tasks.companyId, companyId));
+    } else {
+      conditions.push(isNull(tasks.companyId));
+    }
+    
     const archivedTasks = await db.query.tasks.findMany({
-      where: and(
-        eq(tasks.status, 'archived'),
-        eq(tasks.companyId, companyId)
-      ),
+      where: and(...conditions),
       with: {
         createdBy: {
           columns: {
@@ -618,27 +625,37 @@ export class MemStorage implements IStorage {
     return result.rowCount || 0;
   }
 
-  async unarchiveTask(id: string, companyId: string): Promise<Task | undefined> {
+  async unarchiveTask(id: string, companyId: string | null): Promise<Task | undefined> {
+    const conditions = [eq(tasks.id, id)];
+    
+    // If companyId is provided, filter by it
+    // If companyId is null, match tasks with null companyId
+    if (companyId) {
+      conditions.push(eq(tasks.companyId, companyId));
+    } else {
+      conditions.push(isNull(tasks.companyId));
+    }
+    
     const [task] = await db
       .update(tasks)
       .set({ status: 'completed', archivedAt: null })
-      .where(
-        and(
-          eq(tasks.id, id),
-          eq(tasks.companyId, companyId)
-        )
-      )
+      .where(and(...conditions))
       .returning();
     return task || undefined;
   }
 
-  async deleteAllArchivedTasks(companyId: string): Promise<number> {
-    const result = await db.delete(tasks).where(
-      and(
-        eq(tasks.status, 'archived'),
-        eq(tasks.companyId, companyId)
-      )
-    );
+  async deleteAllArchivedTasks(companyId: string | null): Promise<number> {
+    const conditions = [eq(tasks.status, 'archived')];
+    
+    // If companyId is provided, filter by it
+    // If companyId is null, delete tasks with null companyId
+    if (companyId) {
+      conditions.push(eq(tasks.companyId, companyId));
+    } else {
+      conditions.push(isNull(tasks.companyId));
+    }
+    
+    const result = await db.delete(tasks).where(and(...conditions));
     return result.rowCount || 0;
   }
 

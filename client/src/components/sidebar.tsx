@@ -25,7 +25,6 @@ import {
   Phone,
   Lightbulb,
   TrendingDown,
-  Brain,
   Archive
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -185,17 +184,6 @@ export default function Sidebar() {
       ],
     },
     {
-      title: "الذكاء الاصطناعي",
-      items: [
-        {
-          name: "مركز AI",
-          href: "/ai-center",
-          icon: Brain,
-          badge: null,
-        },
-      ],
-    },
-    {
       title: "أخرى",
       items: [
         {
@@ -212,7 +200,7 @@ export default function Sidebar() {
         },
         {
           name: "الإعدادات",
-          href: "/ai/settings",
+          href: "/settings",
           icon: Settings,
           badge: null,
         },
