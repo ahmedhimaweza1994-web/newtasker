@@ -129,8 +129,14 @@ export interface IStorage {
   getUserTasks(userId: string): Promise<Task[]>;
   getAssignedTasks(userId: string): Promise<Task[]>;
   updateTask(id: string, updates: Partial<Task>): Promise<Task | undefined>;
-  deleteTask(id: string): Promise<boolean>;
+  deleteTask(id: string, companyId?: string): Promise<boolean>;
   getAllTasks(): Promise<Task[]>;
+  getArchivedTasks(companyId: string): Promise<Task[]>;
+  archiveCompletedTasks(companyId: string): Promise<number>;
+  unarchiveTask(id: string, companyId: string): Promise<Task | undefined>;
+  deleteAllArchivedTasks(companyId: string): Promise<number>;
+  getTasksByIds(taskIds: string[], companyId?: string): Promise<Task[]>;
+  deleteMultipleTasks(taskIds: string[]): Promise<number>;
   rateTask(taskId: string, rating: number, ratedBy: string): Promise<Task>;
   approveTaskReview(taskId: string, approverId: string): Promise<Task>;
  
@@ -532,9 +538,119 @@ export class MemStorage implements IStorage {
     return task || undefined;
   }
 
-  async deleteTask(id: string): Promise<boolean> {
-    const result = await db.delete(tasks).where(eq(tasks.id, id));
+  async deleteTask(id: string, companyId?: string): Promise<boolean> {
+    let conditions = [eq(tasks.id, id)];
+    if (companyId) {
+      conditions.push(eq(tasks.companyId, companyId));
+    }
+    const result = await db.delete(tasks).where(
+      companyId ? and(...conditions) : eq(tasks.id, id)
+    );
     return result.rowCount! > 0;
+  }
+
+  async getArchivedTasks(companyId: string): Promise<Task[]> {
+    const archivedTasks = await db.query.tasks.findMany({
+      where: and(
+        eq(tasks.status, 'archived'),
+        eq(tasks.companyId, companyId)
+      ),
+      with: {
+        createdBy: {
+          columns: {
+            id: true,
+            fullName: true,
+            email: true,
+            profilePicture: true,
+            department: true,
+            role: true,
+          },
+        },
+        createdFor: {
+          columns: {
+            id: true,
+            fullName: true,
+            email: true,
+            profilePicture: true,
+            department: true,
+            role: true,
+          },
+        },
+        assignedTo: {
+          columns: {
+            id: true,
+            fullName: true,
+            email: true,
+            profilePicture: true,
+            department: true,
+            role: true,
+          },
+        },
+        ratedBy: {
+          columns: {
+            id: true,
+            fullName: true,
+            email: true,
+            profilePicture: true,
+          },
+        },
+      },
+      orderBy: [desc(tasks.archivedAt)],
+    });
+    return archivedTasks as Task[];
+  }
+
+  async archiveCompletedTasks(companyId: string): Promise<number> {
+    const result = await db
+      .update(tasks)
+      .set({ status: 'archived', archivedAt: new Date() })
+      .where(
+        and(
+          eq(tasks.status, 'completed'),
+          eq(tasks.companyId, companyId)
+        )
+      );
+    return result.rowCount || 0;
+  }
+
+  async unarchiveTask(id: string, companyId: string): Promise<Task | undefined> {
+    const [task] = await db
+      .update(tasks)
+      .set({ status: 'completed', archivedAt: null })
+      .where(
+        and(
+          eq(tasks.id, id),
+          eq(tasks.companyId, companyId)
+        )
+      )
+      .returning();
+    return task || undefined;
+  }
+
+  async deleteAllArchivedTasks(companyId: string): Promise<number> {
+    const result = await db.delete(tasks).where(
+      and(
+        eq(tasks.status, 'archived'),
+        eq(tasks.companyId, companyId)
+      )
+    );
+    return result.rowCount || 0;
+  }
+
+  async getTasksByIds(taskIds: string[], companyId?: string): Promise<Task[]> {
+    const conditions = [inArray(tasks.id, taskIds)];
+    if (companyId) {
+      conditions.push(eq(tasks.companyId, companyId));
+    }
+    const tasksData = await db.query.tasks.findMany({
+      where: and(...conditions),
+    });
+    return tasksData as Task[];
+  }
+
+  async deleteMultipleTasks(taskIds: string[]): Promise<number> {
+    const result = await db.delete(tasks).where(inArray(tasks.id, taskIds));
+    return result.rowCount || 0;
   }
 
   async getAllTasks(): Promise<Task[]> {

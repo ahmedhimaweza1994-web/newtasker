@@ -25,7 +25,8 @@ import {
   Phone,
   Lightbulb,
   TrendingDown,
-  Brain
+  Brain,
+  Archive
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useLocation } from "wouter";
@@ -124,6 +125,12 @@ export default function Sidebar() {
           icon: CheckSquare,
           badge: totalTasks > 0 ? totalTasks.toString() : null,
         },
+        ...(user?.role === 'admin' || user?.role === 'sub-admin' ? [{
+          name: "الأرشيف",
+          href: "/archive",
+          icon: Archive,
+          badge: null,
+        }] : []),
         {
           name: "الشركات",
           href: "/companies",

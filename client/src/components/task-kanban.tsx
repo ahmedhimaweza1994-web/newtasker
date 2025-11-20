@@ -22,7 +22,8 @@ import {
   MessageSquare,
   Edit,
   User,
-  Users
+  Users,
+  Archive
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -117,6 +118,30 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
     onError: (error: any) => {
       toast({
         title: "خطأ في تحديث المهمة",
+        description: error.message || "حدث خطأ غير متوقع",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const archiveCompletedTasksMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("POST", "/api/tasks/archive-completed", {});
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks/my"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks/assigned"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/companies"] });
+      toast({
+        title: "تم أرشفة المهام",
+        description: "تم نقل جميع المهام المكتملة إلى الأرشيف",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "خطأ في الأرشفة",
         description: error.message || "حدث خطأ غير متوقع",
         variant: "destructive",
       });
@@ -481,7 +506,8 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
     tasks, 
     icon, 
     color,
-    testId 
+    testId,
+    actions 
   }: { 
     id: string;
     title: string; 
@@ -489,6 +515,7 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
     icon: React.ReactNode; 
     color: string;
     testId: string;
+    actions?: React.ReactNode;
   }) => {
     const { setNodeRef, isOver } = useDroppable({
       id,
@@ -508,6 +535,7 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
             <Badge variant="secondary" className="text-xs h-5 px-2 flex-shrink-0" data-testid={`${testId}-count`}>
               {tasks.length}
             </Badge>
+            {actions}
           </div>
           <div className="flex-1 overflow-y-auto space-y-2 min-h-0 pr-1" style={{ maxHeight: 'calc(80vh - 120px)' }} data-max-height="responsive-column">
             {tasks.length > 0 ? (
@@ -573,6 +601,21 @@ export default function TaskKanban({ pendingTasks, inProgressTasks, underReviewT
               icon={<CheckCircle className="w-4 h-4 text-green-600" />}
               color="border-t-green-500"
               testId="column-completed"
+              actions={
+                completedTasks.length > 0 && (user?.role === 'admin' || user?.role === 'sub-admin') ? (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-5 w-5"
+                    onClick={() => archiveCompletedTasksMutation.mutate()}
+                    disabled={archiveCompletedTasksMutation.isPending}
+                    data-testid="button-archive-completed"
+                    title="أرشفة جميع المهام المكتملة"
+                  >
+                    <Archive className="h-3 w-3" />
+                  </Button>
+                ) : null
+              }
             />
           </div>
         </div>

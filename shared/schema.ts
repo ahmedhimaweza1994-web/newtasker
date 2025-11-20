@@ -7,7 +7,7 @@ import { z } from "zod";
 // Enums
 export const roleEnum = pgEnum('role', ['admin', 'sub-admin', 'employee']);
 export const auxStatusEnum = pgEnum('aux_status', ['ready', 'working_on_project', 'personal', 'break', 'waiting']);
-export const taskStatusEnum = pgEnum('task_status', ['pending', 'in_progress', 'under_review', 'completed']);
+export const taskStatusEnum = pgEnum('task_status', ['pending', 'in_progress', 'under_review', 'completed', 'archived']);
 export const taskPriorityEnum = pgEnum('task_priority', ['low', 'medium', 'high']);
 export const leaveTypeEnum = pgEnum('leave_type', ['annual', 'sick', 'maternity', 'emergency']);
 export const leaveStatusEnum = pgEnum('leave_status', ['pending', 'approved', 'rejected']);
@@ -76,6 +76,7 @@ export const tasks = pgTable("tasks", {
   assignedTo: uuid("assigned_to").references(() => users.id, { onDelete: "set null" }),
   dueDate: timestamp("due_date"),
   completedAt: timestamp("completed_at"),
+  archivedAt: timestamp("archived_at"),
   estimatedHours: integer("estimated_hours"),
   actualHours: integer("actual_hours"),
   performanceRating: integer("performance_rating"), // نقاط الأداء من 1 إلى 5

@@ -29,6 +29,7 @@ import AICodeAssistant from "@/pages/ai-code-assistant";
 import AISettings from "@/pages/ai-settings";
 import Companies from "@/pages/companies";
 import CompanyProfile from "@/pages/company-profile";
+import Archive from "@/pages/archive";
 import Settings from "@/pages/settings";
 import NotFound from "@/pages/not-found";
 
@@ -41,6 +42,7 @@ function Router() {
       <ProtectedRoute path="/admin" component={AdminDashboard} />
       <ProtectedRoute path="/admin-dashboard" component={AdminDashboard} />
       <ProtectedRoute path="/tasks" component={TaskManagement} />
+      <ProtectedRoute path="/archive" component={Archive} />
       <ProtectedRoute path="/profile/:id?" component={UserProfile} />
       <ProtectedRoute path="/user-profile/:id?" component={UserProfile} />
       <ProtectedRoute path="/reports" component={Reports} />

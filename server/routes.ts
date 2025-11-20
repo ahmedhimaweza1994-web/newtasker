@@ -147,6 +147,10 @@ export function registerRoutes(app: Express): Server {
       if (!task) {
         return res.status(404).json({ message: "المهمة غير موجودة" });
       }
+      // Validate company ownership
+      if (req.user!.companyId && task.companyId !== req.user!.companyId) {
+        return res.status(403).json({ message: "لا يمكن الوصول إلى مهام شركة أخرى" });
+      }
       res.json(task);
     } catch (error) {
       res.status(500).json({ message: "حدث خطأ في جلب المهمة" });
@@ -282,17 +286,121 @@ export function registerRoutes(app: Express): Server {
       if (!task) {
         return res.status(404).json({ message: "المهمة غير موجودة" });
       }
+      // Validate company ownership
+      if (req.user!.companyId && task.companyId !== req.user!.companyId) {
+        return res.status(403).json({ message: "لا يمكن حذف مهام شركة أخرى" });
+      }
       // Check authorization
       if (task.createdBy !== req.user!.id && req.user!.role !== 'admin' && req.user!.role !== 'sub-admin') {
         return res.status(403).json({ message: "غير مصرح لك بحذف هذه المهمة" });
       }
-      const success = await storage.deleteTask(req.params.id);
+      const success = await storage.deleteTask(req.params.id, req.user!.companyId);
       if (!success) {
-        return res.status(404).json({ message: "المهمة غير موجودة" });
+        return res.status(404).json({ message: "المهمة غير موجودة أو لا تنتمي لشركتك" });
       }
       res.json({ message: "تم حذف المهمة بنجاح" });
     } catch (error) {
       res.status(500).json({ message: "حدث خطأ في حذف المهمة" });
+    }
+  });
+
+  // Archive routes
+  app.get("/api/tasks/archived", requireAuth, requireRole(['admin', 'sub-admin']), async (req, res) => {
+    try {
+      if (!req.user!.companyId) {
+        return res.status(400).json({ 
+          message: "لا يمكن جلب المهام المؤرشفة بدون تحديد الشركة" 
+        });
+      }
+      const archivedTasks = await storage.getArchivedTasks(req.user!.companyId);
+      res.json(archivedTasks);
+    } catch (error) {
+      console.error("Error fetching archived tasks:", error);
+      res.status(500).json({ message: "حدث خطأ في جلب المهام المؤرشفة" });
+    }
+  });
+
+  app.post("/api/tasks/archive-completed", requireAuth, requireRole(['admin', 'sub-admin']), async (req, res) => {
+    try {
+      // Require companyId for safety - prevent archiving all tasks system-wide
+      if (!req.user!.companyId) {
+        return res.status(400).json({ 
+          message: "لا يمكن أرشفة المهام بدون تحديد الشركة" 
+        });
+      }
+      const count = await storage.archiveCompletedTasks(req.user!.companyId);
+      res.json({ message: `تم أرشفة ${count} مهمة`, count });
+    } catch (error) {
+      console.error("Error archiving completed tasks:", error);
+      res.status(500).json({ message: "حدث خطأ في أرشفة المهام" });
+    }
+  });
+
+  app.post("/api/tasks/:id/unarchive", requireAuth, requireRole(['admin', 'sub-admin']), async (req, res) => {
+    try {
+      if (!req.user!.companyId) {
+        return res.status(400).json({ 
+          message: "لا يمكن استرجاع المهمة بدون تحديد الشركة" 
+        });
+      }
+      const task = await storage.unarchiveTask(req.params.id, req.user!.companyId);
+      if (!task) {
+        return res.status(404).json({ message: "المهمة غير موجودة أو لا تنتمي لشركتك" });
+      }
+      res.json(task);
+    } catch (error) {
+      console.error("Error unarchiving task:", error);
+      res.status(500).json({ message: "حدث خطأ في استرجاع المهمة" });
+    }
+  });
+
+  app.delete("/api/tasks/archived/all", requireAuth, requireRole(['admin', 'sub-admin']), async (req, res) => {
+    try {
+      if (!req.user!.companyId) {
+        return res.status(400).json({ 
+          message: "لا يمكن حذف المهام بدون تحديد الشركة" 
+        });
+      }
+      const count = await storage.deleteAllArchivedTasks(req.user!.companyId);
+      res.json({ message: `تم حذف ${count} مهمة`, count });
+    } catch (error) {
+      console.error("Error deleting all archived tasks:", error);
+      res.status(500).json({ message: "حدث خطأ في حذف المهام" });
+    }
+  });
+
+  app.post("/api/tasks/delete-multiple", requireAuth, requireRole(['admin', 'sub-admin']), async (req, res) => {
+    try {
+      const { taskIds } = req.body;
+      if (!Array.isArray(taskIds) || taskIds.length === 0) {
+        return res.status(400).json({ message: "يجب تحديد مهام للحذف" });
+      }
+      // Require companyId for safety - prevent cross-company deletion
+      if (!req.user!.companyId) {
+        return res.status(400).json({ 
+          message: "لا يمكن حذف المهام بدون تحديد الشركة" 
+        });
+      }
+      // Verify all tasks are archived and belong to user's company before deleting
+      const tasksToDelete = await storage.getTasksByIds(taskIds, req.user!.companyId);
+      if (tasksToDelete.length !== taskIds.length) {
+        return res.status(404).json({ 
+          message: "بعض المهام غير موجودة أو لا تنتمي لشركتك" 
+        });
+      }
+      const nonArchivedTasks = tasksToDelete.filter(
+        task => task.status !== 'archived'
+      );
+      if (nonArchivedTasks.length > 0) {
+        return res.status(400).json({ 
+          message: "لا يمكن حذف المهام غير المؤرشفة" 
+        });
+      }
+      const count = await storage.deleteMultipleTasks(taskIds);
+      res.json({ message: `تم حذف ${count} مهمة`, count });
+    } catch (error) {
+      console.error("Error deleting multiple tasks:", error);
+      res.status(500).json({ message: "حدث خطأ في حذف المهام" });
     }
   });
 

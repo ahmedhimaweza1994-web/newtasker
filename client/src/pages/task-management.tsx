@@ -42,6 +42,7 @@ export default function TaskManagement() {
   const [priorityFilter, setPriorityFilter] = useState("all");
   const [userFilter, setUserFilter] = useState("all");
   const [departmentFilter, setDepartmentFilter] = useState("all");
+  const [companyFilter, setCompanyFilter] = useState("all");
 
   const { data: tasks = [], isLoading: tasksLoading } = useQuery<Task[]>({
     queryKey: ["/api/tasks"],
@@ -160,6 +161,9 @@ export default function TaskManagement() {
     : Array.from(new Map([...myTasks, ...assignedTasks].map(task => [task.id, task])).values());
   
   const filteredTasks = allUserTasks.filter(task => {
+    // Exclude archived tasks from main view
+    if (task.status === 'archived') return false;
+    
     const companyName = task.companyId ? companies.find(c => c.id === task.companyId)?.name || "" : "";
     const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           task.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -172,14 +176,11 @@ export default function TaskManagement() {
                         task.assignedTo === userFilter ||
                         task.createdFor === userFilter;
     const matchesDepartment = departmentFilter === "all" || (() => {
-                              const creatorUser = users.find(u => u.id === task.createdBy);
-                              const assignedUser = users.find(u => u.id === task.assignedTo);
                               const createdForUser = users.find(u => u.id === task.createdFor);
-                              return (creatorUser?.department === departmentFilter) || 
-                                     (assignedUser?.department === departmentFilter) ||
-                                     (createdForUser?.department === departmentFilter);
+                              return createdForUser?.department === departmentFilter;
                             })();
-    return matchesSearch && matchesStatus && matchesPriority && matchesUser && matchesDepartment;
+    const matchesCompany = companyFilter === "all" || task.companyId === companyFilter;
+    return matchesSearch && matchesStatus && matchesPriority && matchesUser && matchesDepartment && matchesCompany;
   });
 
   const pendingTasks = filteredTasks.filter(task => task.status === 'pending');
@@ -193,6 +194,7 @@ export default function TaskManagement() {
     setPriorityFilter("all");
     setUserFilter("all");
     setDepartmentFilter("all");
+    setCompanyFilter("all");
     toast({
       title: "تم إعادة تعيين الفلاتر",
       description: "تم مسح جميع الفلاتر",
@@ -467,20 +469,8 @@ export default function TaskManagement() {
 
           <MotionSection delay={0.2}>
             <Card className="mb-6" data-testid="card-task-filters">
-              <CardContent className="p-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-3">
-                  <div className="lg:col-span-1 xl:col-span-2">
-                    <div className="relative">
-                      <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input
-                        placeholder="البحث في المهام..."
-                        className="pr-10 h-11 sm:h-10 w-full"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        data-testid="input-search-tasks"
-                      />
-                    </div>
-                  </div>
+              <CardContent className="p-4 space-y-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                   <Select value={statusFilter} onValueChange={setStatusFilter}>
                     <SelectTrigger className="w-full h-11 sm:h-10" data-testid="select-filter-status">
                       <SelectValue placeholder="الحالة" />
@@ -514,12 +504,12 @@ export default function TaskManagement() {
                           <SelectItem value="all">كل الموظفين</SelectItem>
                           <SelectItem value="my">مهامي</SelectItem>
                           {users.map((u) => {
-                            const userTaskCount = tasks.filter(
-                              t => t.createdBy === u.id || t.assignedTo === u.id || t.createdFor === u.id
+                            const userTaskCount = allUserTasks.filter(
+                              t => (t.createdBy === u.id || t.assignedTo === u.id || t.createdFor === u.id) && t.status !== 'archived'
                             ).length;
                             return (
                               <SelectItem key={u.id} value={u.id}>
-                                {u.fullName} - {u.department} ({userTaskCount})
+                                {u.fullName} ({userTaskCount})
                               </SelectItem>
                             );
                           })}
@@ -536,13 +526,34 @@ export default function TaskManagement() {
                           ))}
                         </SelectContent>
                       </Select>
+                      <Select value={companyFilter} onValueChange={setCompanyFilter}>
+                        <SelectTrigger className="w-full h-11 sm:h-10" data-testid="select-filter-company">
+                          <SelectValue placeholder="الشركة" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">كل الشركات</SelectItem>
+                          {companies.map((company) => (
+                            <SelectItem key={company.id} value={company.id}>{company.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </>
                   )}
-                  <Button variant="outline" size="sm" onClick={handleResetFilters} data-testid="button-reset-filters" className="h-11 sm:h-10 w-full sm:w-auto">
+                  <Button variant="outline" size="sm" onClick={handleResetFilters} data-testid="button-reset-filters" className="h-11 sm:h-10 w-full">
                     <Filter className="w-4 h-4 ml-2" />
                     <span className="hidden sm:inline">إعادة تعيين</span>
                     <span className="sm:hidden">إعادة</span>
                   </Button>
+                </div>
+                <div className="relative">
+                  <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    placeholder="البحث في المهام..."
+                    className="pr-10 h-11 sm:h-10 w-full"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    data-testid="input-search-tasks"
+                  />
                 </div>
               </CardContent>
             </Card>
