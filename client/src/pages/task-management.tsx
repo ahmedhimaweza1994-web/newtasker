@@ -160,6 +160,9 @@ export default function TaskManagement() {
     ? tasks 
     : Array.from(new Map([...myTasks, ...assignedTasks].map(task => [task.id, task])).values());
   
+  // Get active (non-archived) tasks for counting
+  const activeTasks = allUserTasks.filter(task => task.status !== 'archived');
+  
   const filteredTasks = allUserTasks.filter(task => {
     // Exclude archived tasks from main view
     if (task.status === 'archived') return false;
@@ -176,8 +179,12 @@ export default function TaskManagement() {
                         task.assignedTo === userFilter ||
                         task.createdFor === userFilter;
     const matchesDepartment = departmentFilter === "all" || (() => {
+                              const createdByUser = users.find(u => u.id === task.createdBy);
+                              const assignedToUser = users.find(u => u.id === task.assignedTo);
                               const createdForUser = users.find(u => u.id === task.createdFor);
-                              return createdForUser?.department === departmentFilter;
+                              return createdByUser?.department === departmentFilter ||
+                                     assignedToUser?.department === departmentFilter ||
+                                     createdForUser?.department === departmentFilter;
                             })();
     const matchesCompany = companyFilter === "all" || task.companyId === companyFilter;
     return matchesSearch && matchesStatus && matchesPriority && matchesUser && matchesDepartment && matchesCompany;
@@ -504,12 +511,12 @@ export default function TaskManagement() {
                           <SelectItem value="all">كل الموظفين</SelectItem>
                           <SelectItem value="my">مهامي</SelectItem>
                           {users.map((u) => {
-                            const userTaskCount = allUserTasks.filter(
-                              t => (t.createdBy === u.id || t.assignedTo === u.id || t.createdFor === u.id) && t.status !== 'archived'
+                            const userTaskCount = activeTasks.filter(
+                              t => (t.createdBy === u.id || t.assignedTo === u.id || t.createdFor === u.id)
                             ).length;
                             return (
                               <SelectItem key={u.id} value={u.id}>
-                                {u.fullName} ({userTaskCount})
+                                {u.fullName} - {u.department} ({userTaskCount})
                               </SelectItem>
                             );
                           })}
