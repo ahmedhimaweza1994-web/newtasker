@@ -14,12 +14,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MotionPageShell, MotionSection } from "@/components/ui/motion-wrappers";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, Search, Filter, ListTodo, Zap, CheckCircle2, Clock, X, Upload } from "lucide-react";
+import { Plus, Search, Filter, ListTodo, Zap, CheckCircle2, Clock, X, Upload, LayoutGrid, Columns3 } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Task, User, SelectCompany } from "@shared/schema";
 import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
+import { formatArabicDate } from "@/lib/arabic-date";
 
 export default function TaskManagement() {
   const { user } = useAuth();
@@ -27,6 +32,7 @@ export default function TaskManagement() {
   const { toast } = useToast();
  
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<"normal" | "tabs">("normal");
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
@@ -246,6 +252,106 @@ export default function TaskManagement() {
   };
 
   const departments = Array.from(new Set(users.map(user => user.department))).filter(dep => dep);
+
+  const getCompanyName = (companyId: string | null) => {
+    if (!companyId) return null;
+    const company = companies.find(c => c.id === companyId);
+    return company ? company.name : null;
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case "high": return "bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20";
+      case "medium": return "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-500/20";
+      case "low": return "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20";
+      default: return "bg-gray-500/10 text-gray-700 dark:text-gray-400 border-gray-500/20";
+    }
+  };
+
+  const getPriorityLabel = (priority: string) => {
+    switch (priority) {
+      case "high": return "عالي";
+      case "medium": return "متوسط";
+      case "low": return "منخفض";
+      default: return priority;
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "pending": return "قيد الانتظار";
+      case "in_progress": return "قيد التنفيذ";
+      case "under_review": return "تحت المراجعة";
+      case "completed": return "مكتمل";
+      default: return status;
+    }
+  };
+
+  const TaskGridCard = ({ task }: { task: Task }) => {
+    return (
+      <Card className="hover-elevate transition-all duration-200" data-testid={`task-grid-card-${task.id}`}>
+        <CardContent className="p-4">
+          <div className="space-y-3">
+            <div className="flex items-start justify-between gap-2">
+              <h3 className="font-semibold text-base line-clamp-2" data-testid={`task-grid-title-${task.id}`}>
+                {task.title}
+              </h3>
+              <Badge className={cn("text-xs", getPriorityColor(task.priority))} data-testid={`task-grid-priority-${task.id}`}>
+                {getPriorityLabel(task.priority)}
+              </Badge>
+            </div>
+            
+            {task.description && (
+              <p className="text-sm text-muted-foreground line-clamp-2" data-testid={`task-grid-description-${task.id}`}>
+                {task.description}
+              </p>
+            )}
+
+            <div className="flex flex-wrap gap-2">
+              {task.companyId && getCompanyName(task.companyId) && (
+                <Badge variant="outline" className="text-xs" data-testid={`task-grid-company-${task.id}`}>
+                  {getCompanyName(task.companyId)}
+                </Badge>
+              )}
+              {task.rewardPoints && (
+                <Badge variant="secondary" className="text-xs" data-testid={`task-grid-points-${task.id}`}>
+                  {task.rewardPoints} نقطة
+                </Badge>
+              )}
+            </div>
+
+            {task.dueDate && (
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground" data-testid={`task-grid-due-date-${task.id}`}>
+                <Clock className="w-3.5 h-3.5" />
+                {formatArabicDate(task.dueDate)}
+              </div>
+            )}
+
+            {(task as any).createdForUser && (
+              <div className="flex items-center gap-2 pt-2 border-t">
+                <Avatar className="h-6 w-6">
+                  <AvatarImage 
+                    src={(task as any).createdForUser.profilePicture || undefined} 
+                    alt={(task as any).createdForUser.fullName || "مكلفة لـ"} 
+                    className="object-cover"
+                  />
+                  <AvatarFallback className="text-xs">
+                    {(task as any).createdForUser.fullName?.[0] || "م"}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium truncate">{(task as any).createdForUser.fullName}</p>
+                  {(task as any).createdForUser.department && (
+                    <p className="text-xs text-muted-foreground truncate">{(task as any).createdForUser.department}</p>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
 
   return (
     <MotionPageShell>
@@ -511,6 +617,31 @@ export default function TaskManagement() {
             </div>
           </MotionSection>
 
+          <MotionSection delay={0.15}>
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <Button
+                variant={viewMode === "normal" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setViewMode("normal")}
+                data-testid="button-view-normal"
+                className="gap-2"
+              >
+                <Columns3 className="w-4 h-4" />
+                عادي
+              </Button>
+              <Button
+                variant={viewMode === "tabs" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setViewMode("tabs")}
+                data-testid="button-view-tabs"
+                className="gap-2"
+              >
+                <LayoutGrid className="w-4 h-4" />
+                تبويبات
+              </Button>
+            </div>
+          </MotionSection>
+
           <MotionSection delay={0.2}>
             <Card className="mb-6" data-testid="card-task-filters">
               <CardContent className="p-4 space-y-3">
@@ -616,13 +747,106 @@ export default function TaskManagement() {
                   ))}
                 </div>
               </div>
-            ) : (
+            ) : viewMode === "normal" ? (
               <TaskKanban
                 pendingTasks={pendingTasks}
                 inProgressTasks={inProgressTasks}
                 underReviewTasks={underReviewTasks}
                 completedTasks={completedTasks}
               />
+            ) : (
+              <Tabs defaultValue="pending" className="w-full" data-testid="tabs-task-status">
+                <TabsList className="grid w-full grid-cols-4 mb-4">
+                  <TabsTrigger value="pending" className="gap-2" data-testid="tab-pending">
+                    <Clock className="w-4 h-4" />
+                    <span className="hidden sm:inline">قيد الانتظار</span>
+                    <Badge variant="secondary" className="text-xs">{pendingTasks.length}</Badge>
+                  </TabsTrigger>
+                  <TabsTrigger value="in_progress" className="gap-2" data-testid="tab-in-progress">
+                    <Zap className="w-4 h-4" />
+                    <span className="hidden sm:inline">قيد التنفيذ</span>
+                    <Badge variant="secondary" className="text-xs">{inProgressTasks.length}</Badge>
+                  </TabsTrigger>
+                  <TabsTrigger value="under_review" className="gap-2" data-testid="tab-under-review">
+                    <Search className="w-4 h-4" />
+                    <span className="hidden sm:inline">تحت المراجعة</span>
+                    <Badge variant="secondary" className="text-xs">{underReviewTasks.length}</Badge>
+                  </TabsTrigger>
+                  <TabsTrigger value="completed" className="gap-2" data-testid="tab-completed">
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span className="hidden sm:inline">مكتمل</span>
+                    <Badge variant="secondary" className="text-xs">{completedTasks.length}</Badge>
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="pending" data-testid="tab-content-pending">
+                  {pendingTasks.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                      {pendingTasks.map((task) => (
+                        <TaskGridCard key={task.id} task={task} />
+                      ))}
+                    </div>
+                  ) : (
+                    <Card className="p-8">
+                      <div className="text-center text-muted-foreground">
+                        <Clock className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                        <p>لا توجد مهام قيد الانتظار</p>
+                      </div>
+                    </Card>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="in_progress" data-testid="tab-content-in-progress">
+                  {inProgressTasks.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                      {inProgressTasks.map((task) => (
+                        <TaskGridCard key={task.id} task={task} />
+                      ))}
+                    </div>
+                  ) : (
+                    <Card className="p-8">
+                      <div className="text-center text-muted-foreground">
+                        <Zap className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                        <p>لا توجد مهام قيد التنفيذ</p>
+                      </div>
+                    </Card>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="under_review" data-testid="tab-content-under-review">
+                  {underReviewTasks.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                      {underReviewTasks.map((task) => (
+                        <TaskGridCard key={task.id} task={task} />
+                      ))}
+                    </div>
+                  ) : (
+                    <Card className="p-8">
+                      <div className="text-center text-muted-foreground">
+                        <Search className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                        <p>لا توجد مهام تحت المراجعة</p>
+                      </div>
+                    </Card>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="completed" data-testid="tab-content-completed">
+                  {completedTasks.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                      {completedTasks.map((task) => (
+                        <TaskGridCard key={task.id} task={task} />
+                      ))}
+                    </div>
+                  ) : (
+                    <Card className="p-8">
+                      <div className="text-center text-muted-foreground">
+                        <CheckCircle2 className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                        <p>لا توجد مهام مكتملة</p>
+                      </div>
+                    </Card>
+                  )}
+                </TabsContent>
+              </Tabs>
             )}
           </MotionSection>
         </main>
