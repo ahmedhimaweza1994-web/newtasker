@@ -1,10 +1,9 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useSidebar } from "@/contexts/sidebar-context";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import Navigation from "@/components/navigation";
 import Sidebar from "@/components/sidebar";
-import TaskKanban from "@/components/task-kanban";
 import { TaskDetailsDialog } from "@/components/task-details-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,11 +14,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MotionPageShell, MotionSection } from "@/components/ui/motion-wrappers";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, Search, Filter, ListTodo, Zap, CheckCircle2, Clock, X, Upload, LayoutGrid, Columns3 } from "lucide-react";
+import { Plus, Search, Filter, ListTodo, Clock, X, Upload } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Task, User, SelectCompany } from "@shared/schema";
@@ -32,7 +30,6 @@ export default function TaskManagement() {
   const { toast } = useToast();
  
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<"normal" | "tabs">("normal");
   const [taskDetailsDialog, setTaskDetailsDialog] = useState<{ open: boolean; taskId: string | null }>({ open: false, taskId: null });
   const [editMode, setEditMode] = useState(false);
   const [newTask, setNewTask] = useState({
@@ -241,6 +238,45 @@ export default function TaskManagement() {
   const underReviewTasks = filteredTasks.filter(task => task.status === 'under_review');
   const completedTasks = filteredTasks.filter(task => task.status === 'completed');
 
+  // Extract departments for filters
+  const departments = Array.from(new Set(users.map(user => user.department))).filter(dep => dep);
+
+  // Calculate task counts for all filter options
+  const filterCounts = useMemo(() => {
+    const counts = {
+      status: {
+        pending: activeTasks.filter(t => t.status === 'pending').length,
+        in_progress: activeTasks.filter(t => t.status === 'in_progress').length,
+        under_review: activeTasks.filter(t => t.status === 'under_review').length,
+        completed: activeTasks.filter(t => t.status === 'completed').length,
+      },
+      priority: {
+        high: activeTasks.filter(t => t.priority === 'high').length,
+        medium: activeTasks.filter(t => t.priority === 'medium').length,
+        low: activeTasks.filter(t => t.priority === 'low').length,
+      },
+      department: {} as Record<string, number>,
+      company: {} as Record<string, number>,
+    };
+
+    // Count tasks by department
+    departments.forEach((dept) => {
+      counts.department[dept] = activeTasks.filter(t => {
+        const createdByDept = getTaskUserDepartment(t.createdBy);
+        const assignedToDept = getTaskUserDepartment(t.assignedTo);
+        const createdForDept = getTaskUserDepartment(t.createdFor);
+        return createdByDept === dept || assignedToDept === dept || createdForDept === dept;
+      }).length;
+    });
+
+    // Count tasks by company
+    companies.forEach((company) => {
+      counts.company[company.id] = activeTasks.filter(t => t.companyId === company.id).length;
+    });
+
+    return counts;
+  }, [activeTasks, departments, companies]);
+
   const handleResetFilters = () => {
     setSearchTerm("");
     setStatusFilter("all");
@@ -253,8 +289,6 @@ export default function TaskManagement() {
       description: "تم مسح جميع الفلاتر",
     });
   };
-
-  const departments = Array.from(new Set(users.map(user => user.department))).filter(dep => dep);
 
   const getCompanyName = (companyId: string | null) => {
     if (!companyId) return null;
@@ -631,31 +665,6 @@ export default function TaskManagement() {
           </MotionSection>
 
           <MotionSection delay={0.15}>
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <Button
-                variant={viewMode === "normal" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setViewMode("normal")}
-                data-testid="button-view-normal"
-                className="gap-2"
-              >
-                <Columns3 className="w-4 h-4" />
-                عادي
-              </Button>
-              <Button
-                variant={viewMode === "tabs" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setViewMode("tabs")}
-                data-testid="button-view-tabs"
-                className="gap-2"
-              >
-                <LayoutGrid className="w-4 h-4" />
-                تبويبات
-              </Button>
-            </div>
-          </MotionSection>
-
-          <MotionSection delay={0.2}>
             <Card className="mb-6" data-testid="card-task-filters">
               <CardContent className="p-4 space-y-3">
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
@@ -665,10 +674,10 @@ export default function TaskManagement() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">كل الحالات</SelectItem>
-                      <SelectItem value="pending">قيد الانتظار</SelectItem>
-                      <SelectItem value="in_progress">قيد التنفيذ</SelectItem>
-                      <SelectItem value="under_review">تحت المراجعة</SelectItem>
-                      <SelectItem value="completed">مكتمل</SelectItem>
+                      <SelectItem value="pending">قيد الانتظار ({filterCounts.status.pending})</SelectItem>
+                      <SelectItem value="in_progress">قيد التنفيذ ({filterCounts.status.in_progress})</SelectItem>
+                      <SelectItem value="under_review">تحت المراجعة ({filterCounts.status.under_review})</SelectItem>
+                      <SelectItem value="completed">مكتمل ({filterCounts.status.completed})</SelectItem>
                     </SelectContent>
                   </Select>
                   <Select value={priorityFilter} onValueChange={setPriorityFilter}>
@@ -677,9 +686,9 @@ export default function TaskManagement() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">كل الأولويات</SelectItem>
-                      <SelectItem value="high">عالي</SelectItem>
-                      <SelectItem value="medium">متوسط</SelectItem>
-                      <SelectItem value="low">منخفض</SelectItem>
+                      <SelectItem value="high">عالي ({filterCounts.priority.high})</SelectItem>
+                      <SelectItem value="medium">متوسط ({filterCounts.priority.medium})</SelectItem>
+                      <SelectItem value="low">منخفض ({filterCounts.priority.low})</SelectItem>
                     </SelectContent>
                   </Select>
                   {(user?.role === 'admin' || user?.role === 'sub-admin') && (
@@ -713,7 +722,7 @@ export default function TaskManagement() {
                         <SelectContent>
                           <SelectItem value="all">كل الأقسام</SelectItem>
                           {departments.map((dept) => (
-                            <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+                            <SelectItem key={dept} value={dept}>{dept} ({filterCounts.department[dept] || 0})</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -724,7 +733,7 @@ export default function TaskManagement() {
                         <SelectContent>
                           <SelectItem value="all">كل الشركات</SelectItem>
                           {companies.map((company) => (
-                            <SelectItem key={company.id} value={company.id}>{company.name}</SelectItem>
+                            <SelectItem key={company.id} value={company.id}>{company.name} ({filterCounts.company[company.id] || 0})</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -754,112 +763,26 @@ export default function TaskManagement() {
             {isLoading ? (
               <div className="space-y-4">
                 <Skeleton className="h-12 w-full" />
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  {[...Array(4)].map((_, i) => (
-                    <Skeleton key={i} className="h-64 w-full" />
+                <div className="space-y-3">
+                  {[...Array(8)].map((_, i) => (
+                    <Skeleton key={i} className="h-32 w-full" />
                   ))}
                 </div>
               </div>
-            ) : viewMode === "normal" ? (
-              <TaskKanban
-                pendingTasks={pendingTasks}
-                inProgressTasks={inProgressTasks}
-                underReviewTasks={underReviewTasks}
-                completedTasks={completedTasks}
-              />
+            ) : filteredTasks.length > 0 ? (
+              <div className="space-y-3" data-testid="tasks-list">
+                {filteredTasks.map((task) => (
+                  <TaskGridCard key={task.id} task={task} />
+                ))}
+              </div>
             ) : (
-              <Tabs defaultValue="pending" className="w-full" data-testid="tabs-task-status">
-                <TabsList className="grid w-full grid-cols-4 mb-4">
-                  <TabsTrigger value="pending" className="gap-2" data-testid="tab-pending">
-                    <Clock className="w-4 h-4" />
-                    <span className="hidden sm:inline">قيد الانتظار</span>
-                    <Badge variant="secondary" className="text-xs">{pendingTasks.length}</Badge>
-                  </TabsTrigger>
-                  <TabsTrigger value="in_progress" className="gap-2" data-testid="tab-in-progress">
-                    <Zap className="w-4 h-4" />
-                    <span className="hidden sm:inline">قيد التنفيذ</span>
-                    <Badge variant="secondary" className="text-xs">{inProgressTasks.length}</Badge>
-                  </TabsTrigger>
-                  <TabsTrigger value="under_review" className="gap-2" data-testid="tab-under-review">
-                    <Search className="w-4 h-4" />
-                    <span className="hidden sm:inline">تحت المراجعة</span>
-                    <Badge variant="secondary" className="text-xs">{underReviewTasks.length}</Badge>
-                  </TabsTrigger>
-                  <TabsTrigger value="completed" className="gap-2" data-testid="tab-completed">
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span className="hidden sm:inline">مكتمل</span>
-                    <Badge variant="secondary" className="text-xs">{completedTasks.length}</Badge>
-                  </TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="pending" data-testid="tab-content-pending">
-                  {pendingTasks.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                      {pendingTasks.map((task) => (
-                        <TaskGridCard key={task.id} task={task} />
-                      ))}
-                    </div>
-                  ) : (
-                    <Card className="p-8">
-                      <div className="text-center text-muted-foreground">
-                        <Clock className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                        <p>لا توجد مهام قيد الانتظار</p>
-                      </div>
-                    </Card>
-                  )}
-                </TabsContent>
-
-                <TabsContent value="in_progress" data-testid="tab-content-in-progress">
-                  {inProgressTasks.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                      {inProgressTasks.map((task) => (
-                        <TaskGridCard key={task.id} task={task} />
-                      ))}
-                    </div>
-                  ) : (
-                    <Card className="p-8">
-                      <div className="text-center text-muted-foreground">
-                        <Zap className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                        <p>لا توجد مهام قيد التنفيذ</p>
-                      </div>
-                    </Card>
-                  )}
-                </TabsContent>
-
-                <TabsContent value="under_review" data-testid="tab-content-under-review">
-                  {underReviewTasks.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                      {underReviewTasks.map((task) => (
-                        <TaskGridCard key={task.id} task={task} />
-                      ))}
-                    </div>
-                  ) : (
-                    <Card className="p-8">
-                      <div className="text-center text-muted-foreground">
-                        <Search className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                        <p>لا توجد مهام تحت المراجعة</p>
-                      </div>
-                    </Card>
-                  )}
-                </TabsContent>
-
-                <TabsContent value="completed" data-testid="tab-content-completed">
-                  {completedTasks.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                      {completedTasks.map((task) => (
-                        <TaskGridCard key={task.id} task={task} />
-                      ))}
-                    </div>
-                  ) : (
-                    <Card className="p-8">
-                      <div className="text-center text-muted-foreground">
-                        <CheckCircle2 className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                        <p>لا توجد مهام مكتملة</p>
-                      </div>
-                    </Card>
-                  )}
-                </TabsContent>
-              </Tabs>
+              <Card className="p-8" data-testid="empty-tasks-state">
+                <div className="text-center text-muted-foreground">
+                  <ListTodo className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                  <p className="text-lg font-medium mb-2">لا توجد مهام</p>
+                  <p className="text-sm">لم يتم العثور على أي مهام تطابق الفلاتر المحددة</p>
+                </div>
+              </Card>
             )}
           </MotionSection>
         </main>

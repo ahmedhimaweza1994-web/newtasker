@@ -178,6 +178,7 @@ export default function Dashboard() {
 
   const [currentNotes, setCurrentNotes] = useState("");
   const [selectedTaskId, setSelectedTaskId] = useState<string>("");
+  const [isWorkingOnProject, setIsWorkingOnProject] = useState(false);
   
   // Sync selectedTaskId with currentSession.selectedTaskId
   useEffect(() => {
@@ -188,6 +189,15 @@ export default function Dashboard() {
       setSelectedTaskId("");
     }
   }, [currentSession?.selectedTaskId, currentSession?.endTime]);
+
+  // Track if user is currently working on a project
+  useEffect(() => {
+    if (currentSession?.status === 'working_on_project' && currentSession?.selectedTaskId) {
+      setIsWorkingOnProject(true);
+    } else {
+      setIsWorkingOnProject(false);
+    }
+  }, [currentSession?.status, currentSession?.selectedTaskId]);
   
   const handleStatusChange = (status: string) => {
     // If clicking working_on_project, just update UI to show it's selected
@@ -224,6 +234,18 @@ export default function Dashboard() {
     setCurrentNotes("");
     // Don't reset selectedTaskId - it will be synced from currentSession
   };
+
+  const updateTaskStatusMutation = useMutation({
+    mutationFn: async (data: { taskId: string; status: string }) => {
+      const res = await apiRequest("PUT", `/api/tasks/${data.taskId}`, { status: data.status });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks/my"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks/assigned"] });
+    },
+  });
 
   const handleConfirmWorkingOnProject = () => {
     const taskId = selectedTaskId && selectedTaskId !== 'none' ? selectedTaskId : undefined;
@@ -262,6 +284,55 @@ export default function Dashboard() {
     setSelectedStatus("working_on_project");
     setCurrentNotes("");
     // Don't reset selectedTaskId - it will be synced from currentSession
+  };
+
+  const handleSubmitTask = () => {
+    const taskId = currentSession?.selectedTaskId;
+    
+    if (!taskId) {
+      toast({
+        title: "خطأ",
+        description: "لا توجد مهمة محددة للتسليم",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // First update task status to under_review
+    updateTaskStatusMutation.mutate(
+      { taskId, status: "under_review" },
+      {
+        onSuccess: () => {
+          // Then change AUX status back to ready
+          if (currentSession && !currentSession.endTime) {
+            endSessionMutation.mutate(
+              {
+                id: currentSession.id,
+                notes: currentNotes,
+                selectedTaskId: undefined,
+              },
+              {
+                onSuccess: () => {
+                  startSessionMutation.mutate({
+                    status: "ready",
+                    notes: "",
+                    selectedTaskId: undefined,
+                  });
+                  setSelectedStatus("ready");
+                  setSelectedTaskId("");
+                  setCurrentNotes("");
+                  setIsWorkingOnProject(false);
+                  toast({
+                    title: "تم تسليم المهمة بنجاح",
+                    description: "تم نقل المهمة إلى تحت المراجعة",
+                  });
+                },
+              }
+            );
+          }
+        },
+      }
+    );
   };
 
   const handleToggleShift = () => {
@@ -660,7 +731,7 @@ export default function Dashboard() {
                         )}
                       </div>
                       
-                      {selectedStatus === 'working_on_project' && (
+                      {selectedStatus === 'working_on_project' && !isWorkingOnProject && (
                         <Button
                           onClick={handleConfirmWorkingOnProject}
                           className="w-full"
@@ -668,6 +739,17 @@ export default function Dashboard() {
                           data-testid="button-confirm-working-on-project"
                         >
                           {startSessionMutation.isPending || endSessionMutation.isPending ? 'جاري التحديث...' : 'تأكيد العمل على المشروع'}
+                        </Button>
+                      )}
+                      {isWorkingOnProject && (
+                        <Button
+                          onClick={handleSubmitTask}
+                          variant="destructive"
+                          className="w-full"
+                          disabled={updateTaskStatusMutation.isPending || startSessionMutation.isPending || endSessionMutation.isPending}
+                          data-testid="button-submit-task"
+                        >
+                          {updateTaskStatusMutation.isPending || startSessionMutation.isPending || endSessionMutation.isPending ? 'جاري التسليم...' : 'تسليم'}
                         </Button>
                       )}
                     </CardContent>
