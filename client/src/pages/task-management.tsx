@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/use-auth";
 import Navigation from "@/components/navigation";
 import Sidebar from "@/components/sidebar";
 import { TaskDetailsDialog } from "@/components/task-details-dialog";
+import TaskKanban from "@/components/task-kanban";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,8 +17,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { MotionPageShell, MotionSection } from "@/components/ui/motion-wrappers";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, Search, Filter, ListTodo, Clock, X, Upload } from "lucide-react";
+import { Plus, Search, Filter, ListTodo, Clock, X, Upload, LayoutGrid, List } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Task, User, SelectCompany } from "@shared/schema";
@@ -32,6 +34,7 @@ export default function TaskManagement() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [taskDetailsDialog, setTaskDetailsDialog] = useState<{ open: boolean; taskId: string | null }>({ open: false, taskId: null });
   const [editMode, setEditMode] = useState(false);
+  const [viewMode, setViewMode] = useState<"kanban" | "list">("kanban");
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
@@ -422,16 +425,26 @@ export default function TaskManagement() {
                 </p>
               </div>
           
-              <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                <DialogTrigger asChild>
-                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                    <Button className="flex items-center gap-2 h-11 sm:h-10 w-full sm:w-auto" data-testid="button-create-task">
-                      <Plus className="w-5 h-5" />
-                      <span className="hidden sm:inline">إنشاء مهمة جديدة</span>
-                      <span className="sm:hidden">إنشاء مهمة</span>
-                    </Button>
-                  </motion.div>
-                </DialogTrigger>
+              <div className="flex gap-2 items-center flex-wrap sm:flex-nowrap w-full sm:w-auto">
+                <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as "kanban" | "list")} className="border rounded-md" data-testid="toggle-view-mode">
+                  <ToggleGroupItem value="kanban" aria-label="عرض Kanban" data-testid="toggle-kanban-view">
+                    <LayoutGrid className="h-4 w-4" />
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="list" aria-label="عرض القائمة" data-testid="toggle-list-view">
+                    <List className="h-4 w-4" />
+                  </ToggleGroupItem>
+                </ToggleGroup>
+              
+                <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                  <DialogTrigger asChild>
+                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                      <Button className="flex items-center gap-2 h-11 sm:h-10 w-full sm:w-auto" data-testid="button-create-task">
+                        <Plus className="w-5 h-5" />
+                        <span className="hidden sm:inline">إنشاء مهمة جديدة</span>
+                        <span className="sm:hidden">إنشاء مهمة</span>
+                      </Button>
+                    </motion.div>
+                  </DialogTrigger>
             
                 <DialogContent className="sm:max-w-[550px] max-h-[85vh] overflow-y-auto" data-testid="dialog-create-task">
                   <DialogHeader>
@@ -661,6 +674,7 @@ export default function TaskManagement() {
                   </form>
                 </DialogContent>
               </Dialog>
+              </div>
             </div>
           </MotionSection>
 
@@ -769,6 +783,13 @@ export default function TaskManagement() {
                   ))}
                 </div>
               </div>
+            ) : viewMode === "kanban" ? (
+              <TaskKanban
+                pendingTasks={pendingTasks}
+                inProgressTasks={inProgressTasks}
+                underReviewTasks={underReviewTasks}
+                completedTasks={completedTasks}
+              />
             ) : filteredTasks.length > 0 ? (
               <div className="space-y-3" data-testid="tasks-list">
                 {filteredTasks.map((task) => (
