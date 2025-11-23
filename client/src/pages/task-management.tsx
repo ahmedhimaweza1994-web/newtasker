@@ -155,6 +155,24 @@ export default function TaskManagement() {
     setAttachments(attachments.filter((_, i) => i !== index));
   };
 
+  // Helper functions to safely access nested user properties from tasks
+  // Tasks returned from the backend have nested user objects instead of just IDs
+  const getTaskUserId = (userField: any): string | null => {
+    if (!userField) return null;
+    // If it's already an object with an id property, return the id
+    if (typeof userField === 'object' && userField.id) return userField.id;
+    // If it's a string (legacy), return it directly
+    if (typeof userField === 'string') return userField;
+    return null;
+  };
+
+  const getTaskUserDepartment = (userField: any): string | null => {
+    if (!userField) return null;
+    // If it's an object with department property, return it
+    if (typeof userField === 'object' && userField.department) return userField.department;
+    return null;
+  };
+  
   // Deduplicate tasks by ID (prevents duplicate display when user both creates and is assigned to same task)
   const allUserTasks = user?.role === 'admin' || user?.role === 'sub-admin' 
     ? tasks 
@@ -174,23 +192,26 @@ export default function TaskManagement() {
     const matchesStatus = statusFilter === "all" || task.status === statusFilter;
     const matchesPriority = priorityFilter === "all" || task.priority === priorityFilter;
     
-    // Fixed user filter - access nested user object IDs
+    // User filter with proper null safety - uses helper to extract user IDs from nested objects
+    const createdById = getTaskUserId(task.createdBy);
+    const assignedToId = getTaskUserId(task.assignedTo);
+    const createdForId = getTaskUserId(task.createdFor);
+    
     const matchesUser = userFilter === "all" ||
                         (userFilter === "my" && (
-                          (task.createdBy as any)?.id === user?.id || 
-                          (task.assignedTo as any)?.id === user?.id || 
-                          (task.createdFor as any)?.id === user?.id
+                          createdById === user?.id || 
+                          assignedToId === user?.id || 
+                          createdForId === user?.id
                         )) ||
-                        (task.createdBy as any)?.id === userFilter ||
-                        (task.assignedTo as any)?.id === userFilter ||
-                        (task.createdFor as any)?.id === userFilter;
+                        createdById === userFilter ||
+                        assignedToId === userFilter ||
+                        createdForId === userFilter;
     
-    // Fixed department filter - access nested user departments directly
+    // Department filter with proper null safety - uses helper to extract departments
     const matchesDepartment = departmentFilter === "all" || (() => {
-      // Tasks now have nested user objects, so we can access department directly
-      const createdByDept = (task.createdBy as any)?.department;
-      const assignedToDept = (task.assignedTo as any)?.department;
-      const createdForDept = (task.createdFor as any)?.department;
+      const createdByDept = getTaskUserDepartment(task.createdBy);
+      const assignedToDept = getTaskUserDepartment(task.assignedTo);
+      const createdForDept = getTaskUserDepartment(task.createdFor);
       
       // Check if any of the users involved in the task belong to the selected department
       return createdByDept === departmentFilter ||
@@ -523,9 +544,12 @@ export default function TaskManagement() {
                           <SelectItem value="all">كل الموظفين</SelectItem>
                           <SelectItem value="my">مهامي</SelectItem>
                           {users.map((u) => {
-                            const userTaskCount = activeTasks.filter(
-                              t => ((t.createdBy as any)?.id === u.id || (t.assignedTo as any)?.id === u.id || (t.createdFor as any)?.id === u.id)
-                            ).length;
+                            const userTaskCount = activeTasks.filter(t => {
+                              const createdById = getTaskUserId(t.createdBy);
+                              const assignedToId = getTaskUserId(t.assignedTo);
+                              const createdForId = getTaskUserId(t.createdFor);
+                              return createdById === u.id || assignedToId === u.id || createdForId === u.id;
+                            }).length;
                             return (
                               <SelectItem key={u.id} value={u.id}>
                                 {u.fullName} - {u.department} ({userTaskCount})
