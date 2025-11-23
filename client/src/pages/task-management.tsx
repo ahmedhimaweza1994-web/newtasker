@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/use-auth";
 import Navigation from "@/components/navigation";
 import Sidebar from "@/components/sidebar";
 import TaskKanban from "@/components/task-kanban";
+import { TaskDetailsDialog } from "@/components/task-details-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,6 +33,8 @@ export default function TaskManagement() {
  
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"normal" | "tabs">("normal");
+  const [taskDetailsDialog, setTaskDetailsDialog] = useState<{ open: boolean; taskId: string | null }>({ open: false, taskId: null });
+  const [editMode, setEditMode] = useState(false);
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
@@ -115,6 +118,7 @@ export default function TaskManagement() {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks/my"] });
       queryClient.invalidateQueries({ queryKey: ["/api/tasks/assigned"] });
       queryClient.invalidateQueries({ queryKey: ["/api/companies"] });
+      setTaskDetailsDialog({ open: false, taskId: null });
       toast({
         title: "تم حذف المهمة",
         description: "تم حذف المهمة بنجاح",
@@ -258,6 +262,12 @@ export default function TaskManagement() {
     return company ? company.name : null;
   };
 
+  const handleDeleteTask = () => {
+    if (taskDetailsDialog.taskId) {
+      deleteTaskMutation.mutate(taskDetailsDialog.taskId);
+    }
+  };
+
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "high": return "bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20";
@@ -288,7 +298,11 @@ export default function TaskManagement() {
 
   const TaskGridCard = ({ task }: { task: Task }) => {
     return (
-      <Card className="hover-elevate transition-all duration-200" data-testid={`task-grid-card-${task.id}`}>
+      <Card 
+        className="hover-elevate transition-all duration-200 cursor-pointer" 
+        data-testid={`task-grid-card-${task.id}`}
+        onClick={() => setTaskDetailsDialog({ open: true, taskId: task.id })}
+      >
         <CardContent className="p-4">
           <div className="space-y-3">
             <div className="flex items-start justify-between gap-2">
@@ -850,6 +864,23 @@ export default function TaskManagement() {
           </MotionSection>
         </main>
       </div>
+
+      <TaskDetailsDialog
+        taskId={taskDetailsDialog.taskId}
+        open={taskDetailsDialog.open}
+        onOpenChange={(open) => {
+          setTaskDetailsDialog({ open, taskId: open ? taskDetailsDialog.taskId : null });
+          if (!open) {
+            setEditMode(false);
+          }
+        }}
+        editMode={editMode}
+        setEditMode={setEditMode}
+        users={users}
+        companies={companies}
+        getCompanyName={getCompanyName}
+        onDelete={handleDeleteTask}
+      />
     </MotionPageShell>
   );
 }
