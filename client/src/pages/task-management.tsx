@@ -174,22 +174,30 @@ export default function TaskManagement() {
     const matchesStatus = statusFilter === "all" || task.status === statusFilter;
     const matchesPriority = priorityFilter === "all" || task.priority === priorityFilter;
     
-    // Fixed user filter - properly checks all relevant user fields
+    // Fixed user filter - access nested user object IDs
     const matchesUser = userFilter === "all" ||
-                        (userFilter === "my" && (task.createdBy === user?.id || task.assignedTo === user?.id || task.createdFor === user?.id)) ||
-                        task.createdBy === userFilter ||
-                        task.assignedTo === userFilter ||
-                        task.createdFor === userFilter;
+                        (userFilter === "my" && (
+                          (task.createdBy as any)?.id === user?.id || 
+                          (task.assignedTo as any)?.id === user?.id || 
+                          (task.createdFor as any)?.id === user?.id
+                        )) ||
+                        (task.createdBy as any)?.id === userFilter ||
+                        (task.assignedTo as any)?.id === userFilter ||
+                        (task.createdFor as any)?.id === userFilter;
     
-    // Fixed department filter - checks all relevant user departments
+    // Fixed department filter - access nested user departments directly
     const matchesDepartment = departmentFilter === "all" || (() => {
-                              const createdByUser = users.find(u => u.id === task.createdBy);
-                              const assignedToUser = users.find(u => u.id === task.assignedTo);
-                              const createdForUser = users.find(u => u.id === task.createdFor);
-                              return (createdByUser?.department === departmentFilter) ||
-                                     (assignedToUser?.department === departmentFilter) ||
-                                     (createdForUser?.department === departmentFilter);
-                            })();
+      // Tasks now have nested user objects, so we can access department directly
+      const createdByDept = (task.createdBy as any)?.department;
+      const assignedToDept = (task.assignedTo as any)?.department;
+      const createdForDept = (task.createdFor as any)?.department;
+      
+      // Check if any of the users involved in the task belong to the selected department
+      return createdByDept === departmentFilter ||
+             assignedToDept === departmentFilter ||
+             createdForDept === departmentFilter;
+    })();
+    
     const matchesCompany = companyFilter === "all" || task.companyId === companyFilter;
     return matchesSearch && matchesStatus && matchesPriority && matchesUser && matchesDepartment && matchesCompany;
   });
@@ -516,7 +524,7 @@ export default function TaskManagement() {
                           <SelectItem value="my">مهامي</SelectItem>
                           {users.map((u) => {
                             const userTaskCount = activeTasks.filter(
-                              t => (t.createdBy === u.id || t.assignedTo === u.id || t.createdFor === u.id)
+                              t => ((t.createdBy as any)?.id === u.id || (t.assignedTo as any)?.id === u.id || (t.createdFor as any)?.id === u.id)
                             ).length;
                             return (
                               <SelectItem key={u.id} value={u.id}>
