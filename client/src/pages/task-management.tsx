@@ -155,21 +155,25 @@ export default function TaskManagement() {
     setAttachments(attachments.filter((_, i) => i !== index));
   };
 
-  // Helper functions to safely access nested user properties from tasks
-  // Tasks returned from the backend have nested user objects instead of just IDs
-  const getTaskUserId = (userField: any): string | null => {
+  // Type-safe helper functions to handle tasks with nested user objects
+  // The backend returns tasks with nested user objects instead of just UUIDs
+  type TaskUserRef = { id: string; department?: string | null } | string | null | undefined;
+  
+  const getTaskUserId = (userField: TaskUserRef): string | null => {
     if (!userField) return null;
-    // If it's already an object with an id property, return the id
-    if (typeof userField === 'object' && userField.id) return userField.id;
-    // If it's a string (legacy), return it directly
+    // If it's a nested user object with id, return the id
+    if (typeof userField === 'object' && 'id' in userField) return userField.id;
+    // If it's a legacy string ID, return it directly
     if (typeof userField === 'string') return userField;
     return null;
   };
 
-  const getTaskUserDepartment = (userField: any): string | null => {
+  const getTaskUserDepartment = (userField: TaskUserRef): string | null => {
     if (!userField) return null;
-    // If it's an object with department property, return it
-    if (typeof userField === 'object' && userField.department) return userField.department;
+    // Only objects can have department property
+    if (typeof userField === 'object' && 'department' in userField && userField.department) {
+      return userField.department;
+    }
     return null;
   };
   
